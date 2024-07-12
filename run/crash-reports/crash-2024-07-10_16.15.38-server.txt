@@ -1,0 +1,67 @@
+---- Minecraft Crash Report ----
+// Shall we play a game?
+
+Time: 2024-07-10 16:15:38
+Description: Exception in server tick loop
+
+java.lang.IllegalStateException: Failed to initialize server
+	at net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:716)
+	at net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:281)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21
+	Minecraft Version ID: 1.21
+	Operating System: Linux (amd64) version 6.7.12-amd64
+	Java Version: 21.0.3, Amazon.com Inc.
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Amazon.com Inc.
+	Memory: 136850032 bytes (130 MiB) / 729808896 bytes (696 MiB) up to 16819159040 bytes (16040 MiB)
+	CPUs: 12
+	Processor Vendor: GenuineIntel
+	Processor Name: 12th Gen Intel(R) Core(TM) i5-12400F
+	Identifier: Intel64 Family 6 Model 151 Stepping 2
+	Microarchitecture: Alder Lake
+	Frequency (GHz): -0.00
+	Number of physical packages: 1
+	Number of physical CPUs: 6
+	Number of logical CPUs: 12
+	Graphics card #0 name: Navi 23 [Radeon RX 6600/6600 XT/6600M]
+	Graphics card #0 vendor: Advanced Micro Devices, Inc. [AMD/ATI] (0x1002)
+	Graphics card #0 VRAM (MiB): 258.00
+	Graphics card #0 deviceId: 0x73ff
+	Graphics card #0 versionInfo: unknown
+	Graphics card #1 name: TU117 [GeForce GTX 1650]
+	Graphics card #1 vendor: NVIDIA Corporation (0x10de)
+	Graphics card #1 VRAM (MiB): 288.00
+	Graphics card #1 deviceId: 0x1f82
+	Graphics card #1 versionInfo: unknown
+	Virtual memory max (MiB): 97613.13
+	Virtual memory used (MiB): 34011.15
+	Swap memory total (MiB): 65536.00
+	Swap memory used (MiB): 0.01
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 6412.34, total: 6415.42
+	Space in storage for workdir (MiB): available: 238925.36, total: 872283.88
+	JVM Flags: 0 total; 
+	Plugins: 
+		Minecraft (minecraft) 1.21
+		SpongeAPI (spongeapi) 12.0.0-SNAPSHOT
+		Sponge (sponge) 1.21-12.0.0-SNAPSHOT
+		SpongeVanilla (spongevanilla) 1.21-12.0.0-RC1755
+		espial (espial) 1.0-SNAPSHOT
+	Server Running: true
+	Active Data Packs: vanilla, plugin-espial (incompatible), plugin-minecraft (incompatible), plugin-sponge (incompatible), plugin-spongeapi (incompatible), plugin-spongevanilla (incompatible)
+	Available Data Packs: bundle, plugin-espial (incompatible), plugin-minecraft (incompatible), plugin-sponge (incompatible), plugin-spongeapi (incompatible), plugin-spongevanilla (incompatible), trade_rebalance, vanilla
+	Enabled Feature Flags: minecraft:vanilla
+	World Generation: Stable
+	World Seed: -5766440518099553651
+	Is Modded: Definitely; Server brand changed to 'sponge'
+	Type: Dedicated Server (map_server.txt)
+	Sponge PhaseTracker: [Empty stack]
