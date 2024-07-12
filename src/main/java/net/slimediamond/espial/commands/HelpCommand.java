@@ -24,9 +24,13 @@ public class HelpCommand implements CommandExecutor {
                 .append(Component.text(" - ", NamedTextColor.WHITE))
                 .append(Component.text("Show info about the plugin", NamedTextColor.GREEN))
                 .append(Component.newline())
-                        .append(Component.text("/espial lookup <[x]|worldedit|facing> [y] [z]").color(NamedTextColor.YELLOW).clickEvent(ClickEvent.runCommand("/espial lookup")))
-                        .append(Component.text(" - ").color(NamedTextColor.WHITE))
-                        .append(Component.text("Lookup specific coords or a region"))
+                .append(Component.text("/espial lookup [worldedit] [<x> <y> <z>] [<x2> <y2> <z2>]").color(NamedTextColor.YELLOW).clickEvent(ClickEvent.runCommand("/espial lookup")))
+                .append(Component.text(" - ").color(NamedTextColor.WHITE))
+                .append(Component.text("Lookup specific coords or a region"))
+                .append(Component.newline())
+                .append(Component.text("/espial inspect <id>").color(NamedTextColor.YELLOW).clickEvent(ClickEvent.runCommand("/espial inspect")))
+                .append(Component.text(" - ").color(NamedTextColor.WHITE))
+                .append(Component.text("Inspect a specific block ID"))
                 .build()
         );
 
