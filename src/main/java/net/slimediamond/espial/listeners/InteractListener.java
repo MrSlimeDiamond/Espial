@@ -2,12 +2,14 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
-import org.spongepowered.api.ResourceKey;
+import net.slimediamond.espial.util.BlockUtil;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 
 public class InteractListener {
     private Database database;
@@ -21,7 +23,10 @@ public class InteractListener {
         if (event.cause().root() instanceof Player) {
             Player player = (Player) event.cause().root();
 
-            if (event.block().state().type().hasBlockEntity()) {
+            BlockType blockType = event.block().state().type();
+            HashSet<BlockType> blocksToCheck = BlockUtil.builder().add(BlockUtil.CONTAINERS).add(BlockUtil.INTERACTIVE).build();
+
+            if (blocksToCheck.contains(blockType)) {
                 database.insertAction(
                         ActionType.INTERACT,
                         player,
