@@ -17,7 +17,7 @@ public class ChangeBlockListener {
     }
 
     @Listener
-    public void onBlockBreak(ChangeBlockEvent.All event) {
+    public void onBlockAction(ChangeBlockEvent.All event) {
         @Nullable Player player;
 
        if (event.cause().root() instanceof Player) {
@@ -33,7 +33,8 @@ public class ChangeBlockListener {
                         ActionType.fromOperation(transaction.operation()),
                         player,
                         transaction.finalReplacement().world().formatted(),
-                        transaction
+                        transaction,
+                        null
                 );
             } catch (SQLException e) {
                 throw new RuntimeException(e);

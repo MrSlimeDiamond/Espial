@@ -11,7 +11,8 @@ public enum ActionType {
     LIQUID_DECAY(4),
     LIQUID_SPREAD(5),
     MODIFY(6),
-    UNKNOWN(7);
+    UNKNOWN(7),
+    INTERACT(8);
 
     private int id;
 
@@ -66,6 +67,8 @@ public enum ActionType {
             return "liquid spread";
         } else if (this.id == 6) {
             return "modified";
+        } else if (this.id == 8) {
+            return "used";
         } else {
             return "did unknown action to";
         }

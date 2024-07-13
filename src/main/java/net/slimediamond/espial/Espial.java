@@ -3,6 +3,7 @@ package net.slimediamond.espial;
 import com.google.inject.Inject;
 import net.slimediamond.espial.commands.*;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
+import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
@@ -57,6 +58,7 @@ public class Espial {
     @Listener
     public void onServerStarting(final StartingEngineEvent<Server> event) {
         Sponge.eventManager().registerListeners(container, new ChangeBlockListener(database));
+        Sponge.eventManager().registerListeners(container, new InteractListener(database));
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
     }
 

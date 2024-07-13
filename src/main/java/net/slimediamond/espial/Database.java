@@ -3,11 +3,13 @@ package net.slimediamond.espial;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.registry.RegistryTypes;
+import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.*;
@@ -60,7 +62,16 @@ public class Database {
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ?");
     }
 
-    public void insertAction(@NonNull ActionType type, @Nullable Player player, @NonNull String world, @NonNull BlockTransaction transaction) throws SQLException {
+    /**
+     * Insert an action
+     * @param type Type of action
+     * @param player The player whom did the action
+     * @param world The world which the action happened in
+     * @param transaction Block transaction (for ChangeBlockEvent)
+     * @param blockSnapshot Block snapshot (for InteractBlockEvent)
+     * @throws SQLException
+     */
+    public void insertAction(@NonNull ActionType type, @Nullable Player player, @NonNull String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
         String playerUUID;
 
         if (player == null) { // Server
@@ -84,21 +95,47 @@ public class Database {
         insertAction.setString(3, playerUUID);
 
         String blockId;
-        if (type.equals(ActionType.PLACE)) {
-            blockId = transaction.defaultReplacement().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
+        int x = 0;
+        int y = -4096;
+        int z = 0;
+
+        if (transaction != null) {
+            if (type.equals(ActionType.PLACE)) {
+                blockId = transaction.defaultReplacement().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
+            } else {
+                blockId = transaction.original().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
+            }
+
+            // balls
+            if (transaction.original().location().get() != null) {
+                x = transaction.original().location().get().blockX();
+                y = transaction.original().location().get().blockY();
+                z = transaction.original().location().get().blockZ();
+            }
+        } else if (blockSnapshot != null) {
+            if (!blockSnapshot.location().isPresent()) {
+                throw new RuntimeException("Block location was not present (?!)");
+            }
+            ServerLocation serverLocation = blockSnapshot.location().get();
+            x = serverLocation.blockX();
+            y = serverLocation.blockY();
+            z = serverLocation.blockZ();
+
+            blockId = blockSnapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
         } else {
-            blockId = transaction.original().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
+            throw new RuntimeException("You must provide either a BlockTransaction or a BlockSnapshot");
         }
+
+        if (y == -4096) {
+            throw new RuntimeException("Could not locate block position!");
+        }
+
+        insertAction.setInt(6, x);
+        insertAction.setInt(7, y);
+        insertAction.setInt(8, z);
+
         insertAction.setString(4, blockId);
-
         insertAction.setString(5, world);
-
-        // balls
-        if (transaction.original().location().get() != null) {
-            insertAction.setInt(6, transaction.original().location().get().blockX());
-            insertAction.setInt(7, transaction.original().location().get().blockY());
-            insertAction.setInt(8, transaction.original().location().get().blockZ());
-        }
 
         insertAction.execute();
     }

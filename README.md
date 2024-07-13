@@ -25,6 +25,6 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
 - [x] Looking up data at block coordinates
 - [x] Looking up data in a region
 - [x] Looking up block modification (i.e broken and placed blocks)
-- [ ] Looking up interactions
+- [x] Looking up interactions
 - [ ] Rollbacks
 - [ ] Interactive inspector (like /co i)
