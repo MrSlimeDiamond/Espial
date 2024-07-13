@@ -170,7 +170,10 @@ public class Database {
 
         ResultSet rs = queryId.executeQuery();
 
-        return this.blockFromRs(rs);
+        if (rs.next()) {
+            return this.blockFromRs(rs);
+        }
+        return null;
     }
 
     public ArrayList<StoredBlock> queryRange(int startX, int startY, int startZ, int endX, int endY, int endZ) throws SQLException {

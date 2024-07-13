@@ -62,6 +62,10 @@ public class InspectCommand implements CommandExecutor {
         try {
             StoredBlock block = database.queryId(id);
 
+            if (block == null) {
+                return CommandResult.error(Component.text("Unable to find a database index with that ID!"));
+            }
+
             if (block.user().isPresent()) {
                 player.setPosition(block.playerLocation());
                 player.setRotation(block.playerRotation());
