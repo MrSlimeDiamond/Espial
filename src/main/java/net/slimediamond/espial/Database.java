@@ -33,33 +33,39 @@ public class Database {
     public void open() throws SQLException {
         conn = DriverManager.getConnection(connectionString);
 
-        //conn.prepareStatement("CREATE TABLE IF NOT EXISTS blocklog (id INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), type TINYINT, time TIMESTAMP, player_uuid MEDIUMTEXT, block_id TINYTEXT, world TINYTEXT, x INT, y INT, z INT, player_x DOUBLE, player_y DOUBLE, player_z DOUBLE, player_pitch DOUBLE, player_yaw DOUBLE, player_roll DOUBLE)").execute();
-
-        conn.prepareStatement(
-                "CREATE TABLE IF NOT EXISTS blocklog (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "type TINYINT, " +
-                        "time TIMESTAMP, " +
-                        "player_uuid MEDIUMTEXT, " +
-                        "block_id TINYTEXT, " +
-                        "world TINYTEXT, " +
-                        "x INT, " +
-                        "y INT, " +
-                        "z INT, " +
-                        "player_x DOUBLE, " +
-                        "player_y DOUBLE, " +
-                        "player_z DOUBLE, " +
-                        "player_pitch DOUBLE, " +
-                        "player_yaw DOUBLE, " +
-                        "player_roll DOUBLE, " +
-                        "player_tool TINYTEXT" +
-                        ")"
-        ).execute();
-
         insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ?");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ?");
+
+        String sql;
+
+        // Databases need to be made differently on different databases.
+        if (connectionString.contains("sqlite")) {
+            sql = "CREATE TABLE IF NOT EXISTS blocklog (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+        } else {
+            // Probably MySQL/MariaDB or whatever. use a different statement
+            sql = "CREATE TABLE IF NOT EXISTS blocklog (id INT AUTO_INCREMENT PRIMARY KEY, ";
+        }
+
+        conn.prepareStatement(sql +
+            "type TINYINT, " +
+            "time TIMESTAMP, " +
+            "player_uuid MEDIUMTEXT, " +
+            "block_id TINYTEXT, " +
+            "world TINYTEXT, " +
+            "x INT, " +
+            "y INT, " +
+            "z INT, " +
+            "player_x DOUBLE, " +
+            "player_y DOUBLE, " +
+            "player_z DOUBLE, " +
+            "player_pitch DOUBLE, " +
+            "player_yaw DOUBLE, " +
+            "player_roll DOUBLE, " +
+            "player_tool TINYTEXT" +
+            ")"
+        ).execute();
     }
 
     /**
