@@ -82,6 +82,16 @@ public class Database {
 
         if (player == null) { // Server
             playerUUID = "0";
+
+            insertAction.setDouble(9, 0);
+            insertAction.setDouble(10, 0);
+            insertAction.setDouble(11, 0);
+
+            insertAction.setDouble(12, 0);
+            insertAction.setDouble(13, 0);
+            insertAction.setDouble(14, 0);
+
+            insertAction.setString(15, "none");
         } else { // Player
             playerUUID = player.profile().uuid().toString();
 
@@ -95,7 +105,6 @@ public class Database {
 
             insertAction.setString(15, player.itemInHand(HandTypes.MAIN_HAND).type().key(RegistryTypes.ITEM_TYPE).formatted());
         }
-
         insertAction.setInt(1, type.id());
         insertAction.setTimestamp(2, new Timestamp(Instant.now().getEpochSecond()));
         insertAction.setString(3, playerUUID);
