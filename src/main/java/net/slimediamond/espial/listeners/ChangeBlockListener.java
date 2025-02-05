@@ -20,12 +20,12 @@ public class ChangeBlockListener {
     public void onBlockAction(ChangeBlockEvent.All event) {
         @Nullable Player player;
 
-       if (event.cause().root() instanceof Player) {
+        if (event.cause().root() instanceof Player) {
            player = (Player) event.cause().root();
            //playerId = player.profile().uuid().toString();
-       } else {
+        } else {
            player = null; // Server action
-       }
+        }
 
         event.transactions().forEach(transaction -> {
             try {

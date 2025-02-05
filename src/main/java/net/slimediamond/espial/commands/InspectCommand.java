@@ -67,8 +67,13 @@ public class InspectCommand implements CommandExecutor {
             }
 
             if (block.user().isPresent()) {
-                player.setPosition(block.playerLocation());
-                player.setRotation(block.playerRotation());
+                Vector3d playerLocation = block.playerLocation();
+                Vector3d playerRotation = block.playerRotation();
+
+                if (playerRotation != null && playerLocation != null) {
+                    player.setPosition(playerLocation);
+                    player.setRotation(playerRotation);
+                }
             } else {
                 player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
                 context.sendMessage(Component.text("The server broke this block, so you have only been teleported to its location.").color(NamedTextColor.GREEN));
@@ -76,16 +81,18 @@ public class InspectCommand implements CommandExecutor {
 
             PaginationList.builder()
                     .title(Component.text("Inspecting ID: ").color(NamedTextColor.GREEN).append(Component.text(id).color(NamedTextColor.YELLOW)))
-                    .contents(Component.text("You have been teleported to the position and rotation when this player actioned that block.").color(NamedTextColor.GREEN)
+                    .contents(Component.text("Information for this block:").color(NamedTextColor.GREEN)
                             .append(Component.newline())
                             .append(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("STOP").color(NamedTextColor.RED).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand("/espial inspect stop")))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text("TP").color(NamedTextColor.GREEN).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(SpongeComponents.executeCallback(cause -> {
-                                if (block.user().isPresent()) {
+                                Vector3d playerLocation = block.playerLocation();
+                                Vector3d playerRotation = block.playerRotation();
+
+                                if (playerLocation != null && playerRotation != null) {
                                     player.setPosition(block.playerLocation());
                                     player.setRotation(block.playerRotation());
                                 } else {
                                     player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
-                                    context.sendMessage(Component.text("The server broke this block, so you have only been teleported to its location.").color(NamedTextColor.GREEN));
                                 }
                             })))
                             .append(Component.newline())

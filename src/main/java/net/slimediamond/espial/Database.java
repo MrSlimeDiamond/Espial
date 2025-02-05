@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class Database {
-    private String connectionString;
+    boolean logPlayerPosition;
     private Connection conn;
 
     private PreparedStatement insertAction;
@@ -26,11 +26,11 @@ public class Database {
     private PreparedStatement queryId;
     private PreparedStatement queryRange;
 
-    public Database(String connectionString) {
-        this.connectionString = connectionString;
+    public Database(boolean logPlayerPosition) {
+        this.logPlayerPosition = logPlayerPosition;
     }
 
-    public void open() throws SQLException {
+    public void open(String connectionString) throws SQLException {
         conn = DriverManager.getConnection(connectionString);
 
         insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -95,13 +95,15 @@ public class Database {
         } else { // Player
             playerUUID = player.profile().uuid().toString();
 
-            insertAction.setDouble(9, player.position().x());
-            insertAction.setDouble(10, player.position().y());
-            insertAction.setDouble(11, player.position().z());
+            if (logPlayerPosition) {
+                insertAction.setDouble(9, player.position().x());
+                insertAction.setDouble(10, player.position().y());
+                insertAction.setDouble(11, player.position().z());
 
-            insertAction.setDouble(12, player.rotation().x()); // pitch
-            insertAction.setDouble(13, player.rotation().y()); // yaw
-            insertAction.setDouble(14, player.rotation().z()); // roll
+                insertAction.setDouble(12, player.rotation().x()); // pitch
+                insertAction.setDouble(13, player.rotation().y()); // yaw
+                insertAction.setDouble(14, player.rotation().z()); // roll
+            }
 
             insertAction.setString(15, player.itemInHand(HandTypes.MAIN_HAND).type().key(RegistryTypes.ITEM_TYPE).formatted());
         }
@@ -258,7 +260,8 @@ public class Database {
         double finalPlayerYaw = playerYaw;
         double finalPlayerPitch = playerPitch;
 
-        return (new StoredBlock() { // TODO: perhaps this should be done with an impl in a sperate class.
+        // TODO: Implementation in a different class.
+        return (new StoredBlock() {
             @Override
             public int uid() {
                 return uid;
@@ -300,13 +303,21 @@ public class Database {
             }
 
             @Override
-            public Vector3d playerLocation() {
-                return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
+            public @Nullable Vector3d playerLocation() {
+                if (logPlayerPosition) {
+                    return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
+                } else {
+                    return null;
+                }
             }
 
             @Override
             public Vector3d playerRotation() {
-                return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
+                if (logPlayerPosition) {
+                    return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
+                } else {
+                    return null;
+                }
             }
 
             @Override

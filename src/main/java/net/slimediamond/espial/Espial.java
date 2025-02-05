@@ -51,8 +51,8 @@ public class Espial {
         this.config = this.reference.referenceTo(EspialConfiguration.class);
         this.reference.save();
 
-        database = new Database(this.config.get().jdbc());
-        database.open();
+        database = new Database(this.config.get().logPlayerPosition());
+        database.open(this.config.get().jdbc());
     }
 
     @Listener
