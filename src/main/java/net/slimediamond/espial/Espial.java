@@ -1,6 +1,8 @@
 package net.slimediamond.espial;
 
 import com.google.inject.Inject;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.commands.*;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
@@ -31,6 +33,8 @@ import java.util.HashMap;
 
 @Plugin("espial")
 public class Espial {
+    public static Component prefix = Component.text("Espial: ").color(NamedTextColor.GREEN);
+
     public static HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
 
     private final PluginContainer container;

@@ -3,9 +3,11 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -13,6 +15,7 @@ import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.util.blockray.RayTrace;
 import org.spongepowered.api.util.blockray.RayTraceResult;
@@ -22,9 +25,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 public class LookupCommand implements CommandExecutor {
     Parameter.Value<ServerLocation> locationParameter;
@@ -90,15 +91,11 @@ public class LookupCommand implements CommandExecutor {
     private void lookupBlock(ServerLocation location, CommandContext context) throws SQLException {
         ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ());
         PaginationList.Builder paginationListBuilder = PaginationList.builder()
-                .title(Component.text("Block data at ")
-                        .color(NamedTextColor.GREEN)
+                .title(Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
+                        .append(Component.text("Block data at ").color(NamedTextColor.GRAY)
                         .append(Component.text(location.blockX() + " " + location.blockY() + " " + location.blockZ())
                                 .color(NamedTextColor.YELLOW))
-                        .append(Component.text(" in "))
-                        .color(NamedTextColor.GREEN)
-                        .append(Component.text(location.world().key().formatted())
-                                .color(NamedTextColor.YELLOW))
-                );
+                ).build());
 
         ArrayList<Component> contents = this.generateContents(blocks);
 
@@ -109,16 +106,17 @@ public class LookupCommand implements CommandExecutor {
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
         ArrayList<StoredBlock> blocks = database.queryRange(location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ());
 
-        PaginationList.Builder paginationListBuilder = PaginationList.builder()
-                .title(Component.text("Block data between ")
-                        .color(NamedTextColor.GREEN)
+        PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
+                Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
+                .append(Component.text("Block data between ")
+                        .color(NamedTextColor.GRAY)
                         .append(Component.text(location.blockX() + " " + location.blockY() + " " + location.blockZ())
                                 .color(NamedTextColor.YELLOW))
                         .append(Component.text(" and "))
-                        .color(NamedTextColor.GREEN)
+                        .color(NamedTextColor.GRAY)
                         .append(Component.text(location2.blockX() + " " + location2.blockY() + " " + location2.blockZ())
                                 .color(NamedTextColor.YELLOW))
-                );
+                ).build());
 
         ArrayList<Component> contents = this.generateContents(blocks);
 
@@ -127,40 +125,35 @@ public class LookupCommand implements CommandExecutor {
     }
 
     protected ArrayList<Component> generateContents(ArrayList<StoredBlock> blocks) {
-
         ArrayList<Component> contents = new ArrayList<>();
+        Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
+
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
 
         blocks.forEach(block -> {
-            String name;
-            if (block.user().isPresent()) {
-                name = block.user().get().name();
-            } else {
-                // whenever players place blocks the server itself appears to register
-                // a modification to it, so we should just ignore them
-                // in our output to make things easier.
-                if (block.actionType().equals(ActionType.MODIFY)) {
-                    return;
-                }
-                name = "(server)";
-            }
+            String name = block.user().map(User::name).orElse("(server)");
+            if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
 
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
+            BlockAction key = new BlockAction(name, block.actionType(), block.blockId());
+            groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
+        });
 
-            contents.add(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("#" + block.uid()).color(NamedTextColor.GREEN)).append(Component.text("]").color(NamedTextColor.GRAY))
+        groupedBlocks.forEach((key, count) -> {
+            contents.add(Component.text()
+                    .append(Component.text(key.name()).color(NamedTextColor.YELLOW))
                     .append(Component.space())
-                    .append(Component.text(dateFormat.format((new Date(block.time().getTime() * 1000)))))
-                    .color(NamedTextColor.GRAY)
+                    .append(Component.text(key.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
                     .append(Component.space())
-                    .append(Component.text(name).color(NamedTextColor.YELLOW))
-                    .append(Component.space())
-                    .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
-                    .append(Component.space())
-                    .append(Component.text(block.blockId()).color(NamedTextColor.YELLOW))
-                    .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
+                    .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
+                    .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
+                    .build()
             );
         });
 
         return contents;
     }
+
+    // Record for better key structure
+    private record BlockAction(String name, ActionType actionType, String blockId) {}
 
 }
