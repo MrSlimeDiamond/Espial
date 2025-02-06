@@ -11,7 +11,9 @@ import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -74,8 +76,6 @@ public class Espial {
 
     @Listener
     public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
-        Parameter.Value<ServerLocation> locationParameter = Parameter.location().key("location").optional().build();
-        Parameter.Value<ServerLocation> locationParameter2 = Parameter.location().key("location2").optional().build();
         Parameter.Value<Integer> idParameter = Parameter.integerNumber().key("id").optional().build();
 
         event.register(this.container, Command.builder()
@@ -91,13 +91,9 @@ public class Espial {
             )
             .addChild(Command.builder()
                 .permission("espial.command.lookup")
-                .executor(new LookupCommand(locationParameter, locationParameter2, database))
-                .addParameter(locationParameter)
-                .addParameter(locationParameter2)
-                    .addChild(Command.builder()
-                            .executor(new WorldEditLookupCommand(locationParameter, locationParameter2, database))
-                            .build(), "worldedit", "we"
-                    )
+                .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("value").optional().build()).build())
+                .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("value").optional().build()).build())
+                .executor(new LookupCommand(database))
                 .build(), "lookup", "l"
             )
             .addChild(Command.builder()

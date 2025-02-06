@@ -1,5 +1,11 @@
 package net.slimediamond.espial.commands;
 
+import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.sponge.SpongeAdapter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -16,11 +22,13 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.util.blockray.RayTrace;
 import org.spongepowered.api.util.blockray.RayTraceResult;
 import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -28,34 +36,47 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class LookupCommand implements CommandExecutor {
-    Parameter.Value<ServerLocation> locationParameter;
-    Parameter.Value<ServerLocation> locationParameter2 ;
     Database database;
 
-    public LookupCommand(Parameter.Value<ServerLocation> locationParameter, Parameter.Value<ServerLocation> locationParameter2, Database database) {
-        this.locationParameter = locationParameter;
-        this.locationParameter2 = locationParameter2;
+    public LookupCommand(Database database) {
         this.database = database;
     }
 
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
-        if (context.hasAny(locationParameter) && context.hasAny(locationParameter2)) { // Range lookup
-            ServerLocation location = context.requireOne(locationParameter);
-            ServerLocation location2 = context.requireOne(locationParameter2);
+        Player player;
+        if (context.cause().root() instanceof Player) {
+            player = (Player) context.cause().root();
+        } else {
+            return CommandResult.error(Component.text("This command can only be used by players.").color(NamedTextColor.RED));
+        }
+
+        if (context.hasFlag("worldedit")) { // Range lookup
+            WorldEdit worldEdit = WorldEdit.getInstance();
+            com.sk89q.worldedit.entity.Player wePlayer = SpongeAdapter.adapt((ServerPlayer) player);
+
+            LocalSession localSession = worldEdit.getSessionManager().get(wePlayer);
 
             try {
-                this.lookupRange(location, location2, context);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+                Region region = localSession.getSelection(localSession.getSelectionWorld());
+                if (region == null) {
+                    context.sendMessage(Component.text("No WorldEdit region selected!").color(NamedTextColor.RED));
+                    return CommandResult.success();
+                } else {
+                    BlockVector3 regionMin = region.getMinimumPoint();
+                    BlockVector3 regionMax = region.getMaximumPoint();
 
-            return CommandResult.success();
-        } if (context.hasAny(locationParameter)) { // Coordinates lookup
-            ServerLocation location = context.requireOne(locationParameter);
+                    Vector3d regionMin3d = new Vector3d(regionMin.getX(), regionMin.getY(), regionMin.getZ());
+                    Vector3d regionMax3d = new Vector3d(regionMax.getX(), regionMax.getY(), regionMax.getZ());
 
-            try {
-                this.lookupBlock(location, context);
+                    ServerLocation serverLocation = ServerLocation.of(player.serverLocation().world(), regionMin3d);
+                    ServerLocation serverLocation2 = ServerLocation.of(player.serverLocation().world(), regionMax3d);
+
+                    this.lookupRange(serverLocation, serverLocation2, context);
+                }
+            } catch (IncompleteRegionException e) {
+                context.sendMessage(Component.text("No WorldEdit region selected!").color(NamedTextColor.RED));
+                return CommandResult.success();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -63,12 +84,6 @@ public class LookupCommand implements CommandExecutor {
             return CommandResult.success();
         } else { // Ray trace block (playing is looking at target)
             // get the block the player is targeting
-            if (!(context.cause().root() instanceof  Player)) {
-                context.sendMessage(Component.text("Only players can run this! (specify block coordinates)").color(NamedTextColor.RED));
-                return CommandResult.success();
-            }
-
-            Player player = (Player) context.cause().root();
 
             Optional<RayTraceResult<LocatableBlock>> result = RayTrace.block().sourceEyePosition(player).direction(player).world(player.serverLocation().world()).limit(4).execute();
 
@@ -81,7 +96,7 @@ public class LookupCommand implements CommandExecutor {
                     throw new RuntimeException(e);
                 }
             } else {
-                context.sendMessage(Component.text("Could not detect a block, move closer, perhaps?").color(NamedTextColor.RED));
+                context.sendMessage(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED));
             }
         }
 
@@ -97,7 +112,7 @@ public class LookupCommand implements CommandExecutor {
                                 .color(NamedTextColor.YELLOW))
                 ).build());
 
-        ArrayList<Component> contents = this.generateContents(blocks);
+        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
         paginationListBuilder.contents(contents);
         paginationListBuilder.sendTo((Audience) context.cause().root());
@@ -118,37 +133,60 @@ public class LookupCommand implements CommandExecutor {
                                 .color(NamedTextColor.YELLOW))
                 ).build());
 
-        ArrayList<Component> contents = this.generateContents(blocks);
+        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
         paginationListBuilder.contents(contents);
         paginationListBuilder.sendTo((Audience) context.cause().root());
     }
 
-    protected ArrayList<Component> generateContents(ArrayList<StoredBlock> blocks) {
+    protected ArrayList<Component> generateContents(ArrayList<StoredBlock> blocks, boolean single) {
         ArrayList<Component> contents = new ArrayList<>();
-        Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
 
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
+        if (single) {
+            blocks.forEach(block -> {
+                String name = block.user().map(User::name).orElse("(server)");
 
-        blocks.forEach(block -> {
-            String name = block.user().map(User::name).orElse("(server)");
-            if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
+                // TODO: Don't even store these in the database.
+                // (we are not querying them at all, so why store it?)
+                if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
 
-            BlockAction key = new BlockAction(name, block.actionType(), block.blockId());
-            groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
-        });
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
 
-        groupedBlocks.forEach((key, count) -> {
-            contents.add(Component.text()
-                    .append(Component.text(key.name()).color(NamedTextColor.YELLOW))
-                    .append(Component.space())
-                    .append(Component.text(key.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
-                    .append(Component.space())
-                    .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
-                    .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                    .build()
-            );
-        });
+                contents.add(Component.text()
+                        .append(Component.text(dateFormat.format(new Date(block.time().getTime() * 1000))).color(NamedTextColor.GRAY))
+                        .append(Component.space())
+                        .append(Component.text(name).color(NamedTextColor.YELLOW))
+                        .append(Component.space())
+                        .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(Component.space())
+                        .append(Component.text(block.blockId().split(":")[1]).color(NamedTextColor.GREEN))
+                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
+                        .build()
+                );
+            });
+        } else {
+            // grouped
+            Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
+            blocks.forEach(block -> {
+                String name = block.user().map(User::name).orElse("(server)");
+                if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
+
+                BlockAction key = new BlockAction(name, block.actionType(), block.blockId());
+                groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
+            });
+
+            groupedBlocks.forEach((key, count) -> {
+                contents.add(Component.text()
+                        .append(Component.text(key.name()).color(NamedTextColor.YELLOW))
+                        .append(Component.space())
+                        .append(Component.text(key.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(Component.space())
+                        .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
+                        .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
+                        .build()
+                );
+            });
+        }
 
         return contents;
     }
