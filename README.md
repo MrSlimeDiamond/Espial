@@ -10,9 +10,9 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
 ## Command Usage
 * **/espial | /es**
   * Base command. If no subcommand is specified, defaults to an info screen (**/espial info**)
-  * **lookup | l** [flags...]
-    * Looks up the block you are looking at.
-    * Flags: *[-s]* *[-w]*
+  * **lookup | l**
+    * Look up a block. Defaults to the block you are looking at.
+    * Flags: *[--single | -s] [--worldedit | -w]*
   * **inspect | i \<id\>**
     * Looks up a specific ID.
   * **inspect stop**
