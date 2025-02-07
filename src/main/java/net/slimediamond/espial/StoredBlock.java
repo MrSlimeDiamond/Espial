@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface StoredBlock {
     int uid();
-    Optional<User> user();
+    String uuid();
     Timestamp time();
     ActionType actionType();
     String blockId();

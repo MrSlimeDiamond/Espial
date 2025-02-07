@@ -5,6 +5,7 @@ import net.slimediamond.espial.Database;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.block.transaction.Operations;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
@@ -21,7 +22,7 @@ public class ChangeBlockListener {
 
     @Listener
     public void onBlockAction(ChangeBlockEvent.All event) {
-        @Nullable Player player;
+        @Nullable Living living;
         Object source = event.cause().root();
 
         if (event.cause().root() instanceof InteractBlockEvent.Primary) {
@@ -30,10 +31,10 @@ public class ChangeBlockListener {
             source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
         }
 
-        if (source instanceof Player) {
-           player = (Player) source;
+        if (source instanceof Living) {
+           living = (Living) source;
         } else {
-           player = null; // Server action
+           living = null; // Server action
         }
 
         event.transactions().forEach(transaction -> {
@@ -44,7 +45,7 @@ public class ChangeBlockListener {
             try {
                 database.insertAction(
                         ActionType.fromOperation(transaction.operation()),
-                        player,
+                        living,
                         transaction.finalReplacement().world().formatted(),
                         transaction,
                         null

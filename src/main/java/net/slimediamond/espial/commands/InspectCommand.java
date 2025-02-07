@@ -4,9 +4,11 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.util.DisplayNameUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandExecutor;
@@ -17,6 +19,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
@@ -24,6 +27,9 @@ import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.plugin.PluginContainer;
 
 import java.sql.SQLException;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class InspectCommand implements CommandExecutor {
@@ -66,18 +72,18 @@ public class InspectCommand implements CommandExecutor {
                 return CommandResult.error(Component.text("Unable to find a database index with that ID!"));
             }
 
-            if (block.user().isPresent()) {
-                Vector3d playerLocation = block.playerLocation();
-                Vector3d playerRotation = block.playerRotation();
+            Vector3d playerLocation = block.playerLocation();
+            Vector3d playerRotation = block.playerRotation();
 
-                if (playerRotation != null && playerLocation != null) {
-                    player.setPosition(playerLocation);
-                    player.setRotation(playerRotation);
-                }
+            if (playerRotation != null && playerLocation != null) {
+                player.setPosition(playerLocation);
+                player.setRotation(playerRotation);
             } else {
                 player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
                 context.sendMessage(Component.text("The server broke this block, so you have only been teleported to its location.").color(NamedTextColor.GREEN));
             }
+
+            Component displayName = DisplayNameUtil.getDisplayName(block);
 
             PaginationList.builder()
                     .title(Component.text("Inspecting ID: ").color(NamedTextColor.GREEN).append(Component.text(id).color(NamedTextColor.YELLOW)))
@@ -85,8 +91,6 @@ public class InspectCommand implements CommandExecutor {
                             .append(Component.newline())
                             .append(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("STOP").color(NamedTextColor.RED).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand("/espial inspect stop")))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text("TP").color(NamedTextColor.GREEN).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(SpongeComponents.executeCallback(cause -> {
-                                Vector3d playerLocation = block.playerLocation();
-                                Vector3d playerRotation = block.playerRotation();
 
                                 if (playerLocation != null && playerRotation != null) {
                                     player.setPosition(block.playerLocation());
@@ -97,7 +101,7 @@ public class InspectCommand implements CommandExecutor {
                             })))
                             .append(Component.newline())
                             .append(Component.text("Player: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.user().isPresent() ? block.user().get().name() : "(server)").color(NamedTextColor.YELLOW))
+                            .append(displayName)
                             .append(Component.newline())
                             .append(Component.text("Action: ").color(NamedTextColor.GREEN))
                             .append(Component.text(block.actionType().toString()).color(NamedTextColor.YELLOW))

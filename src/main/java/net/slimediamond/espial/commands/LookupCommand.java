@@ -11,10 +11,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.util.DisplayNameUtil;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -34,6 +37,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class LookupCommand implements CommandExecutor {
     Database database;
@@ -144,18 +148,14 @@ public class LookupCommand implements CommandExecutor {
 
         if (single) {
             blocks.forEach(block -> {
-                String name = block.user().map(User::name).orElse("(server)");
-
-                // TODO: Don't even store these in the database.
-                // (we are not querying them at all, so why store it?)
-                if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
+                Component displayName = DisplayNameUtil.getDisplayName(block);
 
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
 
                 contents.add(Component.text()
                         .append(Component.text(dateFormat.format(new Date(block.time().getTime() * 1000))).color(NamedTextColor.GRAY))
                         .append(Component.space())
-                        .append(Component.text(name).color(NamedTextColor.YELLOW))
+                        .append(displayName)
                         .append(Component.space())
                         .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
                         .append(Component.space())
@@ -168,16 +168,15 @@ public class LookupCommand implements CommandExecutor {
             // grouped
             Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
             blocks.forEach(block -> {
-                String name = block.user().map(User::name).orElse("(server)");
-                if (name.equals("(server)") && block.actionType().equals(ActionType.MODIFY)) return;
+                Component displayName = DisplayNameUtil.getDisplayName(block);
 
-                BlockAction key = new BlockAction(name, block.actionType(), block.blockId());
+                BlockAction key = new BlockAction(displayName, block.actionType(), block.blockId());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
             });
 
             groupedBlocks.forEach((key, count) -> {
                 contents.add(Component.text()
-                        .append(Component.text(key.name()).color(NamedTextColor.YELLOW))
+                        .append(key.name())
                         .append(Component.space())
                         .append(Component.text(key.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
                         .append(Component.space())
@@ -192,6 +191,6 @@ public class LookupCommand implements CommandExecutor {
     }
 
     // Record for better key structure
-    private record BlockAction(String name, ActionType actionType, String blockId) {}
+    private record BlockAction(Component name, ActionType actionType, String blockId) {}
 
 }

@@ -1,17 +1,20 @@
 package net.slimediamond.espial;
 
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.data.type.HandTypes;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
+import javax.swing.text.html.parser.Entity;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -71,17 +74,17 @@ public class Database {
     /**
      * Insert an action
      * @param type Type of action
-     * @param player The player whom did the action
+     * @param living The living entity which did the action
      * @param world The world which the action happened in
      * @param transaction Block transaction (for ChangeBlockEvent)
      * @param blockSnapshot Block snapshot (for InteractBlockEvent)
      * @throws SQLException
      */
-    public void insertAction(@NonNull ActionType type, @Nullable Player player, @NonNull String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
-        String playerUUID;
+    public void insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+        String uuid;
 
-        if (player == null) { // Server
-            playerUUID = "0";
+        if (living == null) { // Server (or similar)
+            uuid = "0";
 
             insertAction.setDouble(9, 0);
             insertAction.setDouble(10, 0);
@@ -92,24 +95,34 @@ public class Database {
             insertAction.setDouble(14, 0);
 
             insertAction.setString(15, "none");
-        } else { // Player
-            playerUUID = player.profile().uuid().toString();
+        } else { // Living entity (such as a player, possibly)
 
-            if (logPlayerPosition) {
-                insertAction.setDouble(9, player.position().x());
-                insertAction.setDouble(10, player.position().y());
-                insertAction.setDouble(11, player.position().z());
+            if (living instanceof Player player) {
+                uuid = player.profile().uuid().toString();
 
-                insertAction.setDouble(12, player.rotation().x()); // pitch
-                insertAction.setDouble(13, player.rotation().y()); // yaw
-                insertAction.setDouble(14, player.rotation().z()); // roll
+                insertAction.setString(15, player.itemInHand(HandTypes.MAIN_HAND).type().key(RegistryTypes.ITEM_TYPE).formatted());
+            } else {
+                // apparently
+
+                // this is (probably) something like creeper, enderman, etc.
+                uuid = PlainTextComponentSerializer.plainText().serialize(living.displayName().get());
+
+                insertAction.setString(15, "none");
             }
 
-            insertAction.setString(15, player.itemInHand(HandTypes.MAIN_HAND).type().key(RegistryTypes.ITEM_TYPE).formatted());
+            if (logPlayerPosition) {
+                insertAction.setDouble(9, living.position().x());
+                insertAction.setDouble(10, living.position().y());
+                insertAction.setDouble(11, living.position().z());
+
+                insertAction.setDouble(12, living.rotation().x()); // pitch
+                insertAction.setDouble(13, living.rotation().y()); // yaw
+                insertAction.setDouble(14, living.rotation().z()); // roll
+            }
         }
         insertAction.setInt(1, type.id());
         insertAction.setTimestamp(2, new Timestamp(Instant.now().getEpochSecond()));
-        insertAction.setString(3, playerUUID);
+        insertAction.setString(3, uuid);
 
         String blockId;
         int x = 0;
@@ -268,18 +281,9 @@ public class Database {
             }
 
             @Override
-            public Optional<User> user() {
-                if (playerUUID.equals("0")) {
-                    return Optional.empty();
-                }
-
-                try {
-                    return Sponge.server().userManager().load(UUID.fromString(playerUUID)).get();
-                } catch (ExecutionException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+            public String uuid() {
+                // not just player uuid anymore...but pfffft
+                return playerUUID;
             }
 
             @Override
