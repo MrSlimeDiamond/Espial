@@ -198,9 +198,10 @@ public class LookupCommand implements CommandExecutor {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
 
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
+                String formattedDate = dateFormat.format(new Date(block.time().getTime() * 1000));
 
                 contents.add(Component.text()
-                        .append(Component.text(dateFormat.format(new Date(block.time().getTime() * 1000))).color(NamedTextColor.GRAY))
+                        .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
                         .append(Component.space())
@@ -208,6 +209,16 @@ public class LookupCommand implements CommandExecutor {
                         .append(Component.space())
                         .append(Component.text(block.blockId().split(":")[1]).color(NamedTextColor.GREEN))
                         .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
+                        .hoverEvent(HoverEvent.showText(Espial.prefix
+                                .append(Component.newline())
+                                .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
+                                .append(Component.text(block.uid()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.newline())
+                                .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
+                                .append(Component.text(block.itemInHand()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.newline())
+                                .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
+                        ))
                         .build()
                 );
             });
