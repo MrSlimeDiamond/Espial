@@ -2,7 +2,6 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
-import net.slimediamond.espial.IgnoredBlocks;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.entity.living.Living;
@@ -23,7 +22,10 @@ public class ChangeBlockListener {
         @Nullable Living living;
         Object source = event.cause().root();
 
+        System.out.println(source.getClass().getName());
+
         if (event.cause().root() instanceof InteractBlockEvent.Primary) {
+            System.out.println("break block");
             source = ((InteractBlockEvent.Primary) event.cause().root()).source();
         } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
             source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
@@ -39,7 +41,6 @@ public class ChangeBlockListener {
             // These are almost always useless, and just flood the database.
             // It's stuff like "this water spread"
             if (transaction.operation().equals(Operations.MODIFY.get())) return;
-            if (IgnoredBlocks.ignoredBlocks.contains(transaction.finalReplacement().state().type())) return;
 
             try {
                 database.insertAction(
