@@ -2,15 +2,13 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
+import net.slimediamond.espial.IgnoredBlocks;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.Server;
 import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
-import org.spongepowered.api.world.server.ServerWorld;
 
 import java.sql.SQLException;
 
@@ -41,6 +39,7 @@ public class ChangeBlockListener {
             // These are almost always useless, and just flood the database.
             // It's stuff like "this water spread"
             if (transaction.operation().equals(Operations.MODIFY.get())) return;
+            if (IgnoredBlocks.ignoredBlocks.contains(transaction.finalReplacement().state().type())) return;
 
             try {
                 database.insertAction(
