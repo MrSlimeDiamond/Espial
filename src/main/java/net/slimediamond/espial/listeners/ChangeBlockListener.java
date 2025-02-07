@@ -37,6 +37,8 @@ public class ChangeBlockListener {
         event.transactions().forEach(transaction -> {
             // These are almost always useless, and just flood the database.
             // It's stuff like "this water spread"
+
+            // NOTE: I believe that this is used when NBT data is changed.
             if (transaction.operation().equals(Operations.MODIFY.get())) return;
 
             try {

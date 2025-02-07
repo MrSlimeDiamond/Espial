@@ -17,6 +17,7 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
       *  *[--worldedit | -w]* - Use a WorldEdit range
       *  *[--range | -r \<range\>]* - Lookup a cuboid range
       *  *[--player | -p \<player name\>]* - Only look at actions from a specific player
+      *  *[--block | -b \<block id\>]* - Only look at a specific block
   * **inspect | i \<id\>**
     * Looks up a specific ID.
   * **inspect stop**

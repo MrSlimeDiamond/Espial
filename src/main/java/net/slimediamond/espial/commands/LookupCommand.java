@@ -23,6 +23,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.util.blockray.RayTrace;
 import org.spongepowered.api.util.blockray.RayTraceResult;
@@ -129,13 +130,19 @@ public class LookupCommand implements CommandExecutor {
 
     private void lookupBlock(ServerLocation location, CommandContext context) throws SQLException {
         String uuid = null;
+        String blockId = null;
 
         if (context.hasFlag("player")) {
             // Get the UUID of the player (if available!)
             uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
         }
 
-        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid);
+        if (context.hasFlag("block")) {
+            // Get the UUID of the player (if available!)
+            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId);
         PaginationList.Builder paginationListBuilder = PaginationList.builder()
                 .title(Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
                         .append(Component.text("Block data at ").color(NamedTextColor.GRAY)
@@ -151,13 +158,19 @@ public class LookupCommand implements CommandExecutor {
 
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
         String uuid = null;
+        String blockId = null;
 
         if (context.hasFlag("player")) {
             // Get the UUID of the player (if available!)
             uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
         }
 
-        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid);
+        if (context.hasFlag("block")) {
+            // Get the UUID of the player (if available!)
+            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid, blockId);
 
         PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
                 Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
