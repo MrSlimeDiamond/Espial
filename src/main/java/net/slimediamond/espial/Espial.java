@@ -116,6 +116,12 @@ public class Espial {
                 .build();
 
         event.register(this.container, espialCommand, "espial", "es");
+
+        event.register(this.container, Command.builder()
+                .permission("espial.whoplacedthis")
+                .executor(new WhoPlacedThisCommand(database))
+                .build(), "whoplacedthis"
+        );
     }
 
     public PluginContainer getContainer() {

@@ -28,6 +28,7 @@ public class Database {
     private PreparedStatement queryCoords;
     private PreparedStatement queryId;
     private PreparedStatement queryRange;
+    private PreparedStatement getBlockOwner;
 
     public Database(boolean logPlayerPosition) {
         this.logPlayerPosition = logPlayerPosition;
@@ -40,6 +41,7 @@ public class Database {
         queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id)");
+        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
 
         String sql;
 
@@ -237,6 +239,28 @@ public class Database {
 
         Collections.reverse(blocks); // Reverse order so we have newest first
         return blocks;
+    }
+
+    public Optional<User> getBlockOwner(int x, int y, int z) throws SQLException, ExecutionException, InterruptedException {
+        getBlockOwner.setInt(1, x);
+        getBlockOwner.setInt(2, y);
+        getBlockOwner.setInt(3, z);
+
+        ResultSet rs = getBlockOwner.executeQuery();
+        if (rs.next()) {
+            String playerUUID = rs.getString("player_uuid");
+            try {
+                UUID uuid = UUID.fromString(playerUUID);
+                return Sponge.server().userManager().load(uuid).get();
+            } catch (IllegalArgumentException e) {
+                // likely to be an animal or something
+                // TODO: Make some block owner object, then we can derive a name nicer
+                return Optional.empty();
+            }
+
+        } else {
+            return Optional.empty();
+        }
     }
 
     private StoredBlock blockFromRs(ResultSet rs) throws SQLException {
