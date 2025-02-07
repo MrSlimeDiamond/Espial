@@ -88,6 +88,7 @@ public class Espial {
                 .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
                 .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
                 .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
+                .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
                 .executor(new LookupCommand(database))
                 .build(), "lookup", "l"
             )

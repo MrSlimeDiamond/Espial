@@ -37,9 +37,9 @@ public class Database {
         conn = DriverManager.getConnection(connectionString);
 
         insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ?");
+        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ?");
+        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid)");
 
         String sql;
 
@@ -170,11 +170,12 @@ public class Database {
         insertAction.execute();
     }
 
-    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z) throws SQLException {
+    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid) throws SQLException {
         queryCoords.setString(1, world);
         queryCoords.setInt(2, x);
         queryCoords.setInt(3, y);
         queryCoords.setInt(4, z);
+        queryCoords.setString(5, uuid);
 
         ResultSet rs = queryCoords.executeQuery();
 
@@ -200,7 +201,7 @@ public class Database {
         return null;
     }
 
-    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ) throws SQLException {
+    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid) throws SQLException {
         // Rearrange from smallest to biggest for things to actually get picked up
         int[] x = {startX, endX};
         int[] y = {startY, endY};
@@ -221,6 +222,8 @@ public class Database {
 
         queryRange.setInt(6, z[0]);
         queryRange.setInt(7, z[1]);
+
+        queryRange.setString(8, uuid);
 
         ResultSet rs = queryRange.executeQuery();
 

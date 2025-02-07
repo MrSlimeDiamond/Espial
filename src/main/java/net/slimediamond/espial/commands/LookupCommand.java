@@ -128,7 +128,14 @@ public class LookupCommand implements CommandExecutor {
     }
 
     private void lookupBlock(ServerLocation location, CommandContext context) throws SQLException {
-        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ());
+        String uuid = null;
+
+        if (context.hasFlag("player")) {
+            // Get the UUID of the player (if available!)
+            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid);
         PaginationList.Builder paginationListBuilder = PaginationList.builder()
                 .title(Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
                         .append(Component.text("Block data at ").color(NamedTextColor.GRAY)
@@ -143,7 +150,14 @@ public class LookupCommand implements CommandExecutor {
     }
 
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
-        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ());
+        String uuid = null;
+
+        if (context.hasFlag("player")) {
+            // Get the UUID of the player (if available!)
+            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid);
 
         PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
                 Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
