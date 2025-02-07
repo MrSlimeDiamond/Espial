@@ -12,7 +12,11 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
   * Base command. If no subcommand is specified, defaults to an info screen (**/espial info**)
   * **lookup | l**
     * Look up a block. Defaults to the block you are looking at.
-    * Flags: *[--single | -s] [--worldedit | -w]*
+    * Flags:
+      *  *[--single | -s]* - Do not group outputs
+      *  *[--worldedit | -w]* - Use a WorldEdit range
+      *  *[--range | -r \<range\>]* - Lookup a cuboid range
+      *  *[--player | -p \<player name\>]* - Only look at actions from a specific player
   * **inspect | i \<id\>**
     * Looks up a specific ID.
   * **inspect stop**
