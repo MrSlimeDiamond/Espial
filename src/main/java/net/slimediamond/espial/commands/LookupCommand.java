@@ -123,7 +123,7 @@ public class LookupCommand implements CommandExecutor {
     }
 
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
-        ArrayList<StoredBlock> blocks = database.queryRange(location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ());
+        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ());
 
         PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
                 Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
