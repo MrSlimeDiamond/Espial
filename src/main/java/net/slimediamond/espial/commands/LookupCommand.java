@@ -43,7 +43,7 @@ public class LookupCommand implements CommandExecutor {
     }
 
     @Override
-    public CommandResult execute(CommandContext context) throws CommandException {
+    public CommandResult execute(CommandContext context) {
         Player player;
         if (context.cause().root() instanceof Player) {
             player = (Player) context.cause().root();

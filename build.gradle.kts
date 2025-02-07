@@ -22,7 +22,7 @@ dependencies {
 }
 
 sponge {
-    apiVersion("12.0.0-SNAPSHOT")
+    apiVersion("14.0.0-SNAPSHOT")
     license("All-Rights-Reserved")
     loader {
         name(PluginLoaders.JAVA_PLAIN)

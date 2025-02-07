@@ -10,10 +10,9 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
 ## Command Usage
 * **/espial | /es**
   * Base command. If no subcommand is specified, defaults to an info screen (**/espial info**)
-  * **lookup | l [start x y z] [end x y z]**
-    * Looks up specific coordinates, or a range. Defaults to the block you are looking at.
-  * **lookup worldedit|we**
-    * Looks up your WorldEdit selection as a region.
+  * **lookup | l** [flags...]
+    * Looks up the block you are looking at.
+    * Flags: *[-s]* *[-w]*
   * **inspect | i \<id\>**
     * Looks up a specific ID.
   * **inspect stop**
