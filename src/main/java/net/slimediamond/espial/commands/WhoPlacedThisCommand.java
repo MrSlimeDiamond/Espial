@@ -37,7 +37,7 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                 RayTraceResult<LocatableBlock> rayTrace = result.get();
 
                 try {
-                    database.getBlockOwner(rayTrace.hitPosition().floorX(), rayTrace.hitPosition().floorY(), rayTrace.hitPosition().floorZ()).ifPresentOrElse(user -> {
+                    database.getBlockOwner(rayTrace.selectedObject().location().blockX(), rayTrace.selectedObject().location().blockY(), rayTrace.selectedObject().location().blockZ()).ifPresentOrElse(user -> {
                         context.sendMessage(Espial.prefix
                                     .append(Component.text(user.name()).color(NamedTextColor.YELLOW)
                                     .append(Component.space())
