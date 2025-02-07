@@ -22,10 +22,7 @@ public class ChangeBlockListener {
         @Nullable Living living;
         Object source = event.cause().root();
 
-        System.out.println(source.getClass().getName());
-
         if (event.cause().root() instanceof InteractBlockEvent.Primary) {
-            System.out.println("break block");
             source = ((InteractBlockEvent.Primary) event.cause().root()).source();
         } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
             source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
@@ -55,5 +52,4 @@ public class ChangeBlockListener {
             }
         });
     }
-
 }
