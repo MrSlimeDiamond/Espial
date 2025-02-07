@@ -35,6 +35,8 @@ import java.util.HashMap;
 
 @Plugin("espial")
 public class Espial {
+    private static Espial instance;
+
     public static Component prefix = Component.text("Espial: ").color(NamedTextColor.GREEN);
 
     public static HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
@@ -45,11 +47,15 @@ public class Espial {
     private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
     private Database database;
 
+    private Command.Parameterized espialCommand;
+
     @Inject
     Espial(final PluginContainer container, final Logger logger, final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode> reference) {
         this.container = container;
         this.logger = logger;
         this.reference = reference;
+
+        instance = this;
     }
 
     @Listener
@@ -71,38 +77,56 @@ public class Espial {
     @Listener
     public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
         Parameter.Value<Integer> idParameter = Parameter.integerNumber().key("id").optional().build();
+        this.espialCommand = Command.builder()
+                .permission("espial.command.base")
+                .executor(new BaseCommand())
+                .shortDescription(Component.text("Base command for Espial"))
+                .addChild(Command.builder()
+                        .executor(new BaseCommand())
+                        .shortDescription(Component.text("Show information about the plugin"))
+                        .build(), "info"
+                )
+                .addChild(Command.builder()
+                        .executor(new HelpCommand())
+                        .addParameter(Parameters.HELP_COMMAND)
+                        .shortDescription(Component.text("Display a help screen"))
+                        .build(), "help", "?"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.lookup")
+                        .shortDescription(Component.text("Lookup a block or region"))
+                        .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
+                        .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
+                        .addFlag(Flag.builder().aliases("block", "b").setParameter(Parameters.LOOKUP_BLOCK).build())
+                        .executor(new LookupCommand(database))
+                        .build(), "lookup", "l"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.inspect")
+                        .executor(new InspectCommand(idParameter, database, container))
+                        .addParameter(idParameter)
+                        .addChild(Command.builder()
+                                .executor(new InspectCommand(idParameter, database, container))
+                                .build(), "stop", "s"
+                        )
+                        .build(), "inspect", "i"
+                )
+                .build();
 
-        event.register(this.container, Command.builder()
-            .permission("espial.command.base")
-            .executor(new BaseCommand())
-            .addChild(Command.builder()
-                    .executor(new BaseCommand())
-                    .build(), "info"
-            )
-            .addChild(Command.builder()
-                    .executor(new HelpCommand())
-                    .build(), "help"
-            )
-            .addChild(Command.builder()
-                .permission("espial.command.lookup")
-                .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
-                .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
-                .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
-                .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
-                .addFlag(Flag.builder().aliases("block", "b").setParameter(Parameters.LOOKUP_BLOCK).build())
-                .executor(new LookupCommand(database))
-                .build(), "lookup", "l"
-            )
-            .addChild(Command.builder()
-                    .permission("espial.command.inspect")
-                    .executor(new InspectCommand(idParameter, database, container))
-                    .addParameter(idParameter)
-                    .addChild(Command.builder()
-                            .executor(new InspectCommand(idParameter, database, container))
-                            .build(), "stop", "s"
-                    )
-                    .build(), "inspect", "i"
-            )
-            .build(), "espial", "es");
+        event.register(this.container, espialCommand, "espial", "es");
+    }
+
+    public PluginContainer getContainer() {
+        return this.container;
+    }
+
+    public Command.Parameterized getEspialCommand() {
+        return this.espialCommand;
+    }
+
+    public static Espial getInstance() {
+        return instance;
     }
 }
