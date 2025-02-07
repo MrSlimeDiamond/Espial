@@ -211,6 +211,8 @@ public class LookupCommand implements CommandExecutor {
                         .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
                         .hoverEvent(HoverEvent.showText(Espial.prefix
                                 .append(Component.newline())
+                                .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
+                                .append(Component.newline())
                                 .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
                                 .append(Component.text(block.uid()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
