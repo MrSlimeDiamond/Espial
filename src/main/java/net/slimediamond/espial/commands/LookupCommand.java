@@ -143,14 +143,20 @@ public class LookupCommand implements CommandExecutor {
         }
 
         ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId);
+
+        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
+
+        if (contents.isEmpty()) {
+            context.sendMessage(Espial.prefix.append(Component.text("Could not find any block data at this location.").color(NamedTextColor.RED)));
+            return;
+        }
+
         PaginationList.Builder paginationListBuilder = PaginationList.builder()
                 .title(Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
                         .append(Component.text("Block data at ").color(NamedTextColor.GRAY)
                         .append(Component.text(location.blockX() + " " + location.blockY() + " " + location.blockZ())
                                 .color(NamedTextColor.YELLOW))
                 ).build());
-
-        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
         paginationListBuilder.contents(contents);
         paginationListBuilder.sendTo((Audience) context.cause().root());
@@ -172,6 +178,13 @@ public class LookupCommand implements CommandExecutor {
 
         ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid, blockId);
 
+        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
+
+        if (contents.isEmpty()) {
+            context.sendMessage(Espial.prefix.append(Component.text("Could not find any block data at this location.").color(NamedTextColor.RED)));
+            return;
+        }
+
         PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
                 Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
                 .append(Component.text("Block data between ")
@@ -183,8 +196,6 @@ public class LookupCommand implements CommandExecutor {
                         .append(Component.text(location2.blockX() + " " + location2.blockY() + " " + location2.blockZ())
                                 .color(NamedTextColor.YELLOW))
                 ).build());
-
-        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
         paginationListBuilder.contents(contents);
         paginationListBuilder.sendTo((Audience) context.cause().root());
