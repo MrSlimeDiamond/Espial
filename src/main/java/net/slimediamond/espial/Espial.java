@@ -69,12 +69,6 @@ public class Espial {
     }
 
     @Listener
-    public void onServerStopping(final StoppingEngineEvent<Server> event) {
-        // Any tear down per-game instance. This can run multiple times when
-        // using the integrated (singleplayer) server.
-    }
-
-    @Listener
     public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
         Parameter.Value<Integer> idParameter = Parameter.integerNumber().key("id").optional().build();
 
@@ -91,8 +85,9 @@ public class Espial {
             )
             .addChild(Command.builder()
                 .permission("espial.command.lookup")
-                .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("value").optional().build()).build())
-                .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("value").optional().build()).build())
+                .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
+                .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
+                .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
                 .executor(new LookupCommand(database))
                 .build(), "lookup", "l"
             )

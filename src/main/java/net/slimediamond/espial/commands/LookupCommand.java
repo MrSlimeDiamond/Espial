@@ -12,10 +12,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.ActionType;
-import net.slimediamond.espial.Database;
-import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.*;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
@@ -86,6 +83,29 @@ public class LookupCommand implements CommandExecutor {
             }
 
             return CommandResult.success();
+        } else if (context.hasFlag("range")) {
+            // -r <block range>
+            int range = context.requireOne(Parameters.LOOKUP_RANGE);
+
+            Vector3d pos = player.position();
+
+            double minX = pos.x() - range;
+            double minY = pos.y() - range;
+            double minZ = pos.z() - range;
+
+            double maxX = pos.x() + range;
+            double maxY = pos.y() + range;
+            double maxZ = pos.z() + range;
+
+            ServerLocation min = ServerLocation.of(player.serverLocation().world(), new Vector3d(minX, minY, minZ));
+            ServerLocation max = ServerLocation.of(player.serverLocation().world(), new Vector3d(maxX, maxY, maxZ));
+
+            try {
+                this.lookupRange(min, max, context);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
         } else { // Ray trace block (playing is looking at target)
             // get the block the player is targeting
 
