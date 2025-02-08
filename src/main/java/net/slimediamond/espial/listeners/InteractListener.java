@@ -2,6 +2,7 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.util.BlockUtil;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
@@ -20,6 +21,8 @@ public class InteractListener {
 
     @Listener
     public void onInteract(InteractBlockEvent.Secondary event) throws SQLException {
+        if (!Espial.getInstance().getConfig().get().logInteractions()) return;
+
         if (event.cause().root() instanceof Player) {
             Player player = (Player) event.cause().root();
 

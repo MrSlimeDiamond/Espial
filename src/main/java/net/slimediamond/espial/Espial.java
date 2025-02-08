@@ -132,6 +132,10 @@ public class Espial {
         return this.espialCommand;
     }
 
+    public ValueReference<EspialConfiguration, CommentedConfigurationNode> getConfig() {
+        return config;
+    }
+
     public static Espial getInstance() {
         return instance;
     }

@@ -2,6 +2,7 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
+import net.slimediamond.espial.Espial;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.entity.living.Living;
@@ -29,9 +30,10 @@ public class ChangeBlockListener {
         }
 
         if (source instanceof Living) {
-           living = (Living) source;
+            living = (Living) source;
         } else {
-           living = null; // Server action
+            if (!Espial.getInstance().getConfig().get().logServerChanges()) return;
+            living = null; // Server action
         }
 
         event.transactions().forEach(transaction -> {
