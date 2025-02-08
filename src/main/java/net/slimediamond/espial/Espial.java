@@ -8,8 +8,12 @@ import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.Parameter;
@@ -21,6 +25,7 @@ import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -100,8 +105,20 @@ public class Espial {
                         .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(Parameters.LOOKUP_BLOCK).build())
+                        .addFlag(Flag.builder().aliases("time", "t").setParameter(Parameters.TIME).build())
                         .executor(new LookupCommand(database))
                         .build(), "lookup", "l"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.rollback")
+                        .shortDescription(Component.text("Roll back changes made by players"))
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
+                        .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
+                        .addFlag(Flag.builder().aliases("block", "b").setParameter(Parameters.LOOKUP_BLOCK).build())
+                        .addFlag(Flag.builder().aliases("time", "t").setParameter(Parameters.TIME).build())
+                        .executor(new RollbackCommand(database))
+                        .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.inspect")
@@ -112,6 +129,12 @@ public class Espial {
                                 .build(), "stop", "s"
                         )
                         .build(), "inspect", "i"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.rollbackid")
+                        .executor(new RollbackIdCommand(database))
+                        .addParameter(Parameters.ROLLBACK_ID)
+                        .build(), "rollbackid", "rbid"
                 )
                 .build();
 
@@ -138,5 +161,31 @@ public class Espial {
 
     public static Espial getInstance() {
         return instance;
+    }
+
+    public RollbackStatus rollback(StoredBlock block) throws SQLException {
+        if (block.rolledBack()) return RollbackStatus.ALREADY_ROLLEDBACK;
+
+        // roll back this specific ID to another state
+        if (block.actionType() == ActionType.BREAK) {
+            // place the block which was broken at that location
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+
+            block.sponge().location().get().setBlock(blockType.defaultState());
+
+            database.setRolledBack(block.uid(), true);
+
+            return RollbackStatus.SUCCESS;
+        } if (block.actionType() == ActionType.PLACE) {
+            // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
+            // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
+            // (it'll be fine, probably)
+
+            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            database.setRolledBack(block.uid(), true);
+            return RollbackStatus.SUCCESS;
+        } else {
+            return RollbackStatus.UNSUPPORTED;
+        }
     }
 }

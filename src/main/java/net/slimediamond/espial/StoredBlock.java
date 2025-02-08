@@ -1,14 +1,11 @@
 package net.slimediamond.espial;
 
 import org.spongepowered.api.ResourceKey;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.Timestamp;
-import java.util.Optional;
 
 public interface StoredBlock {
     int uid();
@@ -23,6 +20,7 @@ public interface StoredBlock {
     int x();
     int y();
     int z();
+    boolean rolledBack();
 
     // Not scuffed at all.
     default BlockSnapshot sponge() {

@@ -29,6 +29,7 @@ public class Database {
     private PreparedStatement queryId;
     private PreparedStatement queryRange;
     private PreparedStatement getBlockOwner;
+    private PreparedStatement setRolledBack;
 
     public Database(boolean logPlayerPosition) {
         this.logPlayerPosition = logPlayerPosition;
@@ -37,11 +38,12 @@ public class Database {
     public void open(String connectionString) throws SQLException {
         conn = DriverManager.getConnection(connectionString);
 
-        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id)");
+        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)");
+        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id)");
+        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
 
         String sql;
 
@@ -68,7 +70,8 @@ public class Database {
             "player_pitch DOUBLE, " +
             "player_yaw DOUBLE, " +
             "player_roll DOUBLE, " +
-            "player_tool TINYTEXT" +
+            "player_tool TINYTEXT, " +
+            "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
             ")"
         ).execute();
     }
@@ -120,10 +123,19 @@ public class Database {
                 insertAction.setDouble(12, living.rotation().x()); // pitch
                 insertAction.setDouble(13, living.rotation().y()); // yaw
                 insertAction.setDouble(14, living.rotation().z()); // roll
+            } else {
+                // fuck
+                insertAction.setNull(9,  Types.DOUBLE);
+                insertAction.setNull(10, Types.DOUBLE);
+                insertAction.setNull(11, Types.DOUBLE);
+
+                insertAction.setNull(12, Types.DOUBLE); // pitch
+                insertAction.setNull(13, Types.DOUBLE); // yaw
+                insertAction.setNull(14, Types.DOUBLE); // roll
             }
         }
         insertAction.setInt(1, type.id());
-        insertAction.setTimestamp(2, new Timestamp(Instant.now().getEpochSecond()));
+        insertAction.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
         insertAction.setString(3, uuid);
 
         String blockId;
@@ -172,13 +184,20 @@ public class Database {
         insertAction.execute();
     }
 
-    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId) throws SQLException {
+    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+        if (timestamp == null) {
+            // Please let me know if you are querying records from before 1970 :)
+            timestamp = Timestamp.from(Instant.ofEpochMilli(0));
+        }
+
         queryCoords.setString(1, world);
         queryCoords.setInt(2, x);
         queryCoords.setInt(3, y);
         queryCoords.setInt(4, z);
+
         queryCoords.setString(5, uuid);
         queryCoords.setString(6, blockId);
+        queryCoords.setTimestamp(7, timestamp);
 
         ResultSet rs = queryCoords.executeQuery();
 
@@ -204,7 +223,12 @@ public class Database {
         return null;
     }
 
-    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId) throws SQLException {
+    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+        if (timestamp == null) {
+            // Please let me know if you are querying records from before 1970 :)
+            timestamp = Timestamp.from(Instant.ofEpochMilli(0));
+        }
+
         // Rearrange from smallest to biggest for things to actually get picked up
         int[] x = {startX, endX};
         int[] y = {startY, endY};
@@ -228,6 +252,7 @@ public class Database {
 
         queryRange.setString(8, uuid);
         queryRange.setString(9, blockId);
+        queryRange.setTimestamp(10, timestamp);
 
         ResultSet rs = queryRange.executeQuery();
 
@@ -302,6 +327,8 @@ public class Database {
         double finalPlayerYaw = playerYaw;
         double finalPlayerPitch = playerPitch;
 
+        boolean rolledBack = rs.getBoolean("rolled_back");
+
         // TODO: Implementation in a different class.
         return (new StoredBlock() {
             @Override
@@ -372,7 +399,17 @@ public class Database {
             public int z() {
                 return z;
             }
+
+            @Override
+            public boolean rolledBack() {
+                return rolledBack;
+            }
         });
     }
 
+    public void setRolledBack(int id, boolean status) throws SQLException {
+        setRolledBack.setBoolean(1, status);
+        setRolledBack.setInt(2, id);
+        setRolledBack.execute();
+    }
 }

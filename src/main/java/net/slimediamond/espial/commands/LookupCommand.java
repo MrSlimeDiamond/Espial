@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.*;
 import net.slimediamond.espial.util.DisplayNameUtil;
+import net.slimediamond.espial.util.DurationParser;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
@@ -33,8 +34,10 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -132,6 +135,7 @@ public class LookupCommand implements CommandExecutor {
     private void lookupBlock(ServerLocation location, CommandContext context) throws SQLException {
         String uuid = null;
         String blockId = null;
+        Timestamp timestamp = null;
 
         if (context.hasFlag("player")) {
             // Get the UUID of the player (if available!)
@@ -143,7 +147,13 @@ public class LookupCommand implements CommandExecutor {
             blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
         }
 
-        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId);
+        if (context.hasFlag("time")) {
+            String time = context.requireOne(Parameters.TIME);
+            // translated into long (ms)
+            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId, timestamp);
 
         ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
@@ -166,6 +176,7 @@ public class LookupCommand implements CommandExecutor {
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
         String uuid = null;
         String blockId = null;
+        Timestamp timestamp = null;
 
         if (context.hasFlag("player")) {
             // Get the UUID of the player (if available!)
@@ -177,7 +188,13 @@ public class LookupCommand implements CommandExecutor {
             blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
         }
 
-        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid, blockId);
+        if (context.hasFlag("time")) {
+            String time = context.requireOne(Parameters.TIME);
+            // translated into long (ms)
+            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
+        }
+
+        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid, blockId, timestamp);
 
         ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
 
@@ -210,9 +227,9 @@ public class LookupCommand implements CommandExecutor {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
 
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.time().getTime() * 1000));
+                String formattedDate = dateFormat.format(new Date(block.time().getTime()));
 
-                contents.add(Component.text()
+                var msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
@@ -232,9 +249,13 @@ public class LookupCommand implements CommandExecutor {
                                 .append(Component.text(block.itemInHand()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
-                        ))
-                        .build()
-                );
+                        ));
+
+                if (block.rolledBack()) {
+                    msg.decorate(TextDecoration.STRIKETHROUGH);
+                }
+
+                contents.add(msg.build());
             });
         } else {
             // grouped
