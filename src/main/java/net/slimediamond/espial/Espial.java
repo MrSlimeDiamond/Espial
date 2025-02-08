@@ -102,7 +102,7 @@ public class Espial {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(new LookupCommand())
+                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.LOOKUP))
                         .build(), "lookup", "l"
                 )
                 .addChild(Command.builder()
@@ -113,7 +113,7 @@ public class Espial {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(new RollbackCommand())
+                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.ROLLBACK))
                         .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
@@ -124,7 +124,7 @@ public class Espial {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(new RestoreCommand())
+                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.RESTORE))
                         .build(), "restore", "rs"
                 )
                 .addChild(Command.builder()
