@@ -40,4 +40,19 @@ public class EspialTransaction {
 
         this.undone = true;
     }
+
+    public void redo() throws SQLException {
+        if (type == EspialTransactionType.RESTORE) {
+            // Restore all IDs
+            for (int id : ids) {
+                Espial.getInstance().restore(Espial.getInstance().getDatabase().queryId(id));
+            }
+        } else if (type == EspialTransactionType.ROLLBACK) {
+            for (int id : ids) {
+                Espial.getInstance().rollback(Espial.getInstance().getDatabase().queryId(id));
+            }
+        }
+
+        this.undone = false;
+    }
 }

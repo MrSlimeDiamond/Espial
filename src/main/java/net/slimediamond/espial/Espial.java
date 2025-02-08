@@ -135,6 +135,12 @@ public class Espial {
                         .build(), "undo"
                 )
                 .addChild(Command.builder()
+                        .permission("espial.command.redo")
+                        .shortDescription(Component.text("Redo what you just undid"))
+                        .executor(new RedoCommand())
+                        .build(), "redo"
+                )
+                .addChild(Command.builder()
                         .permission("espial.command.inspect")
                         .executor(new InspectCommand(idParameter, database, container))
                         .addParameter(idParameter)
