@@ -34,7 +34,8 @@ import java.util.HashMap;
 public class Espial {
     private static Espial instance;
 
-    public static Component prefix = Component.text("Espial: ").color(NamedTextColor.GREEN);
+    // this makes it look professional or something? idk
+    public static Component prefix = Component.text("Espial › ").color(NamedTextColor.GREEN);
 
     public static HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
 
