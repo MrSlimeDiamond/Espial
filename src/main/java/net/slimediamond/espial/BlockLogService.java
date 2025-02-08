@@ -172,7 +172,14 @@ public class BlockLogService {
         };
 
         if (type == EspialTransactionType.LOOKUP) {
-            PaginationList.builder().contents(generateLookupContents(blocks, single))
+            ArrayList<Component> contents = generateLookupContents(blocks, single);
+
+            if (contents.isEmpty()) {
+                audience.sendMessage(Espial.prefix.append(Component.text("Could not find any block data for this location.").color(NamedTextColor.RED)));
+                return;
+            }
+
+            PaginationList.builder().contents(contents)
                     .title(Espial.prefix.append(Component.text("Block lookup results").color(NamedTextColor.WHITE))).sendTo(audience);
             return;
         }
