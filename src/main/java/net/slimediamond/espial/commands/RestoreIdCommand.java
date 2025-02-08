@@ -21,13 +21,13 @@ public class RestoreIdCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         // restore <id>
-        int id = context.requireOne(Parameters.ROLLBACK_ID);
+        int id = context.requireOne(CommandParameters.ROLLBACK_ID);
 
         try {
             StoredBlock block = database.queryId(id);
-            RestoreStatus status = Espial.getInstance().restore(block);
+            ActionStatus status = Espial.getInstance().getBlockLogService().restore(block);
 
-            if (status == RestoreStatus.SUCCESS) {
+            if (status == ActionStatus.SUCCESS) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("Restore successful. Griefers beware!").color(NamedTextColor.WHITE)
@@ -38,19 +38,10 @@ public class RestoreIdCommand implements CommandExecutor {
                 ids.add(id);
                 EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
 
-                if (Espial.transactions.containsKey(context.cause().root())) {
-                    // add to the existing arraylist with a new transaction:
-                    Espial.transactions.get(context.cause().root()).add(transaction);
-                } else {
-                    // create a new one with the source object
-                    ArrayList<EspialTransaction> transactions = new ArrayList<>();
-                    transactions.add(transaction);
-
-                    Espial.transactions.put(context.cause().root(), transactions);
-                }
+                Espial.getInstance().getBlockLogService().addTransaction(context.cause().root(), transaction);
 
                 return CommandResult.success();
-            } else if (status == RestoreStatus.UNSUPPORTED) {
+            } else if (status == ActionStatus.UNSUPPORTED) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("That operation is not supported at the moment!").color(NamedTextColor.RED)
@@ -58,7 +49,7 @@ public class RestoreIdCommand implements CommandExecutor {
                 );
 
                 return CommandResult.success();
-            } else if (status == RestoreStatus.ALREADY_DONE) {
+            } else if (status == ActionStatus.ALREADY_DONE) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("That id has already been restored!").color(NamedTextColor.RED)

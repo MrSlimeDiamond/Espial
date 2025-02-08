@@ -2,5 +2,6 @@ package net.slimediamond.espial;
 
 public enum EspialTransactionType {
     ROLLBACK,
-    RESTORE
+    RESTORE,
+    LOOKUP
 }
