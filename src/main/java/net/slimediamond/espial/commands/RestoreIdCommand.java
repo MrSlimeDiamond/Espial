@@ -11,32 +11,32 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class RollbackIdCommand implements CommandExecutor {
+public class RestoreIdCommand implements CommandExecutor {
     private Database database;
 
-    public RollbackIdCommand(Database database) {
+    public RestoreIdCommand(Database database) {
         this.database = database;
     }
 
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
-        // rollback <id>
+        // restore <id>
         int id = context.requireOne(Parameters.ROLLBACK_ID);
 
         try {
             StoredBlock block = database.queryId(id);
-            RestoreStatus status = Espial.getInstance().rollback(block);
+            RestoreStatus status = Espial.getInstance().restore(block);
 
             if (status == RestoreStatus.SUCCESS) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
-                        .append(Component.text("Reversal successful. Griefers beware!").color(NamedTextColor.WHITE)
+                        .append(Component.text("Restore successful. Griefers beware!").color(NamedTextColor.WHITE)
                         ).build()
                 );
 
                 ArrayList<Integer> ids = new ArrayList<>();
                 ids.add(id);
-                EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
+                EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
 
                 if (Espial.transactions.containsKey(context.cause().root())) {
                     // add to the existing arraylist with a new transaction:
@@ -61,7 +61,7 @@ public class RollbackIdCommand implements CommandExecutor {
             } else if (status == RestoreStatus.ALREADY_DONE) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
-                        .append(Component.text("That id has already been rolled back!").color(NamedTextColor.RED)
+                        .append(Component.text("That id has already been restored!").color(NamedTextColor.RED)
                         ).build()
                 );
 

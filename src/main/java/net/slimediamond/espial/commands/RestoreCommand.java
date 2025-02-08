@@ -29,10 +29,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class RollbackCommand implements CommandExecutor {
+public class RestoreCommand implements CommandExecutor {
     private Database database;
 
-    public RollbackCommand(Database database) {
+    public RestoreCommand(Database database) {
         this.database = database;
     }
 
@@ -138,13 +138,13 @@ public class RollbackCommand implements CommandExecutor {
         try {
             ArrayList<Integer> ids = new ArrayList<>();
             for (StoredBlock block : database.queryRange(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), max.blockX(), max.blockY(), max.blockZ(), uuid, blockId, timestamp)) {
-                if (block.rolledBack()) continue;
+                if (!block.rolledBack()) continue;
                 ids.add(block.uid());
 
-                Espial.getInstance().rollback(block);
+                Espial.getInstance().restore(block);
             }
 
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
+            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
 
             if (Espial.transactions.containsKey(context.cause().root())) {
                 // add to the existing arraylist with a new transaction:
@@ -158,9 +158,9 @@ public class RollbackCommand implements CommandExecutor {
             }
 
             if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was rolled back.").color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(Component.text("Nothing was restored.").color(NamedTextColor.WHITE)));
             } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were rolled back."))).color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were restored."))).color(NamedTextColor.WHITE)));
             }
         } catch (SQLException e) {
             context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));
@@ -196,13 +196,13 @@ public class RollbackCommand implements CommandExecutor {
             ArrayList<Integer> ids = new ArrayList<>();
 
             for (StoredBlock block : database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId, timestamp)) {
-                if (block.rolledBack()) continue;
+                if (!block.rolledBack()) continue;
                 ids.add(block.uid());
 
-                Espial.getInstance().rollback(block);
+                Espial.getInstance().restore(block);
             }
 
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
+            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
 
             if (Espial.transactions.containsKey(context.cause().root())) {
                 // add to the existing arraylist with a new transaction:
@@ -216,9 +216,9 @@ public class RollbackCommand implements CommandExecutor {
             }
 
             if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was rolled back.").color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(Component.text("Nothing was restored.").color(NamedTextColor.WHITE)));
             } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were rolled back."))).color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were restored."))).color(NamedTextColor.WHITE)));
             }
         } catch (SQLException e) {
             context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));

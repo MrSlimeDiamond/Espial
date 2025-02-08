@@ -11,11 +11,9 @@ import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.Command;
-import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.config.DefaultConfig;
@@ -24,10 +22,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
-import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
-import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.scheduler.ScheduledTask;
-import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
@@ -36,6 +31,7 @@ import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 @Plugin("espial")
@@ -45,6 +41,7 @@ public class Espial {
     public static Component prefix = Component.text("Espial: ").color(NamedTextColor.GREEN);
 
     public static HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
+    public static HashMap<Object, ArrayList<EspialTransaction>> transactions = new HashMap<>();
 
     private final PluginContainer container;
     private final Logger logger;
@@ -121,6 +118,23 @@ public class Espial {
                         .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
+                        .permission("espial.command.restore")
+                        .shortDescription(Component.text("Restore changes which have been rolled back"))
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r").setParameter(Parameters.LOOKUP_RANGE).build())
+                        .addFlag(Flag.builder().aliases("player", "p").setParameter(Parameters.LOOKUP_PLAYER).build())
+                        .addFlag(Flag.builder().aliases("block", "b").setParameter(Parameters.LOOKUP_BLOCK).build())
+                        .addFlag(Flag.builder().aliases("time", "t").setParameter(Parameters.TIME).build())
+                        .executor(new RestoreCommand(database))
+                        .build(), "restore", "rs"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.undo")
+                        .shortDescription(Component.text("Undo what you just did"))
+                        .executor(new UndoCommand())
+                        .build(), "undo"
+                )
+                .addChild(Command.builder()
                         .permission("espial.command.inspect")
                         .executor(new InspectCommand(idParameter, database, container))
                         .addParameter(idParameter)
@@ -135,6 +149,12 @@ public class Espial {
                         .executor(new RollbackIdCommand(database))
                         .addParameter(Parameters.ROLLBACK_ID)
                         .build(), "rollbackid", "rbid"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.restoreid")
+                        .executor(new RestoreIdCommand(database))
+                        .addParameter(Parameters.ROLLBACK_ID)
+                        .build(), "restoreid", "rsid"
                 )
                 .build();
 
@@ -163,8 +183,12 @@ public class Espial {
         return instance;
     }
 
-    public RollbackStatus rollback(StoredBlock block) throws SQLException {
-        if (block.rolledBack()) return RollbackStatus.ALREADY_ROLLEDBACK;
+    public Database getDatabase() {
+        return this.database;
+    }
+
+    public RestoreStatus rollback(StoredBlock block) throws SQLException {
+        if (block.rolledBack()) return RestoreStatus.ALREADY_DONE;
 
         // roll back this specific ID to another state
         if (block.actionType() == ActionType.BREAK) {
@@ -175,7 +199,7 @@ public class Espial {
 
             database.setRolledBack(block.uid(), true);
 
-            return RollbackStatus.SUCCESS;
+            return RestoreStatus.SUCCESS;
         } if (block.actionType() == ActionType.PLACE) {
             // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
@@ -183,9 +207,33 @@ public class Espial {
 
             block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
             database.setRolledBack(block.uid(), true);
-            return RollbackStatus.SUCCESS;
+            return RestoreStatus.SUCCESS;
         } else {
-            return RollbackStatus.UNSUPPORTED;
+            return RestoreStatus.UNSUPPORTED;
+        }
+    }
+
+    public RestoreStatus restore(StoredBlock block) throws SQLException {
+        if (!block.rolledBack()) return RestoreStatus.ALREADY_DONE;
+
+        // roll forwards this specific ID to another state
+        if (block.actionType() == ActionType.BREAK) {
+            // place the block which was broken at that location
+
+            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+
+            database.setRolledBack(block.uid(), false);
+
+            return RestoreStatus.SUCCESS;
+        } if (block.actionType() == ActionType.PLACE) {
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+
+            block.sponge().location().get().setBlock(blockType.defaultState());
+
+            database.setRolledBack(block.uid(), false);
+            return RestoreStatus.SUCCESS;
+        } else {
+            return RestoreStatus.UNSUPPORTED;
         }
     }
 }
