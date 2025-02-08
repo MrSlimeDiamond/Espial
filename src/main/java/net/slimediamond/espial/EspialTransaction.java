@@ -30,11 +30,11 @@ public class EspialTransaction {
         if (type == EspialTransactionType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().restore(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getBlockLogService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
         } else if (type == EspialTransactionType.RESTORE) {
             for (int id : ids) {
-                Espial.getInstance().rollback(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getBlockLogService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
         }
 
@@ -45,11 +45,11 @@ public class EspialTransaction {
         if (type == EspialTransactionType.RESTORE) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().restore(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getBlockLogService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
         } else if (type == EspialTransactionType.ROLLBACK) {
             for (int id : ids) {
-                Espial.getInstance().rollback(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getBlockLogService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
         }
 

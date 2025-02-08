@@ -1,6 +1,6 @@
 package net.slimediamond.espial;
 
-public enum RestoreStatus {
+public enum ActionStatus {
     ALREADY_DONE,
     SUCCESS,
     UNSUPPORTED

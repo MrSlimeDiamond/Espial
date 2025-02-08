@@ -11,24 +11,26 @@ import org.spongepowered.api.command.parameter.CommandContext;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ListIterator;
 
 public class RedoCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
-        if (!Espial.transactions.containsKey(context.cause().root())) {
+        HashMap<Object, ArrayList<EspialTransaction>> transactions = Espial.getInstance().getBlockLogService().getTransactions();
+
+        if (!transactions.containsKey(context.cause().root())) {
             context.sendMessage(Espial.prefix.append(Component.text("There is nothing to redo.").color(NamedTextColor.WHITE)));
             return CommandResult.success();
         } else {
-            ArrayList<EspialTransaction> transactions = Espial.transactions.get(context.cause().root());
+            ArrayList<EspialTransaction> playerTransactions = transactions.get(context.cause().root());
 
-            if (transactions.isEmpty()) {
-                System.out.println("transactions empty");
+            if (playerTransactions.isEmpty()) {
                 context.sendMessage(Espial.prefix.append(Component.text("There is nothing to redo.").color(NamedTextColor.WHITE)));
                 return CommandResult.success();
             }
 
-            ListIterator<EspialTransaction> iterator = transactions.listIterator(transactions.size());
+            ListIterator<EspialTransaction> iterator = playerTransactions.listIterator(playerTransactions.size());
             while (iterator.hasPrevious()) {
                 EspialTransaction transaction = iterator.previous();
                 // we should be going back in the tree for undone changes only

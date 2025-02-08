@@ -6,15 +6,13 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.Parameters;
+import net.slimediamond.espial.CommandParameters;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class HelpCommand implements CommandExecutor {
     @Override
@@ -22,8 +20,8 @@ public class HelpCommand implements CommandExecutor {
         ArrayList<Component> contents = new ArrayList<>();
 
         // Show help for a specific command (if it exists)
-        if (context.hasAny(Parameters.HELP_COMMAND)) {
-            String command = context.requireOne(Parameters.HELP_COMMAND);
+        if (context.hasAny(CommandParameters.HELP_COMMAND)) {
+            String command = context.requireOne(CommandParameters.HELP_COMMAND);
             Espial.getInstance().getEspialCommand().subcommands().stream().filter(cmd -> cmd.aliases().contains(command)).findFirst().ifPresent(subcommand -> {
                 String name = subcommand.aliases().stream().findFirst().get();
                 var builder = Component.text()

@@ -16,19 +16,13 @@ import net.slimediamond.espial.*;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import net.slimediamond.espial.util.DurationParser;
 import net.slimediamond.espial.util.RayTraceUtil;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.service.pagination.PaginationList;
-import org.spongepowered.api.util.blockray.RayTrace;
-import org.spongepowered.api.util.blockray.RayTraceResult;
 import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
@@ -37,9 +31,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 public class LookupCommand implements CommandExecutor {
     Database database;
@@ -90,7 +82,7 @@ public class LookupCommand implements CommandExecutor {
             return CommandResult.success();
         } else if (context.hasFlag("range")) {
             // -r <block range>
-            int range = context.requireOne(Parameters.LOOKUP_RANGE);
+            int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
 
             Vector3d pos = player.position();
 
@@ -133,157 +125,10 @@ public class LookupCommand implements CommandExecutor {
     }
 
     private void lookupBlock(ServerLocation location, CommandContext context) throws SQLException {
-        String uuid = null;
-        String blockId = null;
-        Timestamp timestamp = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        }
-
-        ArrayList<StoredBlock> blocks = database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId, timestamp);
-
-        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
-
-        if (contents.isEmpty()) {
-            context.sendMessage(Espial.prefix.append(Component.text("Could not find any block data at this location.").color(NamedTextColor.RED)));
-            return;
-        }
-
-        PaginationList.Builder paginationListBuilder = PaginationList.builder()
-                .title(Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
-                        .append(Component.text("Block data at ").color(NamedTextColor.GRAY)
-                        .append(Component.text(location.blockX() + " " + location.blockY() + " " + location.blockZ())
-                                .color(NamedTextColor.YELLOW))
-                ).build());
-
-        paginationListBuilder.contents(contents);
-        paginationListBuilder.sendTo((Audience) context.cause().root());
+        Espial.getInstance().getBlockLogService().processSingle(location, context, EspialTransactionType.LOOKUP);
     }
 
     protected void lookupRange(ServerLocation location, ServerLocation location2, CommandContext context) throws SQLException {
-        String uuid = null;
-        String blockId = null;
-        Timestamp timestamp = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        }
-
-        ArrayList<StoredBlock> blocks = database.queryRange(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), location2.blockX(), location2.blockY(), location2.blockZ(), uuid, blockId, timestamp);
-
-        ArrayList<Component> contents = this.generateContents(blocks, context.hasFlag("single"));
-
-        if (contents.isEmpty()) {
-            context.sendMessage(Espial.prefix.append(Component.text("Could not find any block data at this location.").color(NamedTextColor.RED)));
-            return;
-        }
-
-        PaginationList.Builder paginationListBuilder = PaginationList.builder().title(
-                Component.text().color(NamedTextColor.DARK_GRAY).append(Espial.prefix)
-                .append(Component.text("Block data between ")
-                        .color(NamedTextColor.GRAY)
-                        .append(Component.text(location.blockX() + " " + location.blockY() + " " + location.blockZ())
-                                .color(NamedTextColor.YELLOW))
-                        .append(Component.text(" and "))
-                        .color(NamedTextColor.GRAY)
-                        .append(Component.text(location2.blockX() + " " + location2.blockY() + " " + location2.blockZ())
-                                .color(NamedTextColor.YELLOW))
-                ).build());
-
-        paginationListBuilder.contents(contents);
-        paginationListBuilder.sendTo((Audience) context.cause().root());
+        Espial.getInstance().getBlockLogService().process(location, location2, context, EspialTransactionType.LOOKUP, true);
     }
-
-    protected ArrayList<Component> generateContents(ArrayList<StoredBlock> blocks, boolean single) {
-        ArrayList<Component> contents = new ArrayList<>();
-
-        if (single) {
-            blocks.forEach(block -> {
-                Component displayName = DisplayNameUtil.getDisplayName(block);
-
-                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.time().getTime()));
-
-                var msg = Component.text()
-                        .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
-                        .append(Component.space())
-                        .append(displayName)
-                        .append(Component.space())
-                        .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
-                        .append(Component.space())
-                        .append(Component.text(block.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
-                        .hoverEvent(HoverEvent.showText(Espial.prefix
-                                .append(Component.newline())
-                                .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.uid()).color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.itemInHand()).color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
-                        ));
-
-                if (block.rolledBack()) {
-                    msg.decorate(TextDecoration.STRIKETHROUGH);
-                }
-
-                contents.add(msg.build());
-            });
-        } else {
-            // grouped
-            Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
-            blocks.forEach(block -> {
-                Component displayName = DisplayNameUtil.getDisplayName(block);
-
-                BlockAction key = new BlockAction(displayName, block.actionType(), block.blockId());
-                groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
-            });
-
-            groupedBlocks.forEach((key, count) -> {
-                contents.add(Component.text()
-                        .append(key.name())
-                        .append(Component.space())
-                        .append(Component.text(key.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
-                        .append(Component.space())
-                        .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
-                        .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .build()
-                );
-            });
-        }
-
-        return contents;
-    }
-
-    // Record for better key structure
-    private record BlockAction(Component name, ActionType actionType, String blockId) {}
-
 }

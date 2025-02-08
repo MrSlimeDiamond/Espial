@@ -11,6 +11,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
 import net.slimediamond.espial.util.DurationParser;
 import net.slimediamond.espial.util.RayTraceUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -27,6 +28,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class RestoreCommand implements CommandExecutor {
@@ -76,7 +78,7 @@ public class RestoreCommand implements CommandExecutor {
             return CommandResult.success();
         } else if (context.hasFlag("range")) {
             // -r <block range>
-            int range = context.requireOne(Parameters.LOOKUP_RANGE);
+            int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
 
             Vector3d pos = player.position();
 
@@ -110,118 +112,11 @@ public class RestoreCommand implements CommandExecutor {
         return CommandResult.success();
     }
 
-    protected void lookupRange(ServerLocation min, ServerLocation max, CommandContext context) {
-        // Default to 3 days ago
-        Timestamp timestamp = Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-
-        String uuid = null;
-        String blockId = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        } else {
-            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
-        }
-
-        try {
-            ArrayList<Integer> ids = new ArrayList<>();
-            for (StoredBlock block : database.queryRange(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), max.blockX(), max.blockY(), max.blockZ(), uuid, blockId, timestamp)) {
-                if (!block.rolledBack()) continue;
-                ids.add(block.uid());
-
-                Espial.getInstance().restore(block);
-            }
-
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
-
-            if (Espial.transactions.containsKey(context.cause().root())) {
-                // add to the existing arraylist with a new transaction:
-                Espial.transactions.get(context.cause().root()).add(transaction);
-            } else {
-                // create a new one with the source object
-                ArrayList<EspialTransaction> transactions = new ArrayList<>();
-                transactions.add(transaction);
-
-                Espial.transactions.put(context.cause().root(), transactions);
-            }
-
-            if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was restored.").color(NamedTextColor.WHITE)));
-            } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were restored."))).color(NamedTextColor.WHITE)));
-            }
-        } catch (SQLException e) {
-            context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));
-        }
+    private void lookupRange(ServerLocation min, ServerLocation max, CommandContext context) {
+        Espial.getInstance().getBlockLogService().process(min, max, context, EspialTransactionType.RESTORE, true);
     }
 
-    protected void lookupBlock(ServerLocation location, CommandContext context) {
-        // Default to 3 days ago
-        Timestamp timestamp = Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-
-        String uuid = null;
-        String blockId = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        } else {
-            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
-        }
-
-        try {
-            ArrayList<Integer> ids = new ArrayList<>();
-
-            for (StoredBlock block : database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId, timestamp)) {
-                if (!block.rolledBack()) continue;
-                ids.add(block.uid());
-
-                Espial.getInstance().restore(block);
-            }
-
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
-
-            if (Espial.transactions.containsKey(context.cause().root())) {
-                // add to the existing arraylist with a new transaction:
-                Espial.transactions.get(context.cause().root()).add(transaction);
-            } else {
-                // create a new one with the source object
-                ArrayList<EspialTransaction> transactions = new ArrayList<>();
-                transactions.add(transaction);
-
-                Espial.transactions.put(context.cause().root(), transactions);
-            }
-
-            if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was restored.").color(NamedTextColor.WHITE)));
-            } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were restored."))).color(NamedTextColor.WHITE)));
-            }
-        } catch (SQLException e) {
-            context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));
-        }
+    private void lookupBlock(ServerLocation location, CommandContext context) {
+        Espial.getInstance().getBlockLogService().processSingle(location, context, EspialTransactionType.RESTORE);
     }
 }

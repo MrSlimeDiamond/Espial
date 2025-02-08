@@ -76,7 +76,7 @@ public class RollbackCommand implements CommandExecutor {
             return CommandResult.success();
         } else if (context.hasFlag("range")) {
             // -r <block range>
-            int range = context.requireOne(Parameters.LOOKUP_RANGE);
+            int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
 
             Vector3d pos = player.position();
 
@@ -110,118 +110,11 @@ public class RollbackCommand implements CommandExecutor {
         return CommandResult.success();
     }
 
-    protected void lookupRange(ServerLocation min, ServerLocation max, CommandContext context) {
-        // Default to 3 days ago
-        Timestamp timestamp = Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-
-        String uuid = null;
-        String blockId = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        } else {
-            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
-        }
-
-        try {
-            ArrayList<Integer> ids = new ArrayList<>();
-            for (StoredBlock block : database.queryRange(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), max.blockX(), max.blockY(), max.blockZ(), uuid, blockId, timestamp)) {
-                if (block.rolledBack()) continue;
-                ids.add(block.uid());
-
-                Espial.getInstance().rollback(block);
-            }
-
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
-
-            if (Espial.transactions.containsKey(context.cause().root())) {
-                // add to the existing arraylist with a new transaction:
-                Espial.transactions.get(context.cause().root()).add(transaction);
-            } else {
-                // create a new one with the source object
-                ArrayList<EspialTransaction> transactions = new ArrayList<>();
-                transactions.add(transaction);
-
-                Espial.transactions.put(context.cause().root(), transactions);
-            }
-
-            if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was rolled back.").color(NamedTextColor.WHITE)));
-            } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were rolled back."))).color(NamedTextColor.WHITE)));
-            }
-        } catch (SQLException e) {
-            context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));
-        }
+    private void lookupRange(ServerLocation min, ServerLocation max, CommandContext context) {
+        Espial.getInstance().getBlockLogService().process(min, max, context, EspialTransactionType.ROLLBACK, true);
     }
 
-    protected void lookupBlock(ServerLocation location, CommandContext context) {
-        // Default to 3 days ago
-        Timestamp timestamp = Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-
-        String uuid = null;
-        String blockId = null;
-
-        if (context.hasFlag("player")) {
-            // Get the UUID of the player (if available!)
-            uuid = context.requireOne(Parameters.LOOKUP_PLAYER).toString();
-        }
-
-        if (context.hasFlag("block")) {
-            // Get the UUID of the player (if available!)
-            blockId = context.requireOne(Parameters.LOOKUP_BLOCK).type().key(RegistryTypes.BLOCK_TYPE).formatted();
-        }
-
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(Parameters.TIME);
-            // translated into long (ms)
-            timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        } else {
-            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
-        }
-
-        try {
-            ArrayList<Integer> ids = new ArrayList<>();
-
-            for (StoredBlock block : database.queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), uuid, blockId, timestamp)) {
-                if (block.rolledBack()) continue;
-                ids.add(block.uid());
-
-                Espial.getInstance().rollback(block);
-            }
-
-            EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
-
-            if (Espial.transactions.containsKey(context.cause().root())) {
-                // add to the existing arraylist with a new transaction:
-                Espial.transactions.get(context.cause().root()).add(transaction);
-            } else {
-                // create a new one with the source object
-                ArrayList<EspialTransaction> transactions = new ArrayList<>();
-                transactions.add(transaction);
-
-                Espial.transactions.put(context.cause().root(), transactions);
-            }
-
-            if (ids.isEmpty()) {
-                context.sendMessage(Espial.prefix.append(Component.text("Nothing was rolled back.").color(NamedTextColor.WHITE)));
-            } else {
-                context.sendMessage(Espial.prefix.append(Component.text().append(Component.text(ids.size()).append(Component.text(" action(s) were rolled back."))).color(NamedTextColor.WHITE)));
-            }
-        } catch (SQLException e) {
-            context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately.").color(NamedTextColor.RED)));
-        }
+    private void lookupBlock(ServerLocation location, CommandContext context) {
+        Espial.getInstance().getBlockLogService().processSingle(location, context, EspialTransactionType.ROLLBACK);
     }
 }
