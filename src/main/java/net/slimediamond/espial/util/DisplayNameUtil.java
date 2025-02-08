@@ -23,7 +23,11 @@ public class DisplayNameUtil {
         try {
             uuid = UUID.fromString(uuidString);
         } catch (IllegalArgumentException e) {
-            return Component.text(uuidString).color(NamedTextColor.YELLOW).decorate(TextDecoration.ITALIC);
+            return Component.text()
+                    .append(Component.text("("))
+                    .append(Component.text(uuidString))
+                    .append(Component.text(")"))
+                    .build().color(NamedTextColor.YELLOW).decorate(TextDecoration.ITALIC);
         }
 
         Optional<User> user;
