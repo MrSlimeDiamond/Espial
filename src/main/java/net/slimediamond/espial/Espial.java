@@ -118,7 +118,7 @@ public class Espial {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.restore")
-                        .shortDescription(Component.text("Restore changes which have been rolled back"))
+                        .shortDescription(Component.text("Restore changes which were rolled back"))
                         .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
                         .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())

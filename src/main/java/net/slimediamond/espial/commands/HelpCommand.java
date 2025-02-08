@@ -10,9 +10,11 @@ import net.slimediamond.espial.CommandParameters;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class HelpCommand implements CommandExecutor {
     @Override
@@ -68,21 +70,29 @@ public class HelpCommand implements CommandExecutor {
             });
         } else {
             context.sendMessage(Espial.prefix.append(Component.text("Help")));
-            Espial.getInstance().getEspialCommand().subcommands().forEach(subcommand -> {
+            List<Parameter.Subcommand> sortedSubcommands = Espial.getInstance().getEspialCommand().subcommands().stream()
+                    .sorted(Comparator.comparing(subcommand -> subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
+                    .toList();
+
+            for (Parameter.Subcommand subcommand : sortedSubcommands) {
                 var builder = Component.text()
-                        // little bud, if there are no aliases, idk what to tell you
-                        .append(Component.text("/espial " + subcommand.aliases().stream().findFirst().get())
+                        .append(Component.text("/espial " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get())
                                 .color(NamedTextColor.GREEN)
-                                .hoverEvent(HoverEvent.showText(Component.text("Aliases: " + String.join(", ", subcommand.aliases())).append(Component.newline()).append(Component.text("Click for help"))))
-                                .clickEvent(ClickEvent.runCommand("/espial help " + subcommand.aliases().stream().findFirst().get()))
+                                .hoverEvent(HoverEvent.showText(Component.text("Aliases: " + String.join(", ", subcommand.aliases()))
+                                        .append(Component.newline()).append(Component.text("Click for help"))))
+                                .clickEvent(ClickEvent.runCommand("/espial help " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
                         );
 
-                subcommand.command().shortDescription(context.cause()).ifPresent(desc -> {
-                    builder.append(Component.text(" - ")).append(desc);
-                });
+                Optional<Component> description = subcommand.command().shortDescription(context.cause());
+
+                if (description.isPresent()) {
+                    builder.append(Component.text(" - ")).append(description.get());
+                } else {
+                    continue;
+                }
 
                 contents.add(builder.build());
-            });
+            }
         }
 
         for (Component content : contents) {
