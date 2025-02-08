@@ -122,7 +122,7 @@ public class LookupCommand implements CommandExecutor {
                     throw new RuntimeException(e);
                 }
             } else {
-                context.sendMessage(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED));
+                context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
             }
         }
 
