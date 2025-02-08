@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.util.RayTraceUtil;
 import org.checkerframework.checker.units.qual.N;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -30,19 +31,17 @@ public class WhoPlacedThisCommand implements CommandExecutor {
     public CommandResult execute(CommandContext context) throws CommandException {
         if (context.cause().root() instanceof Player player) {
 
-            // TODO: put this in a util class lol
-            Optional<RayTraceResult<LocatableBlock>> result = RayTrace.block().sourceEyePosition(player).direction(player).world(player.serverLocation().world()).limit(4).execute();
-
+            Optional<LocatableBlock> result = RayTraceUtil.getBlockFacingPlayer(player);
             if (result.isPresent()) {
-                RayTraceResult<LocatableBlock> rayTrace = result.get();
+                LocatableBlock block = result.get();
 
                 try {
-                    database.getBlockOwner(rayTrace.selectedObject().location().blockX(), rayTrace.selectedObject().location().blockY(), rayTrace.selectedObject().location().blockZ()).ifPresentOrElse(user -> {
+                    database.getBlockOwner(block.location().blockX(), block.location().blockY(), block.location().blockZ()).ifPresentOrElse(user -> {
                         context.sendMessage(Espial.prefix
                                     .append(Component.text(user.name()).color(NamedTextColor.YELLOW)
                                     .append(Component.space())
                                     .append(Component.text("placed this ").color(NamedTextColor.WHITE))
-                                    .append(Component.text(rayTrace.selectedObject().blockState().type().key(RegistryTypes.BLOCK_TYPE).formatted().split(":")[1]).color(NamedTextColor.YELLOW))
+                                    .append(Component.text(block.blockState().type().key(RegistryTypes.BLOCK_TYPE).formatted().split(":")[1]).color(NamedTextColor.YELLOW))
                                     .append(Component.text(".").color(NamedTextColor.WHITE))
                                 ));
                     }, () -> {

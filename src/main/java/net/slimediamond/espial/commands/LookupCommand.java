@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.*;
 import net.slimediamond.espial.util.DisplayNameUtil;
+import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -110,13 +111,13 @@ public class LookupCommand implements CommandExecutor {
         } else { // Ray trace block (playing is looking at target)
             // get the block the player is targeting
 
-            Optional<RayTraceResult<LocatableBlock>> result = RayTrace.block().sourceEyePosition(player).direction(player).world(player.serverLocation().world()).limit(4).execute();
+            Optional<LocatableBlock> result = RayTraceUtil.getBlockFacingPlayer(player);
 
             if (result.isPresent()) {
-                RayTraceResult<LocatableBlock> rayTrace = result.get();
+                LocatableBlock block = result.get();
 
                 try {
-                    this.lookupBlock(rayTrace.selectedObject().serverLocation(), context);
+                    this.lookupBlock(block.serverLocation(), context);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
