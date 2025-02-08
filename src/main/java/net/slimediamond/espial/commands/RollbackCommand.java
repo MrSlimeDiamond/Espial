@@ -133,6 +133,8 @@ public class RollbackCommand implements CommandExecutor {
             String time = context.requireOne(Parameters.TIME);
             // translated into long (ms)
             timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
+        } else {
+            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
         }
 
         try {
@@ -175,6 +177,8 @@ public class RollbackCommand implements CommandExecutor {
             String time = context.requireOne(Parameters.TIME);
             // translated into long (ms)
             timestamp = new Timestamp(DurationParser.parseDurationAndSubtract(time));
+        } else {
+            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: ").color(NamedTextColor.WHITE).append(Component.text("-t 3d").color(NamedTextColor.GRAY))));
         }
 
         try {
