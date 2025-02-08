@@ -3,9 +3,13 @@ package net.slimediamond.espial.listeners;
 import net.slimediamond.espial.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.EspialTransactionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.Operations;
+import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
@@ -27,6 +31,18 @@ public class ChangeBlockListener {
             source = ((InteractBlockEvent.Primary) event.cause().root()).source();
         } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
             source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
+        }
+
+        if (source instanceof Player player) {
+            if (Espial.getInstance().getBlockLogService().getInspectingPlayers().contains(player.profile().uuid())) {
+
+                event.setCancelled(true);
+
+                BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
+
+                Espial.getInstance().getBlockLogService().processSingle(block.location().get(), player, EspialTransactionType.LOOKUP, null, null, null, true);
+                return;
+            }
         }
 
         if (source instanceof Living) {

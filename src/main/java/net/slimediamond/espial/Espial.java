@@ -147,7 +147,13 @@ public class Espial {
                                 .executor(new InspectCommand(idParameter, database, container))
                                 .build(), "stop", "s"
                         )
-                        .build(), "inspect", "i"
+                        .build(), "inspect"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.interactive")
+                        .executor(new InteractiveToggleCommand())
+                        .shortDescription(Component.text("Enable interactive inspector mode"))
+                        .build(), "interactive", "i"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollbackid")

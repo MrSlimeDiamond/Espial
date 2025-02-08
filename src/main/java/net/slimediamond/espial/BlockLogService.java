@@ -1,5 +1,6 @@
 package net.slimediamond.espial;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -10,6 +11,7 @@ import net.slimediamond.espial.util.DurationParser;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.apache.commons.lang3.tuple.Pair;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
@@ -31,7 +33,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class BlockLogService {
-    private HashMap<Object, ArrayList<EspialTransaction>> transactions = new HashMap<>();
+    private final HashMap<Object, ArrayList<EspialTransaction>> transactions = new HashMap<>();
+    private final ArrayList<UUID> inspectingPlayers = new ArrayList<>();
 
     public void addTransaction(Object key, EspialTransaction transaction) {
         if (this.transactions.containsKey(key)) {
@@ -48,6 +51,10 @@ public class BlockLogService {
 
     public HashMap<Object, ArrayList<EspialTransaction>> getTransactions() {
         return this.transactions;
+    }
+
+    public ArrayList<UUID> getInspectingPlayers() {
+        return this.inspectingPlayers;
     }
 
     public ActionStatus rollback(StoredBlock block) throws SQLException {
@@ -100,11 +107,7 @@ public class BlockLogService {
         }
     }
 
-    public void process(ServerLocation min, ServerLocation max, CommandContext context, EspialTransactionType type, boolean isRange) {
-        Timestamp timestamp = parseTimestamp(context, type);
-        UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
-        BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
-
+    public void process(ServerLocation min, ServerLocation max, Audience audience, EspialTransactionType type, boolean isRange, @Nullable Timestamp timestamp, @Nullable UUID uuid, @Nullable BlockState blockState, boolean single) {
         String uuidString = (uuid == null) ? null : uuid.toString();
         String blockId = (blockState == null) ? null : blockState.asString();
 
@@ -133,17 +136,17 @@ public class BlockLogService {
 
             if (type != EspialTransactionType.LOOKUP) {
                 EspialTransaction transaction = new EspialTransaction(ids, type, false);
-                Espial.getInstance().getBlockLogService().addTransaction(context.cause().root(), transaction);
+                Espial.getInstance().getBlockLogService().addTransaction(audience, transaction);
             }
 
-            sendResultMessage(context, blocks, type);
+            sendResultMessage(audience, blocks, type, single);
         } catch (SQLException e) {
-            context.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately!").color(NamedTextColor.RED)));
+            audience.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately!").color(NamedTextColor.RED)));
         }
     }
 
-    public void processSingle(ServerLocation location, CommandContext context, EspialTransactionType type) {
-        process(location, location, context, type, false);
+    public void processSingle(ServerLocation location, Audience audience, EspialTransactionType type, @Nullable Timestamp timestamp, @Nullable UUID uuid, @Nullable BlockState blockState, boolean single) {
+        process(location, location, audience, type, false, timestamp, uuid, blockState, single);
     }
 
     private Timestamp parseTimestamp(CommandContext context, EspialTransactionType type) {
@@ -161,7 +164,7 @@ public class BlockLogService {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
     }
 
-    private void sendResultMessage(CommandContext context, List<StoredBlock> blocks, EspialTransactionType type) {
+    private void sendResultMessage(Audience audience, List<StoredBlock> blocks, EspialTransactionType type, boolean single) {
         String action = switch (type) {
             case ROLLBACK -> "rolled back";
             case RESTORE -> "restored";
@@ -169,15 +172,15 @@ public class BlockLogService {
         };
 
         if (type == EspialTransactionType.LOOKUP) {
-            PaginationList.builder().contents(generateLookupContents(blocks, context.hasFlag("single")))
-                    .title(Espial.prefix.append(Component.text("Block lookup results").color(NamedTextColor.WHITE))).sendTo(context.cause().audience());
+            PaginationList.builder().contents(generateLookupContents(blocks, single))
+                    .title(Espial.prefix.append(Component.text("Block lookup results").color(NamedTextColor.WHITE))).sendTo(audience);
             return;
         }
 
         if (blocks.isEmpty()) {
-            context.sendMessage(Espial.prefix.append(Component.text("No actions were " + action + ".").color(NamedTextColor.WHITE)));
+            audience.sendMessage(Espial.prefix.append(Component.text("No actions were " + action + ".").color(NamedTextColor.WHITE)));
         } else {
-            context.sendMessage(Espial.prefix.append(Component.text(blocks.size() + " action(s) " + action + ".").color(NamedTextColor.WHITE)));
+            audience.sendMessage(Espial.prefix.append(Component.text(blocks.size() + " action(s) " + action + ".").color(NamedTextColor.WHITE)));
         }
     }
 
@@ -254,9 +257,14 @@ public class BlockLogService {
             return CommandResult.error(Component.text("This command can only be used by players.").color(NamedTextColor.RED));
         }
 
+        Timestamp timestamp = parseTimestamp(context, type);
+        UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
+        BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
+
+
         if (context.hasFlag("worldedit")) { // Range lookup
             PlayerSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
-                Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context, type, true);
+                Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
             }, () -> {
                 context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
             });
@@ -268,7 +276,7 @@ public class BlockLogService {
 
             Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
 
-            Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context, type, true);
+            Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
 
         } else {
             // Ray trace block (playing is looking at target)
@@ -279,7 +287,7 @@ public class BlockLogService {
             if (result.isPresent()) {
                 LocatableBlock block = result.get();
 
-                Espial.getInstance().getBlockLogService().processSingle(block.serverLocation(), context, type);
+                Espial.getInstance().getBlockLogService().processSingle(block.serverLocation(), context.cause().audience(), type, timestamp, uuid, blockState, context.hasFlag("single"));
             } else {
                 context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
             }
