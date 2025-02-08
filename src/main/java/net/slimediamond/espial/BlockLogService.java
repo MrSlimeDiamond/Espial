@@ -7,13 +7,19 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import net.slimediamond.espial.util.DurationParser;
+import net.slimediamond.espial.util.PlayerSelectionUtil;
+import net.slimediamond.espial.util.RayTraceUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
+import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
@@ -238,6 +244,48 @@ public class BlockLogService {
         }
 
         return contents;
+    }
+
+    public CommandResult doSelectiveCommand(CommandContext context, EspialTransactionType type) {
+        Player player;
+        if (context.cause().root() instanceof Player) {
+            player = (Player) context.cause().root();
+        } else {
+            return CommandResult.error(Component.text("This command can only be used by players.").color(NamedTextColor.RED));
+        }
+
+        if (context.hasFlag("worldedit")) { // Range lookup
+            PlayerSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
+                Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context, type, true);
+            }, () -> {
+                context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
+            });
+
+            return CommandResult.success();
+        } else if (context.hasFlag("range")) {
+            // -r <block range>
+            int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
+
+            Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+
+            Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context, type, true);
+
+        } else {
+            // Ray trace block (playing is looking at target)
+            // get the block the player is targeting
+
+            Optional<LocatableBlock> result = RayTraceUtil.getBlockFacingPlayer(player);
+
+            if (result.isPresent()) {
+                LocatableBlock block = result.get();
+
+                Espial.getInstance().getBlockLogService().processSingle(block.serverLocation(), context, type);
+            } else {
+                context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
+            }
+        }
+
+        return CommandResult.success();
     }
 
     // Record for better key structure
