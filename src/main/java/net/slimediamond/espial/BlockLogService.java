@@ -6,10 +6,12 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
@@ -29,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BlockLogService {
     private final HashMap<Object, ArrayList<EspialTransaction>> transactions = new HashMap<>();
@@ -80,6 +83,8 @@ public class BlockLogService {
             block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
             Espial.getInstance().getDatabase().setRolledBack(block.uid(), true);
             return ActionStatus.SUCCESS;
+        } else if (block.actionType() == ActionType.MODIFY) {
+            return this.actionModify(block, EspialTransactionType.ROLLBACK);
         } else {
             return ActionStatus.UNSUPPORTED;
         }
@@ -108,6 +113,70 @@ public class BlockLogService {
             return ActionStatus.UNSUPPORTED;
         }
     }
+
+    public ActionStatus actionModify(StoredBlock block, EspialTransactionType type) throws SQLException {
+        BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[0]));
+        if (BlockUtil.SIGNS.contains(blockType)) {
+            // Get all other blocks at these coordinates
+            List<StoredBlock> blocks = Espial.getInstance().getDatabase().queryBlock(block.world(), block.x(), block.y(), block.z(), null, null, null)
+                    .stream().filter(store -> store.actionType().equals(ActionType.MODIFY)).toList();
+
+            StoredBlock target = null;
+            if (type == EspialTransactionType.ROLLBACK) {
+                // Find the block with the same coordinates but different UID (previous modification)
+                for (int i = 1; i < blocks.size(); i++) {
+                    if (blocks.get(i).uid() == block.uid()) {
+                        target = blocks.get(i - 1); // Get the previous block
+                        break;
+                    }
+                }
+            } else if (type == EspialTransactionType.RESTORE) {
+                // Find the block with the same coordinates but different UID (next modification)
+                for (int i = 0; i < blocks.size() - 1; i++) {
+                    if (blocks.get(i).uid() == block.uid()) {
+                        target = blocks.get(i + 1); // Get the next block
+                        break;
+                    }
+                }
+            }
+
+            if (target == null) {
+                return ActionStatus.FAILURE;
+            }
+
+            Sign sign = (Sign)block.sponge().location().get().blockEntity().get();
+            List<Component> newText = new ArrayList<>();
+
+            target.getNBT().ifPresentOrElse(data -> {
+                String[] lines = data.split("\\|");
+                for (int i = 0; i < lines.length; i++) {
+                    Component line;
+                    try {
+                        line = GsonComponentSerializer.gson().deserialize(lines[i]);
+                    } catch (Exception ignored) {
+                        continue;
+                    }
+                    newText.add(line);
+                }
+
+                sign.frontText().lines().set(newText);
+                System.out.println("updated sign");
+            }, () -> {
+                // Shrug and make it blank
+                System.out.println("setting sign blank");
+                block.sponge().location().get().setBlock(blockType.defaultState());
+            });
+
+            Espial.getInstance().getDatabase().setRolledBack(block.uid(), type == EspialTransactionType.ROLLBACK);
+
+            return ActionStatus.SUCCESS;
+
+        } else {
+            return ActionStatus.UNSUPPORTED;
+        }
+    }
+
+
 
     public void process(ServerLocation min, ServerLocation max, Audience audience, EspialTransactionType type, boolean isRange, @Nullable Timestamp timestamp, @Nullable UUID uuid, @Nullable BlockState blockState, boolean single) {
         String uuidString = (uuid == null) ? null : uuid.toString();
