@@ -272,7 +272,13 @@ public class BlockLogService {
             return CommandResult.error(Component.text("This command can only be used by players.").color(NamedTextColor.RED));
         }
 
-        Timestamp timestamp = parseTimestamp(context, type);
+        Timestamp timestamp;
+        try {
+            timestamp = parseTimestamp(context, type);
+        } catch (IllegalArgumentException e) {
+            context.sendMessage(Espial.prefix.append(Component.text().append(Component.text("Could not parse time argument '").append(Component.text(context.requireOne(CommandParameters.TIME)).append(Component.text("'.")))).color(NamedTextColor.RED)));
+            return CommandResult.success();
+        }
         UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
         BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
 
