@@ -14,21 +14,25 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
     * Look up a block. Defaults to the block you are looking at.
     * Flags:
       *  *[--single | -s]* - Do not group outputs
-      *  *[--worldedit | -w]* - Use a WorldEdit range
-      *  *[--range | -r \<range\>]* - Lookup a cuboid range
-      *  *[--player | -p \<player name\>]* - Only look at actions from a specific player
-      *  *[--block | -b \<block id\>]* - Only look at a specific block
-  * **inspect | i \<id\>**
-    * Looks up a specific ID.
-  * **inspect stop**
-    * Stop block particles for the block you are inspecting.
+      *  Everything from query command flags (below).
+  * **rollback | rb**
+    * Roll back a block or a range. Defaults to the block you are looking at
+    * Flags:
+      * Everything from query command flags (below).
+  * **restore | rs**
+    * Restore a block or a range. Defaults to the block you are looking at
+    * Flags:
+      * Everything from query command flags (below).
 
-[Video demonstration](https://youtu.be/gn4QvT5-5Oc)
+  * **interactive | i**
+    * Enter an interactive inspector mode where you can break or place blocks to query.
+  * **undo**
+    * Revert what you just did.
+  * **redo**
+    * Revert what you just undid. 
 
-## Features
-- [x] Looking up data at block coordinates
-- [x] Looking up data in a region
-- [x] Looking up block modification (i.e broken and placed blocks)
-- [x] Looking up interactions
-- [ ] Rollbacks
-- [ ] Interactive inspector (like /co i)
+## Query command flags
+*  *[--worldedit | -w]* - Use a WorldEdit range
+*  *[--range | -r \<range\>]* - Lookup a cuboid range
+*  *[--player | -p \<player name\>]* - Only look at actions from a specific player
+*  *[--block | -b \<block id\>]* - Only look at a specific block type
