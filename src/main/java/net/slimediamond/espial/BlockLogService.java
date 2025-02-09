@@ -13,6 +13,7 @@ import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.entity.Sign;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
@@ -61,6 +62,10 @@ public class BlockLogService {
         if (block.actionType() == ActionType.BREAK) {
             // place the block which was broken at that location
             BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+
+//            if (blockType instanceof Sign sign) {
+//                sign
+//            }
 
             block.sponge().location().get().setBlock(blockType.defaultState());
 

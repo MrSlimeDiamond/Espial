@@ -39,7 +39,7 @@ public class Database {
     public void open(String connectionString) throws SQLException {
         conn = DriverManager.getConnection(connectionString);
 
-        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)");
+        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
         queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
@@ -86,9 +86,10 @@ public class Database {
      * @param world The world which the action happened in
      * @param transaction Block transaction (for ChangeBlockEvent)
      * @param blockSnapshot Block snapshot (for InteractBlockEvent)
+     * @return {@link Optional} for a {@link StoredBlock} that was created
      * @throws SQLException
      */
-    public void insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+    public Optional<StoredBlock> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
         String uuid;
 
         if (living == null) { // Server (or similar)
@@ -110,9 +111,6 @@ public class Database {
 
                 insertAction.setString(15, player.itemInHand(HandTypes.MAIN_HAND).type().key(RegistryTypes.ITEM_TYPE).formatted());
             } else {
-                // apparently
-
-                // this is (probably) something like creeper, enderman, etc.
                 uuid = PlainTextComponentSerializer.plainText().serialize(living.displayName().get());
 
                 insertAction.setString(15, "none");
@@ -153,12 +151,10 @@ public class Database {
                 blockId = transaction.original().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
             }
 
-            // balls
-            if (transaction.original().location().get() != null) {
-                x = transaction.original().location().get().blockX();
-                y = transaction.original().location().get().blockY();
-                z = transaction.original().location().get().blockZ();
-            }
+            x = transaction.original().location().get().blockX();
+            y = transaction.original().location().get().blockY();
+            z = transaction.original().location().get().blockZ();
+
         } else if (blockSnapshot != null) {
             if (!blockSnapshot.location().isPresent()) {
                 throw new RuntimeException("Block location was not present (?!)");
@@ -185,6 +181,14 @@ public class Database {
         insertAction.setString(5, world);
 
         insertAction.execute();
+
+        ResultSet rs = insertAction.getGeneratedKeys();
+        if (rs.next()) {
+            int id = rs.getInt(1);
+            return Optional.of(this.queryId(id));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {

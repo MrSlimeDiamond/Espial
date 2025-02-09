@@ -210,4 +210,8 @@ public class Espial {
     public BlockLogService getBlockLogService() {
         return blockLogService;
     }
+
+    public Logger getLogger() {
+        return this.logger;
+    }
 }
