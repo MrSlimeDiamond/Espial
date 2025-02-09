@@ -80,10 +80,18 @@ public class InspectCommand implements CommandExecutor {
                 player.setRotation(playerRotation);
             } else {
                 player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
-                context.sendMessage(Component.text("The server broke this block, so you have only been teleported to its location.").color(NamedTextColor.GREEN));
             }
 
             Component displayName = DisplayNameUtil.getDisplayName(block);
+            String undoActionMessage;
+            String undoCommand;
+            if (block.rolledBack()) {
+                undoActionMessage = "RESTORE";
+                undoCommand = "/espial restoreid " + block.uid();
+            } else {
+                undoActionMessage = "ROLLBACK";
+                undoCommand = "/espial rollbackid " + block.uid();
+            }
 
             PaginationList.builder()
                     .title(Component.text("Inspecting ID: ").color(NamedTextColor.GREEN).append(Component.text(id).color(NamedTextColor.YELLOW)))
@@ -91,7 +99,6 @@ public class InspectCommand implements CommandExecutor {
                             .append(Component.newline())
                             .append(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("STOP").color(NamedTextColor.RED).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand("/espial inspect stop")))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text("TP").color(NamedTextColor.GREEN).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(SpongeComponents.executeCallback(cause -> {
-
                                 if (playerLocation != null && playerRotation != null) {
                                     player.setPosition(block.playerLocation());
                                     player.setRotation(block.playerRotation());
@@ -99,6 +106,7 @@ public class InspectCommand implements CommandExecutor {
                                     player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
                                 }
                             })))
+                            .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text(undoActionMessage).color(NamedTextColor.YELLOW)).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand(undoCommand))
                             .append(Component.newline())
                             .append(Component.text("Player: ").color(NamedTextColor.GREEN))
                             .append(displayName)
