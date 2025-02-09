@@ -14,7 +14,6 @@ import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
-import javax.swing.text.html.parser.Entity;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -30,6 +29,8 @@ public class Database {
     private PreparedStatement queryRange;
     private PreparedStatement getBlockOwner;
     private PreparedStatement setRolledBack;
+    private PreparedStatement insertNBTdata;
+    private PreparedStatement getNBTdata;
 
     public Database(boolean logPlayerPosition) {
         this.logPlayerPosition = logPlayerPosition;
@@ -44,6 +45,8 @@ public class Database {
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
         setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
+        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
+        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
 
         String sql;
 
@@ -404,6 +407,24 @@ public class Database {
             public boolean rolledBack() {
                 return rolledBack;
             }
+
+            @Override
+            public void setNBT(String data) {
+                try {
+                    setNBTdata(uid, data);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public Optional<String> getNBT() {
+                try {
+                    return getNBTdata(uid);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         });
     }
 
@@ -411,5 +432,22 @@ public class Database {
         setRolledBack.setBoolean(1, status);
         setRolledBack.setInt(2, id);
         setRolledBack.execute();
+    }
+
+    public void setNBTdata(int id, String data) throws SQLException {
+        insertNBTdata.setInt(1, id);
+        insertNBTdata.setString(2, data);
+        insertNBTdata.execute();
+    }
+
+    public Optional<String> getNBTdata(int id) throws SQLException {
+        getNBTdata.setInt(1, id);
+        ResultSet rs = getNBTdata.executeQuery();
+
+        if (rs.next()) {
+            return Optional.of(rs.getString("data"));
+        }
+
+        return Optional.empty();
     }
 }

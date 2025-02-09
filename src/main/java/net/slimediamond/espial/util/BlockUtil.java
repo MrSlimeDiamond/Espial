@@ -53,7 +53,7 @@ public class BlockUtil {
             .add(BlockTypes.POLISHED_BLACKSTONE_BUTTON, BlockTypes.STONE_BUTTON)
             .build();
 
-    private static final HashSet<BlockType> SIGNS = builder()
+    public static final HashSet<BlockType> SIGNS = builder()
             .add(BlockTypes.ACACIA_SIGN, BlockTypes.BIRCH_SIGN, BlockTypes.DARK_OAK_SIGN, BlockTypes.JUNGLE_SIGN, BlockTypes.OAK_SIGN, BlockTypes.SPRUCE_SIGN)
             .add(BlockTypes.CRIMSON_SIGN, BlockTypes.WARPED_SIGN)
             .build();

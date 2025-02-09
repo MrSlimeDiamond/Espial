@@ -56,8 +56,7 @@ public class ChangeBlockListener {
             // These are almost always useless, and just flood the database.
             // It's stuff like "this water spread"
 
-            // NOTE: I believe that this is used when NBT data is changed.
-            if (transaction.operation().equals(Operations.MODIFY.get())) return;
+            if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
 
             try {
                 database.insertAction(

@@ -6,6 +6,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 public interface StoredBlock {
     int uid();
@@ -21,6 +22,8 @@ public interface StoredBlock {
     int y();
     int z();
     boolean rolledBack();
+    void setNBT(String data);
+    Optional<String> getNBT();
 
     // Not scuffed at all.
     default BlockSnapshot sponge() {

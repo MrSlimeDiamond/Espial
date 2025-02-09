@@ -6,10 +6,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.util.DisplayNameUtil;
-import net.slimediamond.espial.util.DurationParser;
-import net.slimediamond.espial.util.PlayerSelectionUtil;
-import net.slimediamond.espial.util.RayTraceUtil;
+import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
@@ -223,6 +220,12 @@ public class BlockLogService {
                                 .append(Component.newline())
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                         ));
+
+                block.getNBT().flatMap(data -> NBTDataParser.parseNBT(block)).ifPresent(component -> {
+                    msg.append(Component.text(" (...)")
+                            .color(NamedTextColor.GRAY)
+                            .hoverEvent(HoverEvent.showText(Espial.prefix.append(Component.text().color(NamedTextColor.WHITE).append(component)))));
+                });
 
                 if (block.rolledBack()) {
                     msg.decorate(TextDecoration.STRIKETHROUGH);

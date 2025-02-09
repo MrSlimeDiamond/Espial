@@ -7,6 +7,7 @@ import net.slimediamond.espial.commands.*;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
+import net.slimediamond.espial.listeners.SignInteractEvent;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -74,6 +75,7 @@ public class Espial {
         Sponge.eventManager().registerListeners(container, new ChangeBlockListener(database));
         Sponge.eventManager().registerListeners(container, new InteractListener(database));
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
+        Sponge.eventManager().registerListeners(container, new SignInteractEvent());
     }
 
     @Listener
@@ -176,6 +178,12 @@ public class Espial {
                 .permission("espial.whoplacedthis")
                 .executor(new WhoPlacedThisCommand(database))
                 .build(), "whoplacedthis"
+        );
+
+        event.register(this.container, Command.builder()
+                .permission("espial.signinfo")
+                .executor(new SignInfoCommand())
+                .build(), "signinfo"
         );
     }
 
