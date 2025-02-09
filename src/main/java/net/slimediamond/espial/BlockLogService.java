@@ -288,6 +288,7 @@ public class BlockLogService {
 
         if (context.hasFlag("worldedit")) { // Range lookup
             PlayerSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
+                context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
                 Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
             }, () -> {
                 context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
@@ -299,6 +300,8 @@ public class BlockLogService {
             int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
 
             Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+
+            context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using a cuboid with a range of " + range + " blocks for this query.").color(NamedTextColor.WHITE)).build());
 
             Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
 
