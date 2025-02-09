@@ -1,5 +1,6 @@
 package net.slimediamond.espial;
 
+import net.slimediamond.espial.action.ActionType;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.world.server.ServerLocation;

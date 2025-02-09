@@ -1,4 +1,4 @@
-package net.slimediamond.espial;
+package net.slimediamond.espial.action;
 
 public enum ActionStatus {
     ALREADY_DONE,

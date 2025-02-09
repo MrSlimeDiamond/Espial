@@ -1,13 +1,12 @@
 package net.slimediamond.espial.listeners;
 
-import net.slimediamond.espial.ActionType;
+import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.EspialTransactionType;
+import net.slimediamond.espial.transaction.EspialTransactionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.Operations;
-import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;

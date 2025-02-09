@@ -3,12 +3,11 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.EspialTransaction;
+import net.slimediamond.espial.transaction.EspialTransaction;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.entity.living.player.Player;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

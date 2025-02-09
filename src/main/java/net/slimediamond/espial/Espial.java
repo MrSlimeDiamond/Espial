@@ -8,6 +8,7 @@ import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import net.slimediamond.espial.listeners.SignInteractEvent;
+import net.slimediamond.espial.transaction.EspialTransactionType;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;

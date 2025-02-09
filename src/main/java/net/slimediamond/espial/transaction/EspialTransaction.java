@@ -1,4 +1,6 @@
-package net.slimediamond.espial;
+package net.slimediamond.espial.transaction;
+
+import net.slimediamond.espial.Espial;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,6 +1,7 @@
 package net.slimediamond.espial;
 
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.slimediamond.espial.action.ActionType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;

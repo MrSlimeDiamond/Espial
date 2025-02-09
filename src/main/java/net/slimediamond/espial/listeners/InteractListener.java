@@ -1,6 +1,6 @@
 package net.slimediamond.espial.listeners;
 
-import net.slimediamond.espial.ActionType;
+import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.util.BlockUtil;

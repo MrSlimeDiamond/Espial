@@ -1,16 +1,14 @@
 package net.slimediamond.espial.listeners;
 
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.ActionType;
+import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
-import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.StringJoiner;
 
