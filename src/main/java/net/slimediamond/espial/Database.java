@@ -1,7 +1,10 @@
 package net.slimediamond.espial;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.nbt.json.JsonNBTData;
+import net.slimediamond.espial.nbt.NBTData;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
@@ -414,19 +417,19 @@ public class Database {
             }
 
             @Override
-            public void setNBT(String data) {
+            public void setNBT(NBTData data) {
                 try {
-                    setNBTdata(uid, data);
-                } catch (SQLException e) {
+                    setNBTdata(uid, JsonNBTData.serialize(data));
+                } catch (SQLException | JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
             }
 
             @Override
-            public Optional<String> getNBT() {
+            public Optional<NBTData> getNBT() {
                 try {
                     return getNBTdata(uid);
-                } catch (SQLException e) {
+                } catch (SQLException | JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -445,12 +448,12 @@ public class Database {
         insertNBTdata.execute();
     }
 
-    public Optional<String> getNBTdata(int id) throws SQLException {
+    public Optional<NBTData> getNBTdata(int id) throws SQLException, JsonProcessingException {
         getNBTdata.setInt(1, id);
         ResultSet rs = getNBTdata.executeQuery();
 
         if (rs.next()) {
-            return Optional.of(rs.getString("data"));
+            return Optional.of(JsonNBTData.deserialize(rs.getString("data")));
         }
 
         return Optional.empty();

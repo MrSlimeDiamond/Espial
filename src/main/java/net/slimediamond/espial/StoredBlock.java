@@ -1,6 +1,7 @@
 package net.slimediamond.espial;
 
 import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.nbt.NBTData;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.world.server.ServerLocation;
@@ -23,8 +24,8 @@ public interface StoredBlock {
     int y();
     int z();
     boolean rolledBack();
-    void setNBT(String data);
-    Optional<String> getNBT();
+    void setNBT(NBTData data);
+    Optional<NBTData> getNBT();
 
     // Not scuffed at all.
     default BlockSnapshot sponge() {
