@@ -203,10 +203,8 @@ public class BlockLogService {
         if (single) {
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
-
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
                 String formattedDate = dateFormat.format(new Date(block.time().getTime()));
-
                 var msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
@@ -232,26 +230,36 @@ public class BlockLogService {
                 block.getNBT().flatMap(data -> NBTDataParser.parseNBT(block)).ifPresent(component -> {
                     msg.append(Component.text(" (...)")
                             .color(NamedTextColor.GRAY)
-                            .hoverEvent(HoverEvent.showText(Espial.prefix.append(Component.text().color(NamedTextColor.WHITE).append(component)))));
+                            .hoverEvent(HoverEvent.showText(Espial.prefix.append(
+                                    Component.text().color(NamedTextColor.WHITE).append(component)))));
                 });
 
                 if (block.rolledBack()) {
                     msg.decorate(TextDecoration.STRIKETHROUGH);
                 }
-
                 contents.add(msg.build());
             });
         } else {
-            // grouped
+            // Grouped output in reverse chronological order
             Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
+            Map<BlockAction, Long> latestTimes = new HashMap<>();
+
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
-
                 BlockAction key = new BlockAction(displayName, block.actionType(), block.blockId());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
+                long time = block.time().getTime();
+                latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
             });
 
-            groupedBlocks.forEach((key, count) -> {
+            List<Map.Entry<BlockAction, Integer>> sortedEntries = new ArrayList<>(groupedBlocks.entrySet());
+            sortedEntries.sort((e1, e2) ->
+                    Long.compare(latestTimes.get(e2.getKey()), latestTimes.get(e1.getKey()))
+            );
+
+            sortedEntries.forEach(entry -> {
+                BlockAction key = entry.getKey();
+                int count = entry.getValue();
                 contents.add(Component.text()
                         .append(key.name())
                         .append(Component.space())
@@ -259,11 +267,9 @@ public class BlockLogService {
                         .append(Component.space())
                         .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
                         .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .build()
-                );
+                        .build());
             });
         }
-
         return contents;
     }
 
