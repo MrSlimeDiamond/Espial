@@ -26,7 +26,7 @@ public class NBTDataParser {
                     builder.append(
                             Component.text("Line ")
                                     .append(Component.text((i + 1) + ": "))
-                                    .color(NamedTextColor.GRAY)
+                                    .color(NamedTextColor.DARK_AQUA)
                     );
                     // Append the actual line content
                     builder.append(components.get(i));
