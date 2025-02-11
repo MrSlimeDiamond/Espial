@@ -38,7 +38,7 @@ public class SignInfoCommand implements CommandExecutor {
 
                         Component name = DisplayNameUtil.getDisplayName(target);
 
-                        var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was placed by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
+                        var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was last modified by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
 
                         var info = Component.text().append(Espial.prefix);
 
