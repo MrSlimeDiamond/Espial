@@ -43,15 +43,6 @@ public class Database {
     public void open(String connectionString) throws SQLException {
         conn = DriverManager.getConnection(connectionString);
 
-        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
-        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
-        queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
-        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
-        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
-        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
-        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
-
         String sql;
 
         // Databases need to be made differently on different databases.
@@ -81,6 +72,30 @@ public class Database {
             "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
             ")"
         ).execute();
+
+        // Create the nbt table
+        if (connectionString.contains("sqlite")) {
+            sql = "CREATE TABLE IF NOT EXISTS nbt (" +
+                    "id INTEGER PRIMARY KEY, " +
+                    "data TEXT" +
+                    ")";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS nbt (" +
+                    "id INT PRIMARY KEY, " +
+                    "data TEXT" +
+                    ")";
+        }
+
+        conn.prepareStatement(sql).execute();
+
+        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
+        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
+        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
+        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
+        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
     }
 
     /**
@@ -186,7 +201,15 @@ public class Database {
 
         insertAction.execute();
 
-        ResultSet rs = insertAction.getGeneratedKeys();
+        ResultSet rs;
+
+        try {
+            rs = insertAction.getGeneratedKeys();
+        } catch (SQLFeatureNotSupportedException e) {
+            // Try to use another approach (this should work for sqlite)
+            rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
+        }
+
         if (rs.next()) {
             int id = rs.getInt(1);
             return Optional.of(this.queryId(id));

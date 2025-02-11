@@ -9,15 +9,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.slimediamond.espial.nbt.NBTData;
 import net.slimediamond.espial.nbt.SignData;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonNBTData implements NBTData {
     @JsonProperty("rotation")
     private int rotation = 0;
 
-    @JsonProperty("sign")
-    private JsonSignData sign;
+    @JsonProperty("signData")
+    private JsonSignData signData = null; // We can't do Optionals for JSON
 
     @JsonProperty("waterlogged")
     private boolean waterlogged;
@@ -27,17 +27,18 @@ public class JsonNBTData implements NBTData {
     @JsonCreator
     public JsonNBTData(
             @JsonProperty("rotation") int rotation,
-            @JsonProperty("sign") JsonSignData sign,
+            @JsonProperty("signData") JsonSignData signData,
             @JsonProperty("waterlogged") boolean waterlogged
     ) {
         this.rotation = rotation;
-        this.sign = sign;
+        this.signData = signData;
         this.waterlogged = waterlogged;
     }
 
     @Override
-    public Optional<SignData> getSignData() {
-        return Optional.of(this.sign);
+    @Nullable
+    public SignData getSignData() {
+        return this.signData;
     }
 
     @Override
@@ -55,7 +56,7 @@ public class JsonNBTData implements NBTData {
     }
 
     public void setSignData(JsonSignData sign) {
-        this.sign = sign;
+        this.signData = sign;
     }
 
     public void setWaterlogged(boolean waterlogged) {
@@ -70,10 +71,8 @@ public class JsonNBTData implements NBTData {
 
     // Deserialization utility
     public static JsonNBTData deserialize(String json) throws JsonProcessingException {
-        System.out.println("Deserializing!");
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        //mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         return mapper.readValue(json, JsonNBTData.class);
     }
 }

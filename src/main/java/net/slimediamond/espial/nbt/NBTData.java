@@ -1,5 +1,6 @@
 package net.slimediamond.espial.nbt;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -11,7 +12,8 @@ public interface NBTData {
      * Get sign data for this block
      * @return If available, return sign data
      */
-    Optional<SignData> getSignData();
+    @Nullable
+    SignData getSignData();
 
     /**
      * Get a block's rotation value

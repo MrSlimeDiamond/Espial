@@ -48,7 +48,7 @@ public class SignInfoCommand implements CommandExecutor {
                         info.append(Component.newline());
                         info.append(Component.text("Date: ").color(NamedTextColor.DARK_AQUA).append(Component.text(date).color(NamedTextColor.WHITE)));
 
-                        NBTDataParser.parseNBT(target).ifPresent(info::append);
+                        target.getNBT().ifPresent(data -> NBTDataParser.parseNBT(data, block.blockState().type()).ifPresent(info::append));
 
                         builder.append(Component.text(" (...)").color(NamedTextColor.GRAY).hoverEvent(HoverEvent.showText(info)));
                         context.sendMessage(builder.build());

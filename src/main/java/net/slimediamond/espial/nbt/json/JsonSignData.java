@@ -11,10 +11,10 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonSignData implements SignData {
     @JsonProperty("front_text")
-    private List<String> frontComponents;
+    private final List<String> frontComponents;
 
     @JsonProperty("back_text")
-    private List<String> backComponents;
+    private final List<String> backComponents;
 
     @JsonCreator
     public JsonSignData(@JsonProperty("front_text") List<String> frontComponents,
