@@ -5,12 +5,10 @@ import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.nbt.NBTApplier;
-import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.transaction.EspialTransactionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.Operations;
-import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -19,7 +17,6 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 
 import java.sql.SQLException;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChangeBlockListener {
     private Database database;

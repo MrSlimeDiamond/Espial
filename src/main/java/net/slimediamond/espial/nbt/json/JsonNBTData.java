@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonNBTData implements NBTData {
-    @JsonProperty("rotation")
+    @JsonProperty("direction")
     private Direction direction;
 
     @JsonProperty("signData")
@@ -27,7 +27,7 @@ public class JsonNBTData implements NBTData {
 
     @JsonCreator
     public JsonNBTData(
-            @JsonProperty("rotation") Direction direction,
+            @JsonProperty("direction") Direction direction,
             @JsonProperty("signData") JsonSignData signData,
             @JsonProperty("waterlogged") boolean waterlogged
     ) {
