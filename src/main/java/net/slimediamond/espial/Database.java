@@ -37,8 +37,8 @@ public class Database {
     private PreparedStatement insertNBTdata;
     private PreparedStatement getNBTdata;
 
-    public Database(boolean logPlayerPosition) {
-        this.logPlayerPosition = logPlayerPosition;
+    public Database() {
+        this.logPlayerPosition = Espial.getInstance().getConfig().get().logPlayerPosition();
     }
 
     public void open(String connectionString) throws SQLException {
@@ -364,7 +364,6 @@ public class Database {
 
         boolean rolledBack = rs.getBoolean("rolled_back");
 
-        // TODO: Implementation in a different class.
         return (new BlockAction() {
             @Override
             public int getId() {
@@ -373,7 +372,6 @@ public class Database {
 
             @Override
             public String getUuid() {
-                // not just player uuid anymore...but pfffft
                 return playerUUID;
             }
 

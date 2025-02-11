@@ -67,14 +67,14 @@ public class Espial {
         this.config = this.reference.referenceTo(EspialConfiguration.class);
         this.reference.save();
 
-        database = new Database(this.config.get().logPlayerPosition());
+        database = new Database();
         database.open(this.config.get().jdbc());
     }
 
     @Listener
     public void onServerStarting(final StartingEngineEvent<Server> event) {
-        Sponge.eventManager().registerListeners(container, new ChangeBlockListener(database));
-        Sponge.eventManager().registerListeners(container, new InteractListener(database));
+        Sponge.eventManager().registerListeners(container, new ChangeBlockListener());
+        Sponge.eventManager().registerListeners(container, new InteractListener());
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());
     }
@@ -145,10 +145,10 @@ public class Espial {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.inspect")
-                        .executor(new InspectCommand(idParameter, database, container))
+                        .executor(new InspectCommand(idParameter, container))
                         .addParameter(idParameter)
                         .addChild(Command.builder()
-                                .executor(new InspectCommand(idParameter, database, container))
+                                .executor(new InspectCommand(idParameter, container))
                                 .build(), "stop", "s"
                         )
                         .build(), "inspect"
@@ -161,13 +161,13 @@ public class Espial {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollbackid")
-                        .executor(new RollbackIdCommand(database))
+                        .executor(new RollbackIdCommand())
                         .addParameter(CommandParameters.ROLLBACK_ID)
                         .build(), "rollbackid", "rbid"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.restoreid")
-                        .executor(new RestoreIdCommand(database))
+                        .executor(new RestoreIdCommand())
                         .addParameter(CommandParameters.ROLLBACK_ID)
                         .build(), "restoreid", "rsid"
                 )
@@ -177,7 +177,7 @@ public class Espial {
 
         event.register(this.container, Command.builder()
                 .permission("espial.command.whoplacedthis")
-                .executor(new WhoPlacedThisCommand(database))
+                .executor(new WhoPlacedThisCommand())
                 .build(), "whoplacedthis"
         );
 

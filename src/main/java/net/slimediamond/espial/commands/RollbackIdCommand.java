@@ -16,19 +16,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class RollbackIdCommand implements CommandExecutor {
-    private Database database;
-
-    public RollbackIdCommand(Database database) {
-        this.database = database;
-    }
-
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         // rollback <id>
         int id = context.requireOne(CommandParameters.ROLLBACK_ID);
 
         try {
-            BlockAction action = database.queryId(id);
+            BlockAction action = Espial.getInstance().getDatabase().queryId(id);
             TransactionStatus status = Espial.getInstance().getBlockLogService().rollback(action);
 
             if (status == TransactionStatus.SUCCESS) {

@@ -1,7 +1,6 @@
 package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.action.ActionType;
-import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.util.BlockUtil;
 import org.spongepowered.api.block.BlockType;
@@ -13,11 +12,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 
 public class InteractListener {
-    private Database database;
-
-    public InteractListener(Database database) {
-        this.database = database;
-    }
 
     @Listener
     public void onInteract(InteractBlockEvent.Secondary event) throws SQLException {
@@ -30,7 +24,7 @@ public class InteractListener {
             HashSet<BlockType> blocksToCheck = BlockUtil.builder().add(BlockUtil.CONTAINERS).add(BlockUtil.INTERACTIVE).build();
 
             if (blocksToCheck.contains(blockType)) {
-                database.insertAction(
+                Espial.getInstance().getDatabase().insertAction(
                         ActionType.INTERACT,
                         player,
                         event.block().world().formatted(),

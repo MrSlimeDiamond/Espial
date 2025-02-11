@@ -4,7 +4,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.util.DisplayNameUtil;
@@ -29,12 +28,10 @@ import java.util.concurrent.TimeUnit;
 
 public class InspectCommand implements CommandExecutor {
     private Parameter.Value<Integer> idParameter;
-    private Database database;
     private PluginContainer container;
 
-    public InspectCommand(Parameter.Value<Integer> idParameter, Database database, PluginContainer container) {
+    public InspectCommand(Parameter.Value<Integer> idParameter, PluginContainer container) {
         this.idParameter = idParameter;
-        this.database = database;
         this.container = container;
     }
 
@@ -61,7 +58,7 @@ public class InspectCommand implements CommandExecutor {
         int id = context.requireOne(idParameter);
 
         try {
-            BlockAction action = database.queryId(id);
+            BlockAction action = Espial.getInstance().getDatabase().queryId(id);
 
             if (action == null) {
                 return CommandResult.error(Component.text("Unable to find a database index with that ID!"));

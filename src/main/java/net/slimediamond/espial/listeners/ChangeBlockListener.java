@@ -2,7 +2,6 @@ package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.action.ActionType;
-import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.nbt.NBTApplier;
 import net.slimediamond.espial.transaction.EspialTransactionType;
@@ -19,10 +18,6 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class ChangeBlockListener {
-    private Database database;
-    public ChangeBlockListener(Database database) {
-        this.database = database;
-    }
 
     @Listener
     public void onBlockAction(ChangeBlockEvent.All event) {
@@ -61,7 +56,7 @@ public class ChangeBlockListener {
             if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
 
             try {
-                Optional<BlockAction> actionOptional = database.insertAction(
+                Optional<BlockAction> actionOptional = Espial.getInstance().getDatabase().insertAction(
                         ActionType.fromOperation(transaction.operation()),
                         living,
                         transaction.finalReplacement().world().formatted(),
