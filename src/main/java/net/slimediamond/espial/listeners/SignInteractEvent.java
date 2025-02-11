@@ -5,6 +5,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.nbt.NBTApplier;
 import net.slimediamond.espial.nbt.NBTData;
 import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.nbt.json.JsonSignData;
@@ -46,9 +47,10 @@ public class SignInteractEvent {
                             .toList();
                 }
 
-                // FIXME: Attributes: rotation, and waterlogged are not detected.
-                NBTData nbtData = new JsonNBTData(0, new JsonSignData(frontSerialized, backSerialized), false);
-                block.get().setNBT(nbtData);
+                JsonNBTData nbtData = new JsonNBTData();
+                nbtData.setSignData(new JsonSignData(frontSerialized, backSerialized));
+                // process other elements
+                NBTApplier.applyData(nbtData, event.sign().block(), block.get());
             } else {
                 Espial.getInstance().getLogger().error("Could not insert a sign modification event because Database#insertAction returned Optional.empty(). (is the database down?)");
             }

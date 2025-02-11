@@ -8,13 +8,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.slimediamond.espial.nbt.NBTData;
 import net.slimediamond.espial.nbt.SignData;
+import org.spongepowered.api.util.Direction;
 
 import javax.annotation.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonNBTData implements NBTData {
     @JsonProperty("rotation")
-    private int rotation = 0;
+    private Direction direction;
 
     @JsonProperty("signData")
     private JsonSignData signData = null; // We can't do Optionals for JSON
@@ -26,11 +27,11 @@ public class JsonNBTData implements NBTData {
 
     @JsonCreator
     public JsonNBTData(
-            @JsonProperty("rotation") int rotation,
+            @JsonProperty("rotation") Direction direction,
             @JsonProperty("signData") JsonSignData signData,
             @JsonProperty("waterlogged") boolean waterlogged
     ) {
-        this.rotation = rotation;
+        this.direction = direction;
         this.signData = signData;
         this.waterlogged = waterlogged;
     }
@@ -42,8 +43,8 @@ public class JsonNBTData implements NBTData {
     }
 
     @Override
-    public int getRotation() {
-        return this.rotation;
+    public Direction getDirection() {
+        return this.direction;
     }
 
     @Override
@@ -51,8 +52,8 @@ public class JsonNBTData implements NBTData {
         return this.waterlogged;
     }
 
-    public void setRotation(int rotation) {
-        this.rotation = rotation;
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 
     public void setSignData(JsonSignData sign) {

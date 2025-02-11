@@ -1,5 +1,7 @@
 package net.slimediamond.espial.nbt;
 
+import org.spongepowered.api.util.Direction;
+
 import javax.annotation.Nullable;
 import java.util.Optional;
 
@@ -16,10 +18,10 @@ public interface NBTData {
     SignData getSignData();
 
     /**
-     * Get a block's rotation value
-     * @return Block rotation
+     * Get a block's direction
+     * @return Block direction
      */
-    int getRotation();
+    Direction getDirection();
 
     /**
      * Whether the block is waterlogged

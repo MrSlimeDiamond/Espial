@@ -228,9 +228,7 @@ public class BlockLogService {
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                         ));
 
-                // TODO: StoredBlock#getBlockType()
-                BlockType blockId = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
-                block.getNBT().flatMap(data -> NBTDataParser.parseNBT(data, blockId)).ifPresent(component -> {
+                block.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
                     msg.append(Component.text(" (...)")
                             .color(NamedTextColor.GRAY)
                             .hoverEvent(HoverEvent.showText(Espial.prefix.append(
