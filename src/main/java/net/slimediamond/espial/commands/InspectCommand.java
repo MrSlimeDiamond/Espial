@@ -4,6 +4,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.util.DisplayNameUtil;
@@ -13,7 +14,6 @@ import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
@@ -21,19 +21,11 @@ import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.math.vector.Vector3d;
-import org.spongepowered.plugin.PluginContainer;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 public class InspectCommand implements CommandExecutor {
-    private Parameter.Value<Integer> idParameter;
-    private PluginContainer container;
-
-    public InspectCommand(Parameter.Value<Integer> idParameter, PluginContainer container) {
-        this.idParameter = idParameter;
-        this.container = container;
-    }
 
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
@@ -44,7 +36,7 @@ public class InspectCommand implements CommandExecutor {
             return CommandResult.success();
         }
 
-        if (!context.hasAny(idParameter)) {
+        if (!context.hasAny(CommandParameters.GENERIC_ID)) {
             if (Espial.blockOutlines.containsKey(player)) {
                 Espial.blockOutlines.get(player).cancel();
                 Espial.blockOutlines.remove(player);
@@ -55,7 +47,7 @@ public class InspectCommand implements CommandExecutor {
             return CommandResult.success();
         }
 
-        int id = context.requireOne(idParameter);
+        int id = context.requireOne(CommandParameters.GENERIC_ID);
 
         try {
             BlockAction action = Espial.getInstance().getDatabase().queryId(id);
@@ -133,7 +125,7 @@ public class InspectCommand implements CommandExecutor {
                 for (double[] offset : offsets) {
                     player.spawnParticles(particleEffect, action.asSpongeBlock().location().get().position().add(offset[0], offset[1], offset[2]));
                 }
-            }).interval(1, TimeUnit.SECONDS).plugin(container).build();
+            }).interval(1, TimeUnit.SECONDS).plugin(Espial.getInstance().getContainer()).build();
 
             ScheduledTask scheduledTask = Sponge.game().asyncScheduler().submit(task);
             Espial.blockOutlines.put(player, scheduledTask);

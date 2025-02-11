@@ -19,7 +19,7 @@ public class RestoreIdCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         // restore <id>
-        int id = context.requireOne(CommandParameters.ROLLBACK_ID);
+        int id = context.requireOne(CommandParameters.GENERIC_ID);
 
         try {
             BlockAction action = Espial.getInstance().getDatabase().queryId(id);
