@@ -20,16 +20,31 @@ public class SignInteractEvent {
     @Listener
     public void onSignChangeEvent(ChangeSignEvent event) throws SQLException {
         if (event.cause().root() instanceof Living source) {
-            //ArrayList<StoredBlock> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, null, null);
-
             Optional<StoredBlock> block = Espial.getInstance().getDatabase().insertAction(ActionType.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
 
             if (block.isPresent()) {
-                List<Component> front = event.text().get();
-                List<Component> back = event.sign().backText().lines().get();
+                List<Component> newText = event.text().get();
+                List<Component> currentFront = event.sign().frontText().lines().get();
+                List<Component> currentBack = event.sign().backText().lines().get();
 
-                List<String> frontSerialized = front.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
-                List<String> backSerialized = back.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                List<String> frontSerialized;
+                List<String> backSerialized;
+
+                if (event.isFrontSide()) {
+                    frontSerialized = newText.stream()
+                            .map(component -> GsonComponentSerializer.gson().serialize(component))
+                            .toList();
+                    backSerialized = currentBack.stream()
+                            .map(component -> GsonComponentSerializer.gson().serialize(component))
+                            .toList();
+                } else {
+                    frontSerialized = currentFront.stream()
+                            .map(component -> GsonComponentSerializer.gson().serialize(component))
+                            .toList();
+                    backSerialized = newText.stream()
+                            .map(component -> GsonComponentSerializer.gson().serialize(component))
+                            .toList();
+                }
 
                 // FIXME: Attributes: rotation, and waterlogged are not detected.
                 NBTData nbtData = new JsonNBTData(0, new JsonSignData(frontSerialized, backSerialized), false);
