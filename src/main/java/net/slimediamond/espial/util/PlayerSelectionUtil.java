@@ -12,9 +12,7 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 public class PlayerSelectionUtil {
     public static Optional<Pair<ServerLocation, ServerLocation>> getWorldEditRegion(Player player) {
