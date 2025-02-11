@@ -1,6 +1,6 @@
 package net.slimediamond.espial.listeners;
 
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
@@ -61,7 +61,7 @@ public class ChangeBlockListener {
             if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
 
             try {
-                Optional<StoredBlock> storedBlock = database.insertAction(
+                Optional<BlockAction> actionOptional = database.insertAction(
                         ActionType.fromOperation(transaction.operation()),
                         living,
                         transaction.finalReplacement().world().formatted(),
@@ -69,7 +69,7 @@ public class ChangeBlockListener {
                         null
                 );
 
-                storedBlock.ifPresent(block -> {
+                actionOptional.ifPresent(action -> {
                     BlockSnapshot blockSnapshot;
                     if (transaction.operation().equals(Operations.PLACE.get())) {
                         blockSnapshot = transaction.defaultReplacement();
@@ -77,7 +77,7 @@ public class ChangeBlockListener {
                         blockSnapshot = transaction.original();
                     }
 
-                    NBTApplier.applyData(blockSnapshot.state(), block);
+                    NBTApplier.applyData(blockSnapshot.state(), action);
                 });
             } catch (SQLException e) {
                 throw new RuntimeException(e);

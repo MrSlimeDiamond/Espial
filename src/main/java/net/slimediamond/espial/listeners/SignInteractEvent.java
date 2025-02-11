@@ -4,9 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.nbt.NBTApplier;
-import net.slimediamond.espial.nbt.NBTData;
 import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.nbt.json.JsonSignData;
 import org.spongepowered.api.entity.living.Living;
@@ -21,7 +20,7 @@ public class SignInteractEvent {
     @Listener
     public void onSignChangeEvent(ChangeSignEvent event) throws SQLException {
         if (event.cause().root() instanceof Living source) {
-            Optional<StoredBlock> block = Espial.getInstance().getDatabase().insertAction(ActionType.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
+            Optional<BlockAction> block = Espial.getInstance().getDatabase().insertAction(ActionType.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
 
             if (block.isPresent()) {
                 List<Component> newText = event.text().get();

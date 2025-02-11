@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import net.slimediamond.espial.nbt.NBTDataParser;
@@ -33,8 +33,8 @@ public class SignInfoCommand implements CommandExecutor {
                     String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(block.blockState().type()).formatted();
 
                     try {
-                        ArrayList<StoredBlock> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
-                        StoredBlock target = blocks.get(0); // top index
+                        ArrayList<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
+                        BlockAction target = blocks.get(0); // top index
 
                         Component name = DisplayNameUtil.getDisplayName(target);
 

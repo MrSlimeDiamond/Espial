@@ -3,6 +3,7 @@ package net.slimediamond.espial;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.nbt.NBTData;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -105,10 +106,10 @@ public class Database {
      * @param world The world which the action happened in
      * @param transaction Block transaction (for ChangeBlockEvent)
      * @param blockSnapshot Block snapshot (for InteractBlockEvent)
-     * @return {@link Optional} for a {@link StoredBlock} that was created
+     * @return {@link Optional} for a {@link BlockAction} that was created
      * @throws SQLException
      */
-    public Optional<StoredBlock> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+    public Optional<BlockAction> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
         String uuid;
 
         if (living == null) { // Server (or similar)
@@ -218,7 +219,7 @@ public class Database {
         }
     }
 
-    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public ArrayList<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -235,7 +236,7 @@ public class Database {
 
         ResultSet rs = queryCoords.executeQuery();
 
-        ArrayList blocks = new ArrayList<StoredBlock>();
+        ArrayList blocks = new ArrayList<BlockAction>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));
@@ -246,7 +247,7 @@ public class Database {
 
     }
 
-    public StoredBlock queryId(int id) throws SQLException {
+    public BlockAction queryId(int id) throws SQLException {
         queryId.setInt(1, id);
 
         ResultSet rs = queryId.executeQuery();
@@ -257,7 +258,7 @@ public class Database {
         return null;
     }
 
-    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public ArrayList<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -290,7 +291,7 @@ public class Database {
 
         ResultSet rs = queryRange.executeQuery();
 
-        ArrayList<StoredBlock> blocks = new ArrayList<>();
+        ArrayList<BlockAction> blocks = new ArrayList<>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));
@@ -322,7 +323,7 @@ public class Database {
         }
     }
 
-    private StoredBlock blockFromRs(ResultSet rs) throws SQLException {
+    private BlockAction blockFromRs(ResultSet rs) throws SQLException {
         int uid = rs.getInt("id");
         int type = rs.getInt("type");
         Timestamp timestamp = rs.getTimestamp("time");
@@ -364,7 +365,7 @@ public class Database {
         boolean rolledBack = rs.getBoolean("rolled_back");
 
         // TODO: Implementation in a different class.
-        return (new StoredBlock() {
+        return (new BlockAction() {
             @Override
             public int getId() {
                 return uid;

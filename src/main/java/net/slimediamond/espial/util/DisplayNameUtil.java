@@ -3,7 +3,7 @@ package net.slimediamond.espial.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 
@@ -12,8 +12,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class DisplayNameUtil {
-    public static Component getDisplayName(StoredBlock block) {
-        String uuidString = block.getUuid();
+    public static Component getDisplayName(BlockAction action) {
+        String uuidString = action.getUuid();
 
         if (uuidString.equals("0")) {
             return Component.text("(server)").color(NamedTextColor.YELLOW).decorate(TextDecoration.ITALIC);

@@ -1,6 +1,6 @@
 package net.slimediamond.espial.nbt;
 
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.nbt.json.JsonNBTData;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.Keys;
@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NBTApplier {
 
-    public static void applyData(BlockState blockState, StoredBlock storedBlock) {
-        applyData(new JsonNBTData(), blockState, storedBlock);
+    public static void applyData(BlockState blockState, BlockAction blockAction) {
+        applyData(new JsonNBTData(), blockState, blockAction);
     }
 
-    public static void applyData(JsonNBTData nbtData, BlockState blockState, StoredBlock storedBlock) {
+    public static void applyData(JsonNBTData nbtData, BlockState blockState, BlockAction blockAction) {
         AtomicBoolean applyData = new AtomicBoolean(false);
 
         if (blockState.supports(Keys.DIRECTION)) {
@@ -33,7 +33,7 @@ public class NBTApplier {
         // Only apply the data if it's relevant,
         // so we don't take up as much storage space.
         if (applyData.get()) {
-            storedBlock.setNBT(nbtData);
+            blockAction.setNBT(nbtData);
         }
     }
 }

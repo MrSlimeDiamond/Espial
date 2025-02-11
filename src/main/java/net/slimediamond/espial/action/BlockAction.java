@@ -1,6 +1,5 @@
-package net.slimediamond.espial;
+package net.slimediamond.espial.action;
 
-import net.slimediamond.espial.action.ActionType;
 import net.slimediamond.espial.nbt.NBTData;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -10,7 +9,7 @@ import org.spongepowered.math.vector.Vector3d;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-public interface StoredBlock {
+public interface BlockAction {
     /**
      * The ID (primary key value) of the record.
      * @return Internal ID
