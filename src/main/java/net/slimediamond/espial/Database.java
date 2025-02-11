@@ -366,38 +366,38 @@ public class Database {
         // TODO: Implementation in a different class.
         return (new StoredBlock() {
             @Override
-            public int uid() {
+            public int getId() {
                 return uid;
             }
 
             @Override
-            public String uuid() {
+            public String getUuid() {
                 // not just player uuid anymore...but pfffft
                 return playerUUID;
             }
 
             @Override
-            public Timestamp time() {
+            public Timestamp getTimestamp() {
                 return timestamp;
             }
 
             @Override
-            public ActionType actionType() {
+            public ActionType getActionType() {
                 return ActionType.fromId(type);
             }
 
             @Override
-            public String blockId() {
+            public String getBlockId() {
                 return blockId;
             }
 
             @Override
-            public String world() {
+            public String getWorld() {
                 return world;
             }
 
             @Override
-            public @Nullable Vector3d playerLocation() {
+            public @Nullable Vector3d getActorPosition() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
                 } else {
@@ -406,7 +406,7 @@ public class Database {
             }
 
             @Override
-            public Vector3d playerRotation() {
+            public Vector3d getActorRotation() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
                 } else {
@@ -415,27 +415,27 @@ public class Database {
             }
 
             @Override
-            public String itemInHand() {
+            public String getActorItem() {
                 return itemInHand;
             }
 
             @Override
-            public int x() {
+            public int getX() {
                 return x;
             }
 
             @Override
-            public int y() {
+            public int getY() {
                 return y;
             }
 
             @Override
-            public int z() {
+            public int getZ() {
                 return z;
             }
 
             @Override
-            public boolean rolledBack() {
+            public boolean isRolledBack() {
                 return rolledBack;
             }
 

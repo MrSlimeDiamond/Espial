@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 
 public class DisplayNameUtil {
     public static Component getDisplayName(StoredBlock block) {
-        String uuidString = block.uuid();
+        String uuidString = block.getUuid();
 
         if (uuidString.equals("0")) {
             return Component.text("(server)").color(NamedTextColor.YELLOW).decorate(TextDecoration.ITALIC);

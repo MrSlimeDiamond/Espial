@@ -60,29 +60,29 @@ public class BlockLogService {
     }
 
     public ActionStatus rollback(StoredBlock block) throws SQLException {
-        if (block.rolledBack()) return ActionStatus.ALREADY_DONE;
+        if (block.isRolledBack()) return ActionStatus.ALREADY_DONE;
 
         // roll back this specific ID to another state
-        if (block.actionType() == ActionType.BREAK) {
+        if (block.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.getBlockId().split(":")[0], block.getBlockId().split(":")[1]));
 
 //            if (blockType instanceof Sign sign) {
 //                sign
 //            }
 
-            block.sponge().location().get().setBlock(blockType.defaultState());
+            block.asSpongeBlock().location().get().setBlock(blockType.defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), true);
+            Espial.getInstance().getDatabase().setRolledBack(block.getId(), true);
 
             return ActionStatus.SUCCESS;
-        } if (block.actionType() == ActionType.PLACE) {
+        } if (block.getActionType() == ActionType.PLACE) {
             // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
             // (it'll be fine, probably)
 
-            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), true);
+            block.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            Espial.getInstance().getDatabase().setRolledBack(block.getId(), true);
             return ActionStatus.SUCCESS;
         } else {
             return ActionStatus.UNSUPPORTED;
@@ -90,23 +90,23 @@ public class BlockLogService {
     }
 
     public ActionStatus restore(StoredBlock block) throws SQLException {
-        if (!block.rolledBack()) return ActionStatus.ALREADY_DONE;
+        if (!block.isRolledBack()) return ActionStatus.ALREADY_DONE;
 
         // roll forwards this specific ID to another state
-        if (block.actionType() == ActionType.BREAK) {
+        if (block.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
 
-            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            block.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), false);
+            Espial.getInstance().getDatabase().setRolledBack(block.getId(), false);
 
             return ActionStatus.SUCCESS;
-        } if (block.actionType() == ActionType.PLACE) {
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+        } if (block.getActionType() == ActionType.PLACE) {
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.getBlockId().split(":")[0], block.getBlockId().split(":")[1]));
 
-            block.sponge().location().get().setBlock(blockType.defaultState());
+            block.asSpongeBlock().location().get().setBlock(blockType.defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), false);
+            Espial.getInstance().getDatabase().setRolledBack(block.getId(), false);
             return ActionStatus.SUCCESS;
         } else {
             return ActionStatus.UNSUPPORTED;
@@ -124,8 +124,8 @@ public class BlockLogService {
                     : Espial.getInstance().getDatabase().queryBlock(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), uuidString, blockId, timestamp);
 
             for (StoredBlock block : blocks) {
-                if (block.rolledBack() && type == EspialTransactionType.ROLLBACK) continue;
-                ids.add(block.uid());
+                if (block.isRolledBack() && type == EspialTransactionType.ROLLBACK) continue;
+                ids.add(block.getId());
 
                 switch (type) {
                     case ROLLBACK:
@@ -205,25 +205,25 @@ public class BlockLogService {
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.time().getTime()));
+                String formattedDate = dateFormat.format(new Date(block.getTimestamp().getTime()));
                 var msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
                         .append(Component.space())
-                        .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(Component.text(block.getActionType().humanReadableVerb()).color(NamedTextColor.GREEN))
                         .append(Component.space())
-                        .append(Component.text(block.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
+                        .append(Component.text(block.getBlockId().split(":")[1]).color(NamedTextColor.GREEN))
+                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.getId()))
                         .hoverEvent(HoverEvent.showText(Espial.prefix
                                 .append(Component.newline())
                                 .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.uid()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(block.getId()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.itemInHand()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(block.getActorItem()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                         ));
@@ -235,7 +235,7 @@ public class BlockLogService {
                                     Component.text().color(NamedTextColor.WHITE).append(component)))));
                 });
 
-                if (block.rolledBack()) {
+                if (block.isRolledBack()) {
                     msg.decorate(TextDecoration.STRIKETHROUGH);
                 }
                 contents.add(msg.build());
@@ -247,9 +247,9 @@ public class BlockLogService {
 
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
-                BlockAction key = new BlockAction(displayName, block.actionType(), block.blockId());
+                BlockAction key = new BlockAction(displayName, block.getActionType(), block.getBlockId());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
-                long time = block.time().getTime();
+                long time = block.getTimestamp().getTime();
                 latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
             });
 

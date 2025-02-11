@@ -43,7 +43,7 @@ public class SignInfoCommand implements CommandExecutor {
                         var info = Component.text().append(Espial.prefix);
 
                         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                        String date = dateFormat.format(target.time());
+                        String date = dateFormat.format(target.getTimestamp());
 
                         info.append(Component.newline());
                         info.append(Component.text("Date: ").color(NamedTextColor.DARK_AQUA).append(Component.text(date).color(NamedTextColor.WHITE)));

@@ -4,7 +4,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.StoredBlock;
@@ -19,7 +18,6 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
@@ -27,9 +25,6 @@ import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.plugin.PluginContainer;
 
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class InspectCommand implements CommandExecutor {
@@ -72,25 +67,25 @@ public class InspectCommand implements CommandExecutor {
                 return CommandResult.error(Component.text("Unable to find a database index with that ID!"));
             }
 
-            Vector3d playerLocation = block.playerLocation();
-            Vector3d playerRotation = block.playerRotation();
+            Vector3d playerLocation = block.getActorPosition();
+            Vector3d playerRotation = block.getActorRotation();
 
             if (playerRotation != null && playerLocation != null) {
                 player.setPosition(playerLocation);
                 player.setRotation(playerRotation);
             } else {
-                player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
+                player.setPosition(new Vector3d(block.getX(), block.getY(), block.getZ()));
             }
 
             Component displayName = DisplayNameUtil.getDisplayName(block);
             String undoActionMessage;
             String undoCommand;
-            if (block.rolledBack()) {
+            if (block.isRolledBack()) {
                 undoActionMessage = "RESTORE";
-                undoCommand = "/espial restoreid " + block.uid();
+                undoCommand = "/espial restoreid " + block.getId();
             } else {
                 undoActionMessage = "ROLLBACK";
-                undoCommand = "/espial rollbackid " + block.uid();
+                undoCommand = "/espial rollbackid " + block.getId();
             }
 
             PaginationList.builder()
@@ -100,10 +95,10 @@ public class InspectCommand implements CommandExecutor {
                             .append(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("STOP").color(NamedTextColor.RED).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand("/espial inspect stop")))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text("TP").color(NamedTextColor.GREEN).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(SpongeComponents.executeCallback(cause -> {
                                 if (playerLocation != null && playerRotation != null) {
-                                    player.setPosition(block.playerLocation());
-                                    player.setRotation(block.playerRotation());
+                                    player.setPosition(block.getActorPosition());
+                                    player.setRotation(block.getActorRotation());
                                 } else {
-                                    player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
+                                    player.setPosition(new Vector3d(block.getX(), block.getY(), block.getZ()));
                                 }
                             })))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text(undoActionMessage).color(NamedTextColor.YELLOW)).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand(undoCommand))
@@ -112,13 +107,13 @@ public class InspectCommand implements CommandExecutor {
                             .append(displayName)
                             .append(Component.newline())
                             .append(Component.text("Action: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.actionType().toString()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(block.getActionType().toString()).color(NamedTextColor.YELLOW))
                             .append(Component.newline())
                             .append(Component.text("Coordinates: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.x() + " " + block.y() + " " + block.z()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(block.getX() + " " + block.getY() + " " + block.getZ()).color(NamedTextColor.YELLOW))
                             .append(Component.newline())
                             .append(Component.text("Tool: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.itemInHand()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(block.getActorItem()).color(NamedTextColor.YELLOW))
                     )
                     .sendTo((Audience) context.cause().root());
 
@@ -139,7 +134,7 @@ public class InspectCommand implements CommandExecutor {
 
             Task task = Task.builder().execute(() -> {
                 for (double[] offset : offsets) {
-                    player.spawnParticles(particleEffect, block.sponge().location().get().position().add(offset[0], offset[1], offset[2]));
+                    player.spawnParticles(particleEffect, block.asSpongeBlock().location().get().position().add(offset[0], offset[1], offset[2]));
                 }
             }).interval(1, TimeUnit.SECONDS).plugin(container).build();
 
