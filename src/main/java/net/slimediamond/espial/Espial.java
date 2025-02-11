@@ -176,13 +176,13 @@ public class Espial {
         event.register(this.container, espialCommand, "espial", "es");
 
         event.register(this.container, Command.builder()
-                .permission("espial.whoplacedthis")
+                .permission("espial.command.whoplacedthis")
                 .executor(new WhoPlacedThisCommand(database))
                 .build(), "whoplacedthis"
         );
 
         event.register(this.container, Command.builder()
-                .permission("espial.signinfo")
+                .permission("espial.command.signinfo")
                 .executor(new SignInfoCommand())
                 .build(), "signinfo"
         );
