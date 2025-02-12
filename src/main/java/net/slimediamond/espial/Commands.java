@@ -1,12 +1,18 @@
 package net.slimediamond.espial;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.commands.*;
 import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.util.PlayerSelectionUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.Command;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.plugin.PluginContainer;
 
 import java.util.ArrayList;
@@ -42,6 +48,20 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
                         .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.LOOKUP))
                         .build(), "lookup", "l"
+                )
+                .addChild(Command.builder()
+                        .permission("espial.command.lookup")
+                        .shortDescription(Component.text("Look up blocks within 5 blocks of you"))
+                        .executor(context -> {
+                            if (context.cause().root() instanceof Player player) {
+                                Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
+                                Espial.getInstance().getBlockLogService().process(locations.getLeft(), locations.getRight(), context.cause().audience(), EspialTransactionType.LOOKUP, true, null, null, null, false);
+                                return CommandResult.success();
+                            } else {
+                                context.sendMessage(Component.text("You must be a player to use this.").color(NamedTextColor.RED));
+                                return CommandResult.success();
+                            }
+                        }).build(), "near"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollback")
