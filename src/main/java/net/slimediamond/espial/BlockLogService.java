@@ -107,20 +107,6 @@ public class BlockLogService {
         return TransactionStatus.UNSUPPORTED;
     }
 
-    public void setSignData(BlockAction action) {
-        action.getServerLocation().blockEntity().ifPresent(tileEntity -> {
-            action.getNBT().ifPresent(nbtData -> {
-                if (nbtData.getSignData() != null) {
-                    List<Component> components = new ArrayList<>();
-
-                    nbtData.getSignData().getFrontComponents().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
-
-                    tileEntity.offer(Keys.SIGN_LINES, components);
-                }
-            });
-        });
-    }
-
     public TransactionStatus restore(BlockAction action) throws SQLException {
         if (!action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
 
@@ -157,6 +143,20 @@ public class BlockLogService {
         }
 
         return TransactionStatus.UNSUPPORTED;
+    }
+
+    public void setSignData(BlockAction action) {
+        action.getServerLocation().blockEntity().ifPresent(tileEntity -> {
+            action.getNBT().ifPresent(nbtData -> {
+                if (nbtData.getSignData() != null) {
+                    List<Component> components = new ArrayList<>();
+
+                    nbtData.getSignData().getFrontComponents().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
+
+                    tileEntity.offer(Keys.SIGN_LINES, components);
+                }
+            });
+        });
     }
 
     public void process(ServerLocation min, ServerLocation max, Audience audience, EspialTransactionType type, boolean isRange, @Nullable Timestamp timestamp, @Nullable UUID uuid, @Nullable BlockState blockState, boolean single) {
