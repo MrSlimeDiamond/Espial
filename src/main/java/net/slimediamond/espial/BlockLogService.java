@@ -66,13 +66,12 @@ public class BlockLogService {
         // roll back this specific ID to another state
         if (action.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(action.getBlockId().split(":")[0], action.getBlockId().split(":")[1]));
 
 //            if (blockType instanceof Sign sign) {
 //                sign
 //            }
 
-            action.asSpongeBlock().location().get().setBlock(blockType.defaultState());
+            action.getServerLocation().setBlock(action.getState());
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
 
@@ -82,7 +81,7 @@ public class BlockLogService {
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
             // (it'll be fine, probably)
 
-            action.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
             return TransactionStatus.SUCCESS;
         } else {
@@ -97,15 +96,13 @@ public class BlockLogService {
         if (action.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
 
-            action.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
 
             return TransactionStatus.SUCCESS;
         } if (action.getActionType() == ActionType.PLACE) {
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(action.getBlockId().split(":")[0], action.getBlockId().split(":")[1]));
-
-            action.asSpongeBlock().location().get().setBlock(blockType.defaultState());
+            action.getServerLocation().setBlock(action.getState());
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
             return TransactionStatus.SUCCESS;

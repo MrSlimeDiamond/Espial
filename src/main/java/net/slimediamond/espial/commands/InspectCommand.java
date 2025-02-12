@@ -123,7 +123,7 @@ public class InspectCommand implements CommandExecutor {
 
             Task task = Task.builder().execute(() -> {
                 for (double[] offset : offsets) {
-                    player.spawnParticles(particleEffect, action.asSpongeBlock().location().get().position().add(offset[0], offset[1], offset[2]));
+                    player.spawnParticles(particleEffect, action.getServerLocation().position().add(offset[0], offset[1], offset[2]));
                 }
             }).interval(1, TimeUnit.SECONDS).plugin(Espial.getInstance().getContainer()).build();
 

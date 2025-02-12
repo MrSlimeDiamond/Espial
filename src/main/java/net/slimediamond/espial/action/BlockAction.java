@@ -3,11 +3,16 @@ package net.slimediamond.espial.action;
 import net.slimediamond.espial.nbt.NBTData;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.Timestamp;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface BlockAction {
     /**
@@ -100,13 +105,24 @@ public interface BlockAction {
      */
     Optional<NBTData> getNBT();
 
-    // Not scuffed at all.
+    default ServerLocation getServerLocation() {
+        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
+    }
 
-    /**
-     * Get this block as a Sponge block (as it currently stands, not when the block was modified)
-     * @return Sponge block
-     */
-    default BlockSnapshot asSpongeBlock() {
-        return BlockSnapshot.builder().from(ServerLocation.of(ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ())).build();
+    default BlockType getBlockType() {
+        return BlockTypes.registry().value(ResourceKey.of(
+                getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
+                getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+    }
+
+    default BlockState getState() {
+        AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
+        this.getNBT().ifPresent(nbtData -> {
+            //blockState.set(blockState.get().with(Keys.IS_WATERLOGGED, nbtData.isWaterlogged()).get());
+            if (nbtData.getDirection() != null) {
+                blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+            }
+        });
+        return blockState.get();
     }
 }
