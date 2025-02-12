@@ -5,8 +5,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.slimediamond.espial.Commands;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.CommandParameters;
+import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -14,7 +16,6 @@ import org.spongepowered.api.command.parameter.Parameter;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class HelpCommand implements CommandExecutor {
     @Override
@@ -24,7 +25,8 @@ public class HelpCommand implements CommandExecutor {
         // Show help for a specific command (if it exists)
         if (context.hasAny(CommandParameters.HELP_COMMAND)) {
             String command = context.requireOne(CommandParameters.HELP_COMMAND);
-            Espial.getInstance().getEspialCommand().subcommands().stream().filter(cmd -> cmd.aliases().contains(command)).findFirst().ifPresent(subcommand -> {
+            // FIXME: Stuff like /help lookup will work for /es lookup, but something else like /help whoplacedthis doesn't
+            Commands.commands.get(0).subcommands().stream().filter(cmd -> cmd.aliases().contains(command)).findFirst().ifPresent(subcommand -> {
                 String name = subcommand.aliases().stream().findFirst().get();
                 var builder = Component.text()
                         .append(Espial.prefix)
@@ -69,8 +71,10 @@ public class HelpCommand implements CommandExecutor {
                 contents.add(builder.build());
             });
         } else {
+            // FIXME: Other root commands (like /whoplacedthis)
             context.sendMessage(Espial.prefix.append(Component.text("Help")));
-            List<Parameter.Subcommand> sortedSubcommands = Espial.getInstance().getEspialCommand().subcommands().stream()
+            Command.Parameterized command = Commands.commands.get(0);
+            List<Parameter.Subcommand> sortedSubcommands = command.subcommands().stream()
                     .sorted(Comparator.comparing(subcommand -> subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
                     .toList();
 

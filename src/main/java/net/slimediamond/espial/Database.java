@@ -1,7 +1,11 @@
 package net.slimediamond.espial;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.nbt.json.JsonNBTData;
+import net.slimediamond.espial.nbt.NBTData;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
@@ -33,21 +37,12 @@ public class Database {
     private PreparedStatement insertNBTdata;
     private PreparedStatement getNBTdata;
 
-    public Database(boolean logPlayerPosition) {
-        this.logPlayerPosition = logPlayerPosition;
+    public Database() {
+        this.logPlayerPosition = Espial.getInstance().getConfig().get().logPlayerPosition();
     }
 
     public void open(String connectionString) throws SQLException {
         conn = DriverManager.getConnection(connectionString);
-
-        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
-        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
-        queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
-        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
-        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
-        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
-        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
 
         String sql;
 
@@ -78,6 +73,30 @@ public class Database {
             "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
             ")"
         ).execute();
+
+        // Create the nbt table
+        if (connectionString.contains("sqlite")) {
+            sql = "CREATE TABLE IF NOT EXISTS nbt (" +
+                    "id INTEGER PRIMARY KEY, " +
+                    "data TEXT" +
+                    ")";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS nbt (" +
+                    "id INT PRIMARY KEY, " +
+                    "data TEXT" +
+                    ")";
+        }
+
+        conn.prepareStatement(sql).execute();
+
+        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
+        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
+        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
+        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
+        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
     }
 
     /**
@@ -87,10 +106,10 @@ public class Database {
      * @param world The world which the action happened in
      * @param transaction Block transaction (for ChangeBlockEvent)
      * @param blockSnapshot Block snapshot (for InteractBlockEvent)
-     * @return {@link Optional} for a {@link StoredBlock} that was created
+     * @return {@link Optional} for a {@link BlockAction} that was created
      * @throws SQLException
      */
-    public Optional<StoredBlock> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+    public Optional<BlockAction> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
         String uuid;
 
         if (living == null) { // Server (or similar)
@@ -183,7 +202,15 @@ public class Database {
 
         insertAction.execute();
 
-        ResultSet rs = insertAction.getGeneratedKeys();
+        ResultSet rs;
+
+        try {
+            rs = insertAction.getGeneratedKeys();
+        } catch (SQLFeatureNotSupportedException e) {
+            // Try to use another approach (this should work for sqlite)
+            rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
+        }
+
         if (rs.next()) {
             int id = rs.getInt(1);
             return Optional.of(this.queryId(id));
@@ -192,7 +219,7 @@ public class Database {
         }
     }
 
-    public ArrayList<StoredBlock> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public ArrayList<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -209,7 +236,7 @@ public class Database {
 
         ResultSet rs = queryCoords.executeQuery();
 
-        ArrayList blocks = new ArrayList<StoredBlock>();
+        ArrayList blocks = new ArrayList<BlockAction>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));
@@ -220,7 +247,7 @@ public class Database {
 
     }
 
-    public StoredBlock queryId(int id) throws SQLException {
+    public BlockAction queryId(int id) throws SQLException {
         queryId.setInt(1, id);
 
         ResultSet rs = queryId.executeQuery();
@@ -231,7 +258,7 @@ public class Database {
         return null;
     }
 
-    public ArrayList<StoredBlock> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public ArrayList<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -264,7 +291,7 @@ public class Database {
 
         ResultSet rs = queryRange.executeQuery();
 
-        ArrayList<StoredBlock> blocks = new ArrayList<>();
+        ArrayList<BlockAction> blocks = new ArrayList<>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));
@@ -296,7 +323,7 @@ public class Database {
         }
     }
 
-    private StoredBlock blockFromRs(ResultSet rs) throws SQLException {
+    private BlockAction blockFromRs(ResultSet rs) throws SQLException {
         int uid = rs.getInt("id");
         int type = rs.getInt("type");
         Timestamp timestamp = rs.getTimestamp("time");
@@ -337,41 +364,39 @@ public class Database {
 
         boolean rolledBack = rs.getBoolean("rolled_back");
 
-        // TODO: Implementation in a different class.
-        return (new StoredBlock() {
+        return (new BlockAction() {
             @Override
-            public int uid() {
+            public int getId() {
                 return uid;
             }
 
             @Override
-            public String uuid() {
-                // not just player uuid anymore...but pfffft
+            public String getUuid() {
                 return playerUUID;
             }
 
             @Override
-            public Timestamp time() {
+            public Timestamp getTimestamp() {
                 return timestamp;
             }
 
             @Override
-            public ActionType actionType() {
+            public ActionType getActionType() {
                 return ActionType.fromId(type);
             }
 
             @Override
-            public String blockId() {
+            public String getBlockId() {
                 return blockId;
             }
 
             @Override
-            public String world() {
+            public String getWorld() {
                 return world;
             }
 
             @Override
-            public @Nullable Vector3d playerLocation() {
+            public @Nullable Vector3d getActorPosition() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
                 } else {
@@ -380,7 +405,7 @@ public class Database {
             }
 
             @Override
-            public Vector3d playerRotation() {
+            public Vector3d getActorRotation() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
                 } else {
@@ -389,44 +414,44 @@ public class Database {
             }
 
             @Override
-            public String itemInHand() {
+            public String getActorItem() {
                 return itemInHand;
             }
 
             @Override
-            public int x() {
+            public int getX() {
                 return x;
             }
 
             @Override
-            public int y() {
+            public int getY() {
                 return y;
             }
 
             @Override
-            public int z() {
+            public int getZ() {
                 return z;
             }
 
             @Override
-            public boolean rolledBack() {
+            public boolean isRolledBack() {
                 return rolledBack;
             }
 
             @Override
-            public void setNBT(String data) {
+            public void setNBT(NBTData data) {
                 try {
-                    setNBTdata(uid, data);
-                } catch (SQLException e) {
+                    setNBTdata(uid, JsonNBTData.serialize(data));
+                } catch (SQLException | JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
             }
 
             @Override
-            public Optional<String> getNBT() {
+            public Optional<NBTData> getNBT() {
                 try {
                     return getNBTdata(uid);
-                } catch (SQLException e) {
+                } catch (SQLException | JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -445,12 +470,12 @@ public class Database {
         insertNBTdata.execute();
     }
 
-    public Optional<String> getNBTdata(int id) throws SQLException {
+    public Optional<NBTData> getNBTdata(int id) throws SQLException, JsonProcessingException {
         getNBTdata.setInt(1, id);
         ResultSet rs = getNBTdata.executeQuery();
 
         if (rs.next()) {
-            return Optional.of(rs.getString("data"));
+            return Optional.of(JsonNBTData.deserialize(rs.getString("data")));
         }
 
         return Optional.empty();

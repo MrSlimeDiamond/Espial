@@ -15,8 +15,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.3.5-SNAPSHOT")
-    //compileOnly("com.sk89q.worldedit:worldedit-sponge:7.3.5-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.3.9")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }

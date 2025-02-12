@@ -1,8 +1,9 @@
 package net.slimediamond.espial.listeners;
 
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.action.ActionType;
-import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.nbt.NBTApplier;
 import net.slimediamond.espial.transaction.EspialTransactionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -14,12 +15,9 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class ChangeBlockListener {
-    private Database database;
-    public ChangeBlockListener(Database database) {
-        this.database = database;
-    }
 
     @Listener
     public void onBlockAction(ChangeBlockEvent.All event) {
@@ -58,13 +56,24 @@ public class ChangeBlockListener {
             if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
 
             try {
-                database.insertAction(
+                Optional<BlockAction> actionOptional = Espial.getInstance().getDatabase().insertAction(
                         ActionType.fromOperation(transaction.operation()),
                         living,
                         transaction.finalReplacement().world().formatted(),
                         transaction,
                         null
                 );
+
+                actionOptional.ifPresent(action -> {
+                    BlockSnapshot blockSnapshot;
+                    if (transaction.operation().equals(Operations.PLACE.get())) {
+                        blockSnapshot = transaction.defaultReplacement();
+                    } else {
+                        blockSnapshot = transaction.original();
+                    }
+
+                    NBTApplier.applyData(blockSnapshot.state(), action);
+                });
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

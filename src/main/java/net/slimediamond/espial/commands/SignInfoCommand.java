@@ -3,14 +3,12 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.DisplayNameUtil;
-import net.slimediamond.espial.util.NBTDataParser;
+import net.slimediamond.espial.nbt.NBTDataParser;
 import net.slimediamond.espial.util.RayTraceUtil;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -35,22 +33,22 @@ public class SignInfoCommand implements CommandExecutor {
                     String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(block.blockState().type()).formatted();
 
                     try {
-                        ArrayList<StoredBlock> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
-                        StoredBlock target = blocks.get(0); // top index
+                        ArrayList<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
+                        BlockAction target = blocks.get(0); // top index
 
                         Component name = DisplayNameUtil.getDisplayName(target);
 
-                        var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was placed by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
+                        var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was last modified by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
 
                         var info = Component.text().append(Espial.prefix);
 
                         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                        String date = dateFormat.format(target.time());
+                        String date = dateFormat.format(target.getTimestamp());
 
                         info.append(Component.newline());
                         info.append(Component.text("Date: ").color(NamedTextColor.DARK_AQUA).append(Component.text(date).color(NamedTextColor.WHITE)));
 
-                        NBTDataParser.parseNBT(target).ifPresent(info::append);
+                        target.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(info::append);
 
                         builder.append(Component.text(" (...)").color(NamedTextColor.GRAY).hoverEvent(HoverEvent.showText(info)));
                         context.sendMessage(builder.build());

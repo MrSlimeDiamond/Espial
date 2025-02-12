@@ -4,10 +4,9 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.Database;
+import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.StoredBlock;
+import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
@@ -15,33 +14,18 @@ import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.math.vector.Vector3d;
-import org.spongepowered.plugin.PluginContainer;
 
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class InspectCommand implements CommandExecutor {
-    private Parameter.Value<Integer> idParameter;
-    private Database database;
-    private PluginContainer container;
-
-    public InspectCommand(Parameter.Value<Integer> idParameter, Database database, PluginContainer container) {
-        this.idParameter = idParameter;
-        this.database = database;
-        this.container = container;
-    }
 
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
@@ -52,7 +36,7 @@ public class InspectCommand implements CommandExecutor {
             return CommandResult.success();
         }
 
-        if (!context.hasAny(idParameter)) {
+        if (!context.hasAny(CommandParameters.GENERIC_ID)) {
             if (Espial.blockOutlines.containsKey(player)) {
                 Espial.blockOutlines.get(player).cancel();
                 Espial.blockOutlines.remove(player);
@@ -63,34 +47,34 @@ public class InspectCommand implements CommandExecutor {
             return CommandResult.success();
         }
 
-        int id = context.requireOne(idParameter);
+        int id = context.requireOne(CommandParameters.GENERIC_ID);
 
         try {
-            StoredBlock block = database.queryId(id);
+            BlockAction action = Espial.getInstance().getDatabase().queryId(id);
 
-            if (block == null) {
+            if (action == null) {
                 return CommandResult.error(Component.text("Unable to find a database index with that ID!"));
             }
 
-            Vector3d playerLocation = block.playerLocation();
-            Vector3d playerRotation = block.playerRotation();
+            Vector3d playerLocation = action.getActorPosition();
+            Vector3d playerRotation = action.getActorRotation();
 
             if (playerRotation != null && playerLocation != null) {
                 player.setPosition(playerLocation);
                 player.setRotation(playerRotation);
             } else {
-                player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
+                player.setPosition(new Vector3d(action.getX(), action.getY(), action.getZ()));
             }
 
-            Component displayName = DisplayNameUtil.getDisplayName(block);
+            Component displayName = DisplayNameUtil.getDisplayName(action);
             String undoActionMessage;
             String undoCommand;
-            if (block.rolledBack()) {
+            if (action.isRolledBack()) {
                 undoActionMessage = "RESTORE";
-                undoCommand = "/espial restoreid " + block.uid();
+                undoCommand = "/espial restoreid " + action.getId();
             } else {
                 undoActionMessage = "ROLLBACK";
-                undoCommand = "/espial rollbackid " + block.uid();
+                undoCommand = "/espial rollbackid " + action.getId();
             }
 
             PaginationList.builder()
@@ -100,10 +84,10 @@ public class InspectCommand implements CommandExecutor {
                             .append(Component.text("[").color(NamedTextColor.GRAY).append(Component.text("STOP").color(NamedTextColor.RED).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand("/espial inspect stop")))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text("TP").color(NamedTextColor.GREEN).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(SpongeComponents.executeCallback(cause -> {
                                 if (playerLocation != null && playerRotation != null) {
-                                    player.setPosition(block.playerLocation());
-                                    player.setRotation(block.playerRotation());
+                                    player.setPosition(action.getActorPosition());
+                                    player.setRotation(action.getActorRotation());
                                 } else {
-                                    player.setPosition(new Vector3d(block.x(), block.y(), block.z()));
+                                    player.setPosition(new Vector3d(action.getX(), action.getY(), action.getZ()));
                                 }
                             })))
                             .append(Component.text(" [").color(NamedTextColor.GRAY).append(Component.text(undoActionMessage).color(NamedTextColor.YELLOW)).append(Component.text("]").color(NamedTextColor.GRAY))).clickEvent(ClickEvent.runCommand(undoCommand))
@@ -112,13 +96,13 @@ public class InspectCommand implements CommandExecutor {
                             .append(displayName)
                             .append(Component.newline())
                             .append(Component.text("Action: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.actionType().toString()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(action.getActionType().toString()).color(NamedTextColor.YELLOW))
                             .append(Component.newline())
                             .append(Component.text("Coordinates: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.x() + " " + block.y() + " " + block.z()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(action.getX() + " " + action.getY() + " " + action.getZ()).color(NamedTextColor.YELLOW))
                             .append(Component.newline())
                             .append(Component.text("Tool: ").color(NamedTextColor.GREEN))
-                            .append(Component.text(block.itemInHand()).color(NamedTextColor.YELLOW))
+                            .append(Component.text(action.getActorItem()).color(NamedTextColor.YELLOW))
                     )
                     .sendTo((Audience) context.cause().root());
 
@@ -139,9 +123,9 @@ public class InspectCommand implements CommandExecutor {
 
             Task task = Task.builder().execute(() -> {
                 for (double[] offset : offsets) {
-                    player.spawnParticles(particleEffect, block.sponge().location().get().position().add(offset[0], offset[1], offset[2]));
+                    player.spawnParticles(particleEffect, action.asSpongeBlock().location().get().position().add(offset[0], offset[1], offset[2]));
                 }
-            }).interval(1, TimeUnit.SECONDS).plugin(container).build();
+            }).interval(1, TimeUnit.SECONDS).plugin(Espial.getInstance().getContainer()).build();
 
             ScheduledTask scheduledTask = Sponge.game().asyncScheduler().submit(task);
             Espial.blockOutlines.put(player, scheduledTask);

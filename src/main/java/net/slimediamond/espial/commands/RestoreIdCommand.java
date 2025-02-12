@@ -3,7 +3,8 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
-import net.slimediamond.espial.action.ActionStatus;
+import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.transaction.TransactionStatus;
 import net.slimediamond.espial.transaction.EspialTransaction;
 import net.slimediamond.espial.transaction.EspialTransactionType;
 import org.spongepowered.api.command.CommandExecutor;
@@ -15,22 +16,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class RestoreIdCommand implements CommandExecutor {
-    private Database database;
-
-    public RestoreIdCommand(Database database) {
-        this.database = database;
-    }
-
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         // restore <id>
-        int id = context.requireOne(CommandParameters.ROLLBACK_ID);
+        int id = context.requireOne(CommandParameters.GENERIC_ID);
 
         try {
-            StoredBlock block = database.queryId(id);
-            ActionStatus status = Espial.getInstance().getBlockLogService().restore(block);
+            BlockAction action = Espial.getInstance().getDatabase().queryId(id);
+            TransactionStatus status = Espial.getInstance().getBlockLogService().restore(action);
 
-            if (status == ActionStatus.SUCCESS) {
+            if (status == TransactionStatus.SUCCESS) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("Restore successful. Griefers beware!").color(NamedTextColor.WHITE)
@@ -44,7 +39,7 @@ public class RestoreIdCommand implements CommandExecutor {
                 Espial.getInstance().getBlockLogService().addTransaction(context.cause().root(), transaction);
 
                 return CommandResult.success();
-            } else if (status == ActionStatus.UNSUPPORTED) {
+            } else if (status == TransactionStatus.UNSUPPORTED) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("That operation is not supported at the moment!").color(NamedTextColor.RED)
@@ -52,7 +47,7 @@ public class RestoreIdCommand implements CommandExecutor {
                 );
 
                 return CommandResult.success();
-            } else if (status == ActionStatus.ALREADY_DONE) {
+            } else if (status == TransactionStatus.ALREADY_DONE) {
                 context.sendMessage(Component.text()
                         .append(Espial.prefix)
                         .append(Component.text("That id has already been restored!").color(NamedTextColor.RED)

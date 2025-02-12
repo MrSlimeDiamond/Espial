@@ -2,18 +2,14 @@ package net.slimediamond.espial.commands;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.slimediamond.espial.Database;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.util.RayTraceUtil;
-import org.checkerframework.checker.units.qual.N;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.registry.RegistryTypes;
-import org.spongepowered.api.util.blockray.RayTrace;
-import org.spongepowered.api.util.blockray.RayTraceResult;
 import org.spongepowered.api.world.LocatableBlock;
 
 import java.sql.SQLException;
@@ -21,11 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class WhoPlacedThisCommand implements CommandExecutor {
-    private Database database;
-
-    public WhoPlacedThisCommand(Database database) {
-        this.database = database;
-    }
 
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
@@ -36,7 +27,7 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                 LocatableBlock block = result.get();
 
                 try {
-                    database.getBlockOwner(block.location().blockX(), block.location().blockY(), block.location().blockZ()).ifPresentOrElse(user -> {
+                    Espial.getInstance().getDatabase().getBlockOwner(block.location().blockX(), block.location().blockY(), block.location().blockZ()).ifPresentOrElse(user -> {
                         context.sendMessage(Espial.prefix
                                     .append(Component.text(user.name()).color(NamedTextColor.YELLOW)
                                     .append(Component.space())

@@ -6,8 +6,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.action.ActionStatus;
+import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.transaction.TransactionStatus;
 import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.nbt.NBTDataParser;
 import net.slimediamond.espial.transaction.EspialTransaction;
 import net.slimediamond.espial.transaction.EspialTransactionType;
 import net.slimediamond.espial.util.*;
@@ -58,57 +60,57 @@ public class BlockLogService {
         return this.inspectingPlayers;
     }
 
-    public ActionStatus rollback(StoredBlock block) throws SQLException {
-        if (block.rolledBack()) return ActionStatus.ALREADY_DONE;
+    public TransactionStatus rollback(BlockAction action) throws SQLException {
+        if (action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
 
         // roll back this specific ID to another state
-        if (block.actionType() == ActionType.BREAK) {
+        if (action.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(action.getBlockId().split(":")[0], action.getBlockId().split(":")[1]));
 
 //            if (blockType instanceof Sign sign) {
 //                sign
 //            }
 
-            block.sponge().location().get().setBlock(blockType.defaultState());
+            action.asSpongeBlock().location().get().setBlock(blockType.defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), true);
+            Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
 
-            return ActionStatus.SUCCESS;
-        } if (block.actionType() == ActionType.PLACE) {
+            return TransactionStatus.SUCCESS;
+        } if (action.getActionType() == ActionType.PLACE) {
             // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
             // (it'll be fine, probably)
 
-            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), true);
-            return ActionStatus.SUCCESS;
+            action.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
+            return TransactionStatus.SUCCESS;
         } else {
-            return ActionStatus.UNSUPPORTED;
+            return TransactionStatus.UNSUPPORTED;
         }
     }
 
-    public ActionStatus restore(StoredBlock block) throws SQLException {
-        if (!block.rolledBack()) return ActionStatus.ALREADY_DONE;
+    public TransactionStatus restore(BlockAction action) throws SQLException {
+        if (!action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
 
         // roll forwards this specific ID to another state
-        if (block.actionType() == ActionType.BREAK) {
+        if (action.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
 
-            block.sponge().location().get().setBlock(BlockTypes.AIR.get().defaultState());
+            action.asSpongeBlock().location().get().setBlock(BlockTypes.AIR.get().defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), false);
+            Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
 
-            return ActionStatus.SUCCESS;
-        } if (block.actionType() == ActionType.PLACE) {
-            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(block.blockId().split(":")[0], block.blockId().split(":")[1]));
+            return TransactionStatus.SUCCESS;
+        } if (action.getActionType() == ActionType.PLACE) {
+            BlockType blockType = BlockTypes.registry().value(ResourceKey.of(action.getBlockId().split(":")[0], action.getBlockId().split(":")[1]));
 
-            block.sponge().location().get().setBlock(blockType.defaultState());
+            action.asSpongeBlock().location().get().setBlock(blockType.defaultState());
 
-            Espial.getInstance().getDatabase().setRolledBack(block.uid(), false);
-            return ActionStatus.SUCCESS;
+            Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
+            return TransactionStatus.SUCCESS;
         } else {
-            return ActionStatus.UNSUPPORTED;
+            return TransactionStatus.UNSUPPORTED;
         }
     }
 
@@ -118,20 +120,20 @@ public class BlockLogService {
 
         try {
             ArrayList<Integer> ids = new ArrayList<>();
-            List<StoredBlock> blocks = isRange
+            List<BlockAction> actions = isRange
                     ? Espial.getInstance().getDatabase().queryRange(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), max.blockX(), max.blockY(), max.blockZ(), uuidString, blockId, timestamp)
                     : Espial.getInstance().getDatabase().queryBlock(min.world().key().formatted(), min.blockX(), min.blockY(), min.blockZ(), uuidString, blockId, timestamp);
 
-            for (StoredBlock block : blocks) {
-                if (block.rolledBack() && type == EspialTransactionType.ROLLBACK) continue;
-                ids.add(block.uid());
+            for (BlockAction action : actions) {
+                if (action.isRolledBack() && type == EspialTransactionType.ROLLBACK) continue;
+                ids.add(action.getId());
 
                 switch (type) {
                     case ROLLBACK:
-                        Espial.getInstance().getBlockLogService().rollback(block);
+                        Espial.getInstance().getBlockLogService().rollback(action);
                         break;
                     case RESTORE:
-                        Espial.getInstance().getBlockLogService().restore(block);
+                        Espial.getInstance().getBlockLogService().restore(action);
                         break;
                     case LOOKUP:
                         // Lookup does not modify blocks
@@ -144,7 +146,7 @@ public class BlockLogService {
                 Espial.getInstance().getBlockLogService().addTransaction(audience, transaction);
             }
 
-            sendResultMessage(audience, blocks, type, single);
+            sendResultMessage(audience, actions, type, single);
         } catch (SQLException e) {
             audience.sendMessage(Espial.prefix.append(Component.text("A SQLException occurred when executing this. This is very very bad. The database is probably down. Look into this immediately!").color(NamedTextColor.RED)));
         }
@@ -169,7 +171,7 @@ public class BlockLogService {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
     }
 
-    private void sendResultMessage(Audience audience, List<StoredBlock> blocks, EspialTransactionType type, boolean single) {
+    private void sendResultMessage(Audience audience, List<net.slimediamond.espial.action.BlockAction> blocks, EspialTransactionType type, boolean single) {
         String action = switch (type) {
             case ROLLBACK -> "rolled back";
             case RESTORE -> "restored";
@@ -197,68 +199,68 @@ public class BlockLogService {
     }
 
 
-    private ArrayList<Component> generateLookupContents(List<StoredBlock> blocks, boolean single) {
+    private ArrayList<Component> generateLookupContents(List<net.slimediamond.espial.action.BlockAction> blocks, boolean single) {
         ArrayList<Component> contents = new ArrayList<>();
 
         if (single) {
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.time().getTime()));
+                String formattedDate = dateFormat.format(new Date(block.getTimestamp().getTime()));
                 var msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
                         .append(Component.space())
-                        .append(Component.text(block.actionType().humanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(Component.text(block.getActionType().humanReadableVerb()).color(NamedTextColor.GREEN))
                         .append(Component.space())
-                        .append(Component.text(block.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.uid()))
+                        .append(Component.text(block.getBlockId().split(":")[1]).color(NamedTextColor.GREEN))
+                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.getId()))
                         .hoverEvent(HoverEvent.showText(Espial.prefix
                                 .append(Component.newline())
                                 .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.uid()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(block.getId()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.itemInHand()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(block.getActorItem()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                         ));
 
-                block.getNBT().flatMap(data -> NBTDataParser.parseNBT(block)).ifPresent(component -> {
+                block.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
                     msg.append(Component.text(" (...)")
                             .color(NamedTextColor.GRAY)
                             .hoverEvent(HoverEvent.showText(Espial.prefix.append(
                                     Component.text().color(NamedTextColor.WHITE).append(component)))));
                 });
 
-                if (block.rolledBack()) {
+                if (block.isRolledBack()) {
                     msg.decorate(TextDecoration.STRIKETHROUGH);
                 }
                 contents.add(msg.build());
             });
         } else {
             // Grouped output in reverse chronological order
-            Map<BlockAction, Integer> groupedBlocks = new HashMap<>();
-            Map<BlockAction, Long> latestTimes = new HashMap<>();
+            Map<BlockTracker, Integer> groupedBlocks = new HashMap<>();
+            Map<BlockTracker, Long> latestTimes = new HashMap<>();
 
             blocks.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
-                BlockAction key = new BlockAction(displayName, block.actionType(), block.blockId());
+                BlockTracker key = new BlockTracker(displayName, block.getActionType(), block.getBlockId());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
-                long time = block.time().getTime();
+                long time = block.getTimestamp().getTime();
                 latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
             });
 
-            List<Map.Entry<BlockAction, Integer>> sortedEntries = new ArrayList<>(groupedBlocks.entrySet());
+            List<Map.Entry<BlockTracker, Integer>> sortedEntries = new ArrayList<>(groupedBlocks.entrySet());
             sortedEntries.sort((e1, e2) ->
                     Long.compare(latestTimes.get(e2.getKey()), latestTimes.get(e1.getKey()))
             );
 
             sortedEntries.forEach(entry -> {
-                BlockAction key = entry.getKey();
+                BlockTracker key = entry.getKey();
                 int count = entry.getValue();
                 contents.add(Component.text()
                         .append(key.name())
@@ -330,6 +332,6 @@ public class BlockLogService {
     }
 
     // Record for better key structure
-    private record BlockAction(Component name, ActionType actionType, String blockId) {}
+    private record BlockTracker(Component name, ActionType actionType, String blockId) {}
 
 }
