@@ -6,6 +6,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.action.BlockAction;
 import net.slimediamond.espial.transaction.TransactionStatus;
 import net.slimediamond.espial.action.ActionType;
@@ -22,6 +23,7 @@ import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.LocatableBlock;
@@ -84,9 +86,39 @@ public class BlockLogService {
             action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
             return TransactionStatus.SUCCESS;
-        } else {
-            return TransactionStatus.UNSUPPORTED;
+        } if (action.getActionType() == ActionType.MODIFY) {
+            // Rolling back a modification action will entail going to its previous state of modification
+            // (if it's present), so let's look for that.
+
+            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
+
+                BlockState state = action.getState();
+                action.getServerLocation().setBlock(state);
+
+                List<BlockAction> actions = Espial.getInstance().getDatabase().queryBlock(action.getWorld(), action.getX(), action.getY(), action.getZ(), null, null, null).stream().filter(act -> !act.isRolledBack()).toList();
+                if (actions.size() >= 2) {
+                    setSignData(actions.get(1));
+                }
+
+              return TransactionStatus.SUCCESS;
+            }
+
         }
+        return TransactionStatus.UNSUPPORTED;
+    }
+
+    public void setSignData(BlockAction action) {
+        action.getServerLocation().blockEntity().ifPresent(tileEntity -> {
+            action.getNBT().ifPresent(nbtData -> {
+                if (nbtData.getSignData() != null) {
+                    List<Component> components = new ArrayList<>();
+
+                    nbtData.getSignData().getFrontComponents().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
+
+                    tileEntity.offer(Keys.SIGN_LINES, components);
+                }
+            });
+        });
     }
 
     public TransactionStatus restore(BlockAction action) throws SQLException {
@@ -106,9 +138,25 @@ public class BlockLogService {
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
             return TransactionStatus.SUCCESS;
-        } else {
-            return TransactionStatus.UNSUPPORTED;
+        } if (action.getActionType() == ActionType.MODIFY) {
+            // Because this is a restore, let's get the one after this which is rolled back
+
+            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
+
+                BlockState state = action.getState();
+                action.getServerLocation().setBlock(state);
+
+                List<BlockAction> actions = Espial.getInstance().getDatabase().queryBlock(action.getWorld(), action.getX(), action.getY(), action.getZ(), null, null, null).stream().filter(BlockAction::isRolledBack).toList();
+                if (actions.size() >= 2) {
+                    setSignData(actions.get(1));
+                }
+
+                return TransactionStatus.SUCCESS;
+            }
+
         }
+
+        return TransactionStatus.UNSUPPORTED;
     }
 
     public void process(ServerLocation min, ServerLocation max, Audience audience, EspialTransactionType type, boolean isRange, @Nullable Timestamp timestamp, @Nullable UUID uuid, @Nullable BlockState blockState, boolean single) {
