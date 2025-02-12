@@ -218,7 +218,7 @@ public class BlockLogService {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
     }
 
-    private void sendResultMessage(Audience audience, List<BlockAction> blocks, EspialTransactionType type, boolean single) {
+    public void sendResultMessage(Audience audience, List<BlockAction> blocks, EspialTransactionType type, boolean single) {
         String action = switch (type) {
             case ROLLBACK -> "rolled back";
             case RESTORE -> "restored";

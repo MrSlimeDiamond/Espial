@@ -20,6 +20,12 @@ import java.util.List;
 
 public class Commands {
     public static final List<Command.Parameterized> commands = new ArrayList<>();
+    private static Command.Parameterized nearbysigns = Command.builder()
+            .permission("espial.command.signs")
+            .shortDescription(Component.text("Lookup signs nearby"))
+            .executor(new NearbySignsCommand())
+            .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
+            .build();
 
     static {
         commands.add(Command.builder()
@@ -51,18 +57,18 @@ public class Commands {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.lookup")
-                        .shortDescription(Component.text("Look up blocks within 5 blocks of you"))
+                        .shortDescription(Component.text("Look up blocks in a range of 5 blocks"))
                         .executor(context -> {
                             if (context.cause().root() instanceof Player player) {
                                 Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
                                 Espial.getInstance().getBlockLogService().process(locations.getLeft(), locations.getRight(), context.cause().audience(), EspialTransactionType.LOOKUP, true, null, null, null, false);
-                                return CommandResult.success();
                             } else {
                                 context.sendMessage(Component.text("You must be a player to use this.").color(NamedTextColor.RED));
-                                return CommandResult.success();
                             }
+                            return CommandResult.success();
                         }).build(), "near"
                 )
+                .addChild(nearbysigns, "nearbysigns", "signs", "signsnear")
                 .addChild(Command.builder()
                         .permission("espial.command.rollback")
                         .shortDescription(Component.text("Roll back changes made by players"))
@@ -143,5 +149,6 @@ public class Commands {
         event.register(container, commands.get(0), "espial", "es");
         event.register(container, commands.get(1), "whoplacedthis");
         event.register(container, commands.get(2), "signinfo");
+        event.register(container, nearbysigns, "nearbysigns", "signs", "signsnear", "signsnearby");
     }
 }
