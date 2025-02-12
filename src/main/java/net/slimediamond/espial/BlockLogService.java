@@ -171,7 +171,7 @@ public class BlockLogService {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
     }
 
-    private void sendResultMessage(Audience audience, List<net.slimediamond.espial.action.BlockAction> blocks, EspialTransactionType type, boolean single) {
+    private void sendResultMessage(Audience audience, List<BlockAction> blocks, EspialTransactionType type, boolean single) {
         String action = switch (type) {
             case ROLLBACK -> "rolled back";
             case RESTORE -> "restored";
@@ -199,7 +199,7 @@ public class BlockLogService {
     }
 
 
-    private ArrayList<Component> generateLookupContents(List<net.slimediamond.espial.action.BlockAction> blocks, boolean single) {
+    private ArrayList<Component> generateLookupContents(List<BlockAction> blocks, boolean single) {
         ArrayList<Component> contents = new ArrayList<>();
 
         if (single) {
