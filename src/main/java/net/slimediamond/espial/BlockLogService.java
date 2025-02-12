@@ -100,7 +100,9 @@ public class BlockLogService {
                     setSignData(actions.get(1));
                 }
 
-              return TransactionStatus.SUCCESS;
+                Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
+
+                return TransactionStatus.SUCCESS;
             }
 
         }
@@ -136,6 +138,8 @@ public class BlockLogService {
                 if (actions.size() >= 2) {
                     setSignData(actions.get(1));
                 }
+
+                Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
 
                 return TransactionStatus.SUCCESS;
             }
