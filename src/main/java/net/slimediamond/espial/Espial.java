@@ -22,6 +22,7 @@ import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.scheduler.ScheduledTask;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
@@ -31,6 +32,7 @@ import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
 public class Espial {
@@ -66,6 +68,20 @@ public class Espial {
 
         database = new Database();
         database.open(this.config.get().jdbc());
+
+        Component message = Espial.prefix
+                .append(Component.text("Interactive mode is enabled. Disable it with ").color(NamedTextColor.WHITE)
+                .append(Component.text("/es i").color(NamedTextColor.YELLOW))
+                .append(Component.text(".").color(NamedTextColor.WHITE))
+        );
+        Task task = Task.builder().execute(() ->
+                blockLogService.getInspectingPlayers().forEach(uuid -> {
+                    Sponge.server().player(uuid).ifPresent(player -> {
+                        player.sendActionBar(message);
+                    });
+                })).plugin(container).interval(1, TimeUnit.SECONDS).build();
+
+        Sponge.asyncScheduler().submit(task, "Espial interactive mode broadcast");
     }
 
     @Listener
