@@ -26,6 +26,11 @@ public class Commands {
             .executor(new NearbySignsCommand())
             .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
             .build();
+    private static Command.Parameterized isthisblockmine = Command.builder()
+            .permission("espial.command.myblock")
+            .shortDescription(Component.text("Check if a block was placed by you"))
+            .executor(new IsThisBlockMineCommand())
+            .build();
 
     static {
         commands.add(Command.builder()
@@ -69,6 +74,7 @@ public class Commands {
                         }).build(), "near"
                 )
                 .addChild(nearbysigns, "nearbysigns", "signs", "signsnear")
+                .addChild(isthisblockmine, "isthisblockmine", "isthismyblock", "myblock")
                 .addChild(Command.builder()
                         .permission("espial.command.rollback")
                         .shortDescription(Component.text("Roll back changes made by players"))
@@ -150,5 +156,6 @@ public class Commands {
         event.register(container, commands.get(1), "whoplacedthis");
         event.register(container, commands.get(2), "signinfo");
         event.register(container, nearbysigns, "nearbysigns", "signs", "signsnear", "signsnearby");
+        event.register(container, isthisblockmine, "isthisblockmine", "isthismyblock", "myblock");
     }
 }
