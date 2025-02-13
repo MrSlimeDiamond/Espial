@@ -39,9 +39,6 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
   * **redo**
     * Permission: espial.command.redo
     * Revert your previous undoals.
-  * **/whoplacedthis**
-    * Permission: espial.command.whoplacedthis
-    * Show the player who placed a block and nothing more.
   * **nearbysigns | signsnear | signs**
     * Permission: espial.command.signs
     * Lookup nearby signs
@@ -52,6 +49,9 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
     * Permission: espial.command.myblock
     * Check if a block was placed by you
     * Can also be used as a base command (**/isthisblockmine**)
+* **/whoplacedthis**
+  * Permission: espial.command.whoplacedthis
+  * Show the player who placed a block and nothing more.
 
 ## Query command flags
 *  *[--worldedit | -w]* - Use a WorldEdit range
