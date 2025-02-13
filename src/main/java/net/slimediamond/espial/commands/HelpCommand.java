@@ -72,30 +72,32 @@ public class HelpCommand implements CommandExecutor {
             });
         } else {
             // FIXME: Other root commands (like /whoplacedthis)
-            context.sendMessage(Espial.prefix.append(Component.text("Help")));
+            context.sendMessage(Espial.prefix.append(Component.text("Help").color(NamedTextColor.WHITE)));
             Command.Parameterized command = Commands.commands.get(0);
             List<Parameter.Subcommand> sortedSubcommands = command.subcommands().stream()
                     .sorted(Comparator.comparing(subcommand -> subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
                     .toList();
 
             for (Parameter.Subcommand subcommand : sortedSubcommands) {
-                var builder = Component.text()
-                        .append(Component.text("/espial " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get())
-                                .color(NamedTextColor.GREEN)
-                                .hoverEvent(HoverEvent.showText(Component.text("Aliases: " + String.join(", ", subcommand.aliases()))
-                                        .append(Component.newline()).append(Component.text("Click for help"))))
-                                .clickEvent(ClickEvent.runCommand("/espial help " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
-                        );
+                if (subcommand.command().executionRequirements().test(context.cause())) {
+                    var builder = Component.text()
+                            .append(Component.text("/espial " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get())
+                                    .color(NamedTextColor.GREEN)
+                                    .hoverEvent(HoverEvent.showText(Component.text("Aliases: " + String.join(", ", subcommand.aliases()))
+                                            .append(Component.newline()).append(Component.text("Click for help"))))
+                                    .clickEvent(ClickEvent.runCommand("/espial help " + subcommand.aliases().stream().max(Comparator.comparingInt(String::length)).get()))
+                            );
 
-                Optional<Component> description = subcommand.command().shortDescription(context.cause());
+                    Optional<Component> description = subcommand.command().shortDescription(context.cause());
 
-                if (description.isPresent()) {
-                    builder.append(Component.text(" - ")).append(description.get());
-                } else {
-                    continue;
+                    if (description.isPresent()) {
+                        builder.append(Component.text(" - ")).append(description.get());
+                    } else {
+                        continue;
+                    }
+
+                    contents.add(builder.build());
                 }
-
-                contents.add(builder.build());
             }
         }
 
