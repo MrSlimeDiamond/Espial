@@ -52,7 +52,7 @@ public enum ActionType {
         return ActionType.UNKNOWN;
     }
 
-    public String humanReadableVerb() {
+    public String getHumanReadableVerb() {
         if (this.id == 0) {
             return "broke";
         } else if (this.id == 1) {
