@@ -14,13 +14,31 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
+import org.spongepowered.api.event.filter.IsCancelled;
+import org.spongepowered.api.util.Tristate;
 
 import java.sql.SQLException;
 import java.util.Optional;
 
 public class ChangeBlockListener {
 
+    @Listener(order = Order.EARLY)
+    public void preBlockAction(ChangeBlockEvent.Pre event) {
+        if (event.cause().root() instanceof Player player) {
+            if (Espial.getInstance().getBlockLogService().getInspectingPlayers().contains(player.profile().uuid())) {
+
+                event.setCancelled(true);
+
+                event.locations().forEach(location -> {
+                    BlockSnapshot block = location.block().snapshotFor(location);
+                    Espial.getInstance().getBlockLogService().processSingle(block.location().get(), player, EspialTransactionType.LOOKUP, null, null, null, true);
+                });
+            }
+        }
+    }
+
     @Listener(order = Order.LATE)
+    @IsCancelled(Tristate.FALSE)
     public void onBlockAction(ChangeBlockEvent.All event) {
         @Nullable Living living;
         Object source = event.cause().root();
