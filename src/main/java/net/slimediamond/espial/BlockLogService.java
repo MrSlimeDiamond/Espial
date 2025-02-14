@@ -342,12 +342,16 @@ public class BlockLogService {
 
 
         if (context.hasFlag("worldedit")) { // Range lookup
-            PlayerSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
-                context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
-                Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
-            }, () -> {
-                context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
-            });
+            try {
+                WorldEditSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
+                    context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
+                    Espial.getInstance().getBlockLogService().process(selection.getLeft(), selection.getRight(), context.cause().audience(), type, true, timestamp, uuid, blockState, context.hasFlag("single"));
+                }, () -> {
+                    context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
+                });
+            } catch (NoClassDefFoundError e) {
+                context.sendMessage(Component.text("It doesn't look like WorldEdit is installed on this server!").color(NamedTextColor.RED));
+            }
 
             return CommandResult.success();
         } else if (context.hasFlag("range")) {
