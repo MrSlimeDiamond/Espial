@@ -4,6 +4,7 @@ import org.spongepowered.plugin.metadata.model.PluginDependency
 plugins {
     `java-library`
     id("org.spongepowered.gradle.plugin") version "2.2.0"
+    id("com.gradleup.shadow") version "9.0.0-beta8"
 }
 
 group = "net.slimediamond"
@@ -19,7 +20,7 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
 
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    compileOnly(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }
 
 sponge {
@@ -75,4 +76,17 @@ tasks.withType(JavaCompile::class).configureEach {
 tasks.withType(AbstractArchiveTask::class).configureEach {
     isReproducibleFileOrder = true
     isPreserveFileTimestamps = false
+}
+
+tasks.shadowJar {
+    mergeServiceFiles()
+    relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+artifacts {
+    archives(tasks.shadowJar)
 }
