@@ -11,6 +11,7 @@ import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 public class ChangeBlockListener {
 
-    @Listener
+    @Listener(order = Order.LATE)
     public void onBlockAction(ChangeBlockEvent.All event) {
         @Nullable Living living;
         Object source = event.cause().root();

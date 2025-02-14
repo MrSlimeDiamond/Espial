@@ -6,6 +6,7 @@ import net.slimediamond.espial.util.BlockUtil;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 
 import java.sql.SQLException;
@@ -13,7 +14,7 @@ import java.util.HashSet;
 
 public class InteractListener {
 
-    @Listener
+    @Listener(order = Order.LATE)
     public void onInteract(InteractBlockEvent.Secondary event) throws SQLException {
         if (!Espial.getInstance().getConfig().get().logInteractions()) return;
 

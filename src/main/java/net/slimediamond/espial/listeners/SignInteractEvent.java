@@ -10,6 +10,7 @@ import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.nbt.json.JsonSignData;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 
 import java.sql.SQLException;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class SignInteractEvent {
-    @Listener
+    @Listener(order = Order.LATE)
     public void onSignChangeEvent(ChangeSignEvent event) throws SQLException {
         if (event.cause().root() instanceof Living source) {
             Optional<BlockAction> block = Espial.getInstance().getDatabase().insertAction(ActionType.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
