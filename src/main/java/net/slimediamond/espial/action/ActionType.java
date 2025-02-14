@@ -53,24 +53,16 @@ public enum ActionType {
     }
 
     public String getHumanReadableVerb() {
-        if (this.id == 0) {
-            return "broke";
-        } else if (this.id == 1) {
-            return "placed";
-        } else if (this.id == 2) {
-            return "decayed";
-        } else if (this.id == 3) {
-            return "grew";
-        } else if (this.id == 4) {
-            return "liquid decayed";
-        } else if (this.id == 5) {
-            return "liquid spread";
-        } else if (this.id == 6) {
-            return "modified";
-        } else if (this.id == 8) {
-            return "used";
-        } else {
-            return "did unknown action to";
-        }
+        return switch (this.id) {
+            case 0 -> "broke";
+            case 1 -> "placed";
+            case 2 -> "decayed";
+            case 3 -> "grew";
+            case 4 -> "liquid decayed";
+            case 5 -> "liquid spread";
+            case 6 -> "modified";
+            case 7 -> "used";
+            default -> "did unknown action to";
+        };
     }
 }
