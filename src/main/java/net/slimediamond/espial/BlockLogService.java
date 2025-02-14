@@ -153,7 +153,7 @@ public class BlockLogService {
                 if (nbtData.getSignData() != null) {
                     List<Component> components = new ArrayList<>();
 
-                    nbtData.getSignData().getFrontComponents().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
+                    nbtData.getSignData().getFrontText().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
 
                     tileEntity.offer(Keys.SIGN_LINES, components);
                 }

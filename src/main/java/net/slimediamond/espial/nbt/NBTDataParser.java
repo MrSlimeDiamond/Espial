@@ -17,8 +17,8 @@ public class NBTDataParser {
         if (data.getSignData() != null) {
             // It's a sign, lets parse data accordingly
 
-            List<String> frontLines = data.getSignData().getFrontComponents();
-            List<String> backLines = data.getSignData().getBackComponents();
+            List<String> frontLines = data.getSignData().getFrontText();
+            List<String> backLines = data.getSignData().getBackText();
             List<Component> frontComponents = frontLines.stream().map(line -> GsonComponentSerializer.gson().deserialize(line)).toList();
 
             builder.append(Component.newline());

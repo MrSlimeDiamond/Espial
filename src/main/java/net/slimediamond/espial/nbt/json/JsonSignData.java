@@ -11,23 +11,23 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class JsonSignData implements SignData {
     @JsonProperty("front_text")
-    private final List<String> frontComponents;
+    private final List<String> frontText;
 
     @JsonProperty("back_text")
-    private final List<String> backComponents;
+    private final List<String> backText;
 
     @JsonCreator
-    public JsonSignData(@JsonProperty("front_text") List<String> frontComponents,
-                        @JsonProperty("back_text") List<String> backComponents) {
-        this.frontComponents = frontComponents != null ? frontComponents : new ArrayList<>();
-        this.backComponents = backComponents != null ? backComponents : new ArrayList<>();
+    public JsonSignData(@JsonProperty("front_text") List<String> frontText,
+                        @JsonProperty("back_text") List<String> backText) {
+        this.frontText = frontText != null ? frontText : new ArrayList<>();
+        this.backText = backText != null ? backText : new ArrayList<>();
     }
 
-    public List<String> getFrontComponents() {
-        return frontComponents;
+    public List<String> getFrontText() {
+        return frontText;
     }
 
-    public List<String> getBackComponents() {
-        return backComponents;
+    public List<String> getBackText() {
+        return backText;
     }
 }
