@@ -30,7 +30,7 @@ sponge {
         version("1.0")
     }
     plugin("espial") {
-        displayName("espial")
+        displayName("Espial")
         entrypoint("net.slimediamond.espial.Espial")
         description("Plugin for logging and viewing block actions")
         links {
@@ -46,6 +46,9 @@ sponge {
             loadOrder(PluginDependency.LoadOrder.AFTER)
             version("7.1.0")
             optional(true)
+        }
+        contributor("SlimeDiamond") {
+            description("Lead Developer")
         }
     }
 }
