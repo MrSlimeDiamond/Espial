@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ChangeBlockListener {
 
@@ -38,8 +37,7 @@ public class ChangeBlockListener {
                 event.setCancelled(true);
 
                 event.locations().forEach(location -> {
-                    BlockSnapshot block = location.block().snapshotFor(location);
-                    Espial.getInstance().getBlockLogService().processSingle(block.location().get(), player, EspialTransactionType.LOOKUP, null, null, null, true);
+                    Espial.getInstance().getBlockLogService().processSingle(location, player, EspialTransactionType.LOOKUP, null, null, null, true);
                 });
             }
         }
