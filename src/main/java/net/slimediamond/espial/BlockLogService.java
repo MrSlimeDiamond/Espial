@@ -67,11 +67,11 @@ public class BlockLogService {
         if (action.getActionType() == ActionType.BREAK) {
             // place the block which was broken at that location
 
-//            if (blockType instanceof Sign sign) {
-//                sign
-//            }
-
             action.getServerLocation().setBlock(action.getState());
+
+            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
+                setSignData(action);
+            }
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
 
@@ -84,7 +84,7 @@ public class BlockLogService {
             action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
             return TransactionStatus.SUCCESS;
-        } if (action.getActionType() == ActionType.MODIFY) {
+        } else if (action.getActionType() == ActionType.MODIFY) {
             // Rolling back a modification action will entail going to its previous state of modification
             // (if it's present), so let's look for that.
 
@@ -102,7 +102,6 @@ public class BlockLogService {
 
                 return TransactionStatus.SUCCESS;
             }
-
         }
         return TransactionStatus.UNSUPPORTED;
     }
@@ -121,6 +120,10 @@ public class BlockLogService {
             return TransactionStatus.SUCCESS;
         } if (action.getActionType() == ActionType.PLACE) {
             action.getServerLocation().setBlock(action.getState());
+
+            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
+                setSignData(action);
+            }
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
             return TransactionStatus.SUCCESS;
