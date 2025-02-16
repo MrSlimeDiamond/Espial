@@ -23,6 +23,7 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
@@ -38,6 +39,7 @@ import java.util.*;
 public class BlockLogService {
     private final HashMap<Object, ArrayList<EspialTransaction>> transactions = new HashMap<>();
     private final ArrayList<UUID> inspectingPlayers = new ArrayList<>();
+    private final HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
 
     public void addTransaction(Object key, EspialTransaction transaction) {
         if (this.transactions.containsKey(key)) {
@@ -58,6 +60,10 @@ public class BlockLogService {
 
     public ArrayList<UUID> getInspectingPlayers() {
         return this.inspectingPlayers;
+    }
+
+    public HashMap<Player, ScheduledTask> getBlockOutlines() {
+        return this.blockOutlines;
     }
 
     public TransactionStatus rollback(BlockAction action) throws SQLException {

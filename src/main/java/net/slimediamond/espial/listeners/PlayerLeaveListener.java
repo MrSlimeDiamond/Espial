@@ -8,9 +8,9 @@ import org.spongepowered.api.scheduler.ScheduledTask;
 public class PlayerLeaveListener {
     @Listener
     public void playerLeave(ServerSideConnectionEvent.Leave event) {
-        if (Espial.blockOutlines.containsKey(event.player())) {
-            Espial.blockOutlines.get(event.player()).cancel();
-            Espial.blockOutlines.remove(event.player());
+        if (Espial.getInstance().getBlockLogService().getBlockOutlines().containsKey(event.player())) {
+            Espial.getInstance().getBlockLogService().getBlockOutlines().get(event.player()).cancel();
+            Espial.getInstance().getBlockLogService().getBlockOutlines().remove(event.player());
         }
     }
 }

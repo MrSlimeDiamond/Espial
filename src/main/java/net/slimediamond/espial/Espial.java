@@ -31,7 +31,6 @@ import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
@@ -39,8 +38,6 @@ public class Espial {
     private static Espial instance;
 
     public static Component prefix = Component.text("Espial › ").color(NamedTextColor.GREEN);
-
-    public static HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
 
     private final PluginContainer container;
     private final Logger logger;
