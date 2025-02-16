@@ -42,6 +42,14 @@ public class NBTDataParser {
             shouldReturn = true;
         }
 
+        if (data.getAxis() != null) {
+            builder.append(Component.newline());
+            builder.append(Component.text("Axis: ").color(NamedTextColor.DARK_AQUA));
+            builder.append(Component.text(data.getAxis().toString()).color(NamedTextColor.WHITE));
+
+            shouldReturn = true;
+        }
+
         if (data.isWaterlogged()) {
             builder.append(Component.newline());
             builder.append(Component.text("Waterlogged: ").color(NamedTextColor.DARK_AQUA));

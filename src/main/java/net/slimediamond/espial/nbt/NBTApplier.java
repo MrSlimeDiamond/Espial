@@ -30,6 +30,13 @@ public class NBTApplier {
             });
         }
 
+        if (blockState.supports(Keys.AXIS)) {
+            blockState.get(Keys.AXIS).ifPresent(axis -> {
+                applyData.set(true);
+                nbtData.setAxis(axis);
+            });
+        }
+
         // Only apply the data if it's relevant,
         // so we don't take up as much storage space.
         if (applyData.get()) {

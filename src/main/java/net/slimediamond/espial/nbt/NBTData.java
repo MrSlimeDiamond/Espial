@@ -1,5 +1,6 @@
 package net.slimediamond.espial.nbt;
 
+import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
 
 import javax.annotation.Nullable;
@@ -22,6 +23,12 @@ public interface NBTData {
      * @return Block direction
      */
     Direction getDirection();
+
+    /**
+     * Get a block's axis (x, y, or z)
+     * @return Block axis
+     */
+    Axis getAxis();
 
     /**
      * Whether the block is waterlogged

@@ -123,9 +123,12 @@ public interface BlockAction {
     default BlockState getState() {
         AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
         this.getNBT().ifPresent(nbtData -> {
-            //blockState.set(blockState.get().with(Keys.IS_WATERLOGGED, nbtData.isWaterlogged()).get());
             if (nbtData.getDirection() != null) {
                 blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+            }
+
+            if (nbtData.getAxis() != null) {
+                blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
             }
         });
         return blockState.get();
