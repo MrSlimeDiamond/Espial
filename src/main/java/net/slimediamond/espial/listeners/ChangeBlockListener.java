@@ -9,6 +9,7 @@ import net.slimediamond.espial.nbt.NBTApplier;
 import net.slimediamond.espial.nbt.json.JsonNBTData;
 import net.slimediamond.espial.nbt.json.JsonSignData;
 import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.util.BlockUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.Operations;
@@ -99,35 +100,39 @@ public class ChangeBlockListener {
 
                     JsonNBTData nbtData = new JsonNBTData();
 
-                    blockSnapshot.createArchetype().ifPresent(blockEntity -> {
-                        List<Component> frontComponents = null;
-                        List<Component> backComponents = null;
+                    if (BlockUtil.SIGNS.contains(blockSnapshot.state().type())) {
+                        blockSnapshot.createArchetype().ifPresent(blockEntity -> {
+                            List<Component> frontComponents = null;
+                            List<Component> backComponents = null;
 
-                        if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
-                            frontComponents = blockEntity.get(Keys.SIGN_FRONT_TEXT)
-                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                    .orElseGet(ArrayList::new);
-                        }
+                            if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
+                                frontComponents = blockEntity.get(Keys.SIGN_FRONT_TEXT)
+                                        .map(text -> new ArrayList<>(text.lines().get()))
+                                        .orElseGet(ArrayList::new);
+                            }
 
-                        if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
-                            backComponents = blockEntity.get(Keys.SIGN_BACK_TEXT)
-                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                    .orElseGet(ArrayList::new);
-                        }
+                            if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
+                                backComponents = blockEntity.get(Keys.SIGN_BACK_TEXT)
+                                        .map(text -> new ArrayList<>(text.lines().get()))
+                                        .orElseGet(ArrayList::new);
+                            }
 
-                        List<String> frontText = null;
-                        List<String> backText = null;
+                            List<String> frontText = null;
+                            List<String> backText = null;
 
-                        if (frontComponents != null) {
-                            frontText = frontComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
-                        }
+                            if (frontComponents != null) {
+                                frontText = frontComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                            }
 
-                        if (backComponents != null) {
-                            backText = backComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
-                        }
+                            if (backComponents != null) {
+                                backText = backComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                            }
 
-                        nbtData.setSignData(new JsonSignData(frontText, backText));
-                    });
+                            if (frontComponents != null && backComponents != null) {
+                                nbtData.setSignData(new JsonSignData(frontText, backText));
+                            }
+                        });
+                    }
 
                     NBTApplier.applyData(nbtData, blockSnapshot.state(), action);
                 });
