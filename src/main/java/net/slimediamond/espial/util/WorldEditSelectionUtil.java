@@ -26,8 +26,8 @@ public class WorldEditSelectionUtil {
                 BlockVector3 regionMin = region.getMinimumPoint();
                 BlockVector3 regionMax = region.getMaximumPoint();
 
-                Vector3d regionMin3d = new Vector3d(regionMin.getX(), regionMin.getY(), regionMin.getZ());
-                Vector3d regionMax3d = new Vector3d(regionMax.getX(), regionMax.getY(), regionMax.getZ());
+                Vector3d regionMin3d = new Vector3d(regionMin.x(), regionMin.y(), regionMin.z());
+                Vector3d regionMax3d = new Vector3d(regionMax.x(), regionMax.y(), regionMax.z());
 
                 ServerLocation serverLocationMin = ServerLocation.of(player.serverLocation().world(), regionMin3d);
                 ServerLocation serverLocationMax = ServerLocation.of(player.serverLocation().world(), regionMax3d);
