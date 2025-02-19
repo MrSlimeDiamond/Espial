@@ -222,6 +222,7 @@ public class EspialServiceImpl implements EspialService {
                 builder.setMin(block.serverLocation());
             } else {
                 context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
+                return CommandResult.success();
             }
 
             try {
