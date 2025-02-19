@@ -2,6 +2,7 @@ package net.slimediamond.espial;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -84,11 +85,13 @@ public class EspialServiceImpl implements EspialService {
         ArrayList<Component> contents = new ArrayList<>();
 
         if (spread) {
+            // reverse chronological order
+            actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
             actions.forEach(block -> {
                 Component displayName = DisplayNameUtil.getDisplayName(block);
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
                 String formattedDate = dateFormat.format(new Date(block.getTimestamp().getTime()));
-                var msg = Component.text()
+                TextComponent.Builder msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
