@@ -14,7 +14,6 @@ import net.slimediamond.espial.api.nbt.NBTDataParser;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
-import net.slimediamond.espial.api.transaction.EspialTransactionType;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -328,20 +327,57 @@ public class EspialServiceImpl implements EspialService {
 
     public void process(Query query, Audience audience, boolean spread) throws Exception {
         ArrayList<BlockAction> actions = this.query(query);
-        switch (query.getType()) {
-            case ROLLBACK -> this.rollbackAll(actions);
-            case RESTORE -> this.restoreAll(actions);
-        }
 
-        if (query.getType() == QueryType.LOOKUP) {
+        if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
+            String msg = "processed";
+
+            ArrayList<Integer> success = new ArrayList<>();
+            int skipped = 0;
+
+            for (BlockAction action : actions) {
+                TransactionStatus status;
+                switch (query.getType()) {
+                    case ROLLBACK -> {
+                        status = this.rollback(action);
+                        msg = "rolled back";
+                    }
+                    case RESTORE -> {
+                        status = this.restore(action);
+                        msg = "restored";
+                    }
+                    default -> status = TransactionStatus.UNSUPPORTED;
+                }
+
+                if (status == TransactionStatus.SUCCESS) {
+                    success.add(action.getId());
+                } else {
+                    skipped++;
+                }
+            }
+
+            EspialTransaction transaction = new EspialTransaction(success, query.getType(), false);
+            Espial.getInstance().addTransaction(audience, transaction);
+
+            var builder = Espial.prefix.append(Component.text()
+                    .append(Component.text(success.size()))
+                    .append(Component.text(" action(s) were "))
+                    .append(Component.text(msg))
+            ).color(NamedTextColor.WHITE);
+
+            if (skipped != 0) {
+                builder.append(Component.text(", with " + skipped + " skipped").color(NamedTextColor.WHITE));
+            }
+
+            builder.append(Component.text(".").color(NamedTextColor.WHITE));
+
+            audience.sendMessage(builder);
+        } else if (query.getType() == QueryType.LOOKUP) {
             PaginationList.builder().title(Espial.prefix.append(Component.text("Lookup results").color(NamedTextColor.WHITE)))
                     .contents(this.generateLookupContents(actions, spread))
                     .sendTo(audience);
-        } else if (query.getType() == QueryType.ROLLBACK) {
-            audience.sendMessage(Espial.prefix.append(Component.text(actions.size() + " action(s) were rolled back.").color(NamedTextColor.WHITE)));
-        } else if (query.getType() == QueryType.RESTORE) {
-            audience.sendMessage(Espial.prefix.append(Component.text(actions.size() + " action(s) were restored.").color(NamedTextColor.WHITE)));
-
+        } else {
+            // Some other query type that we don't currently support
+            audience.sendMessage(Espial.prefix.append(Component.text("This query type is not currently supported.").color(NamedTextColor.RED)));
         }
     }
 

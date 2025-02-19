@@ -1,16 +1,16 @@
 package net.slimediamond.espial.api.transaction;
 
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.query.QueryType;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class EspialTransaction {
     private ArrayList<Integer> ids;
-    private EspialTransactionType type;
+    private QueryType type;
     private boolean undone;
 
-    public EspialTransaction(ArrayList<Integer> ids, EspialTransactionType type, boolean undone) {
+    public EspialTransaction(ArrayList<Integer> ids, QueryType type, boolean undone) {
         this.ids = ids;
         this.type = type;
         this.undone = undone;
@@ -20,7 +20,7 @@ public class EspialTransaction {
         return ids;
     }
 
-    public EspialTransactionType getType() {
+    public QueryType getType() {
         return type;
     }
 
@@ -29,12 +29,12 @@ public class EspialTransaction {
     }
 
     public void undo() throws Exception {
-        if (type == EspialTransactionType.ROLLBACK) {
+        if (type == QueryType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
                 Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
-        } else if (type == EspialTransactionType.RESTORE) {
+        } else if (type == QueryType.RESTORE) {
             for (int id : ids) {
                 Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
@@ -44,12 +44,12 @@ public class EspialTransaction {
     }
 
     public void redo() throws Exception {
-        if (type == EspialTransactionType.RESTORE) {
+        if (type == QueryType.RESTORE) {
             // Restore all IDs
             for (int id : ids) {
                 Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
-        } else if (type == EspialTransactionType.ROLLBACK) {
+        } else if (type == QueryType.ROLLBACK) {
             for (int id : ids) {
                 Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }

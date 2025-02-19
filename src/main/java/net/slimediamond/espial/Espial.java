@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
+import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
@@ -16,7 +17,6 @@ import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
-import org.spongepowered.api.event.lifecycle.ProvideServiceEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.scheduler.ScheduledTask;
@@ -29,9 +29,7 @@ import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
@@ -44,7 +42,8 @@ public class Espial {
     private final Logger logger;
     private final ConfigurationReference<CommentedConfigurationNode> reference;
     private final ArrayList<UUID> inspectingPlayers = new ArrayList<>();
-    private final HashMap<Player, ScheduledTask> blockOutlines = new HashMap<>();
+    private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
+    private final Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
 
     private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
     private Database database;
@@ -121,11 +120,28 @@ public class Espial {
         return inspectingPlayers;
     }
 
-    public HashMap<Player, ScheduledTask> getBlockOutlines() {
+    public Map<Player, ScheduledTask> getBlockOutlines() {
         return blockOutlines;
+    }
+
+    public Map<Object, List<EspialTransaction>> getTransactions() {
+        return transactions;
     }
 
     public Logger getLogger() {
         return this.logger;
+    }
+
+    public void addTransaction(Object key, EspialTransaction transaction) {
+        if (this.transactions.containsKey(key)) {
+            // add to the existing arraylist with a new transaction:
+            this.transactions.get(key).add(transaction);
+        } else {
+            // create a new one with the source object
+            ArrayList<EspialTransaction> transactions = new ArrayList<>();
+            transactions.add(transaction);
+
+            this.transactions.put(key, transactions);
+        }
     }
 }
