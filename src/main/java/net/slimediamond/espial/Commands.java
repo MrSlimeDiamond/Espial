@@ -68,6 +68,7 @@ public class Commands {
                             if (context.cause().root() instanceof Player player) {
                                 Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
                                 Query query = Query.builder()
+                                                .setType(QueryType.LOOKUP)
                                                 .setMin(locations.getLeft())
                                                 .setMax(locations.getRight())
                                                 .build();
