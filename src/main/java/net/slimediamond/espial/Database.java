@@ -223,11 +223,11 @@ public class Database {
         }
     }
 
-    public ArrayList<BlockAction> query(Query query) throws SQLException {
+    public List<BlockAction> query(Query query) throws SQLException {
         Timestamp timestamp = query.getTimestamp() == null ? Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
         String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
 
-        ArrayList<BlockAction> actions = new ArrayList<>();
+        List<BlockAction> actions = new ArrayList<>();
         ResultSet rs;
 
         if (query.getMax() == null) {
@@ -280,7 +280,7 @@ public class Database {
     }
 
     @Deprecated(forRemoval = true)
-    public ArrayList<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public List<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -297,7 +297,7 @@ public class Database {
 
         ResultSet rs = queryCoords.executeQuery();
 
-        ArrayList blocks = new ArrayList<BlockAction>();
+        List<BlockAction> blocks = new ArrayList<>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));
@@ -320,7 +320,7 @@ public class Database {
     }
 
     @Deprecated(forRemoval = true)
-    public ArrayList<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
+    public List<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
             timestamp = Timestamp.from(Instant.ofEpochMilli(0));
@@ -353,7 +353,7 @@ public class Database {
 
         ResultSet rs = queryRange.executeQuery();
 
-        ArrayList<BlockAction> blocks = new ArrayList<>();
+        List<BlockAction> blocks = new ArrayList<>();
 
         while (rs.next()) {
             blocks.add(this.blockFromRs(rs));

@@ -14,6 +14,7 @@ import org.spongepowered.api.command.parameter.CommandContext;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RestoreIdCommand implements CommandExecutor {
     @Override
@@ -32,7 +33,7 @@ public class RestoreIdCommand implements CommandExecutor {
                         ).build()
                 );
 
-                ArrayList<Integer> ids = new ArrayList<>();
+                List<Integer> ids = new ArrayList<>();
                 ids.add(id);
                 EspialTransaction transaction = new EspialTransaction(ids, QueryType.RESTORE, false);
 

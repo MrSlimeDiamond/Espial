@@ -3,20 +3,20 @@ package net.slimediamond.espial.api.transaction;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.query.QueryType;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class EspialTransaction {
-    private ArrayList<Integer> ids;
+    private List<Integer> ids;
     private QueryType type;
     private boolean undone;
 
-    public EspialTransaction(ArrayList<Integer> ids, QueryType type, boolean undone) {
+    public EspialTransaction(List<Integer> ids, QueryType type, boolean undone) {
         this.ids = ids;
         this.type = type;
         this.undone = undone;
     }
 
-    public ArrayList<Integer> getIds() {
+    public List<Integer> getIds() {
         return ids;
     }
 

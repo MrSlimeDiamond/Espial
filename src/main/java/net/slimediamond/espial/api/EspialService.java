@@ -10,8 +10,6 @@ import net.slimediamond.espial.api.transaction.TransactionStatus;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,15 +36,15 @@ public interface EspialService {
      * Query a block
      * @param query Query
      */
-    ArrayList<BlockAction> query(Query query) throws Exception;
+    List<BlockAction> query(Query query) throws Exception;
 
     /**
-     * Generate an {@link ArrayList} of components from some {@link BlockAction}s
+     * Generate a {@link List} of components from some {@link BlockAction}s
      * @param actions Actions to lookup
      * @param spread Whether to spread the results
      * @return Contents
      */
-    ArrayList<Component> generateLookupContents(List<BlockAction> actions, boolean spread);
+    List<Component> generateLookupContents(List<BlockAction> actions, boolean spread);
 
     /**
      * Execute a command which uses queries

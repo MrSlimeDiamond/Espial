@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SignInfoCommand implements CommandExecutor {
     @Override
@@ -33,7 +34,7 @@ public class SignInfoCommand implements CommandExecutor {
                     String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(block.blockState().type()).formatted();
 
                     try {
-                        ArrayList<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
+                        List<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
                         BlockAction target = blocks.get(0); // top index
 
                         Component name = DisplayNameUtil.getDisplayName(target);

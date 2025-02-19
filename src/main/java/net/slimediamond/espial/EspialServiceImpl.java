@@ -76,13 +76,13 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public ArrayList<BlockAction> query(Query query) throws SQLException {
+    public List<BlockAction> query(Query query) throws SQLException {
         return Espial.getInstance().getDatabase().query(query);
     }
 
     @Override
-    public ArrayList<Component> generateLookupContents(List<BlockAction> actions, boolean spread) {
-        ArrayList<Component> contents = new ArrayList<>();
+    public List<Component> generateLookupContents(List<BlockAction> actions, boolean spread) {
+        List<Component> contents = new ArrayList<>();
 
         if (spread) {
             // reverse chronological order
@@ -333,12 +333,12 @@ public class EspialServiceImpl implements EspialService {
     }
 
     public void process(Query query, Audience audience, boolean spread) throws Exception {
-        ArrayList<BlockAction> actions = this.query(query);
+        List<BlockAction> actions = this.query(query);
 
         if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
             String msg = "processed";
 
-            ArrayList<Integer> success = new ArrayList<>();
+            List<Integer> success = new ArrayList<>();
             int skipped = 0;
 
             for (BlockAction action : actions) {

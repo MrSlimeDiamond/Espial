@@ -13,6 +13,7 @@ import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RollbackIdCommand implements CommandExecutor {
     @Override
@@ -31,7 +32,7 @@ public class RollbackIdCommand implements CommandExecutor {
                         ).build()
                 );
 
-                ArrayList<Integer> ids = new ArrayList<>();
+                List<Integer> ids = new ArrayList<>();
                 ids.add(id);
                 EspialTransaction transaction = new EspialTransaction(ids, QueryType.ROLLBACK, false);
 

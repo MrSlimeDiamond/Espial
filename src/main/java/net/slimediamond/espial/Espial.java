@@ -41,7 +41,7 @@ public class Espial {
     private final PluginContainer container;
     private final Logger logger;
     private final ConfigurationReference<CommentedConfigurationNode> reference;
-    private final ArrayList<UUID> inspectingPlayers = new ArrayList<>();
+    private final List<UUID> inspectingPlayers = new ArrayList<>();
     private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
     private final Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
 
@@ -116,7 +116,7 @@ public class Espial {
         return espialService;
     }
 
-    public ArrayList<UUID> getInspectingPlayers() {
+    public List<UUID> getInspectingPlayers() {
         return inspectingPlayers;
     }
 
@@ -138,7 +138,7 @@ public class Espial {
             this.transactions.get(key).add(transaction);
         } else {
             // create a new one with the source object
-            ArrayList<EspialTransaction> transactions = new ArrayList<>();
+            List<EspialTransaction> transactions = new ArrayList<>();
             transactions.add(transaction);
 
             this.transactions.put(key, transactions);
