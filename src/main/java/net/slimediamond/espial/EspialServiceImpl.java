@@ -187,19 +187,22 @@ public class EspialServiceImpl implements EspialService {
 
         if (context.hasFlag("worldedit")) { // Range lookup
             try {
-                WorldEditSelectionUtil.getWorldEditRegion(player).ifPresentOrElse(selection -> {
+                Optional<Pair<ServerLocation, ServerLocation>> selectionOptional = WorldEditSelectionUtil.getWorldEditRegion(player);
+
+                if (selectionOptional.isPresent()) {
+                    Pair<ServerLocation, ServerLocation> selection = selectionOptional.get();
                     context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
                     builder.setMin(selection.getLeft());
                     builder.setMax(selection.getRight());
-
-                    }, () -> {
+                } else {
                     context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
-                });
+                    return CommandResult.success();
+                }
             } catch (NoClassDefFoundError e) {
                 context.sendMessage(Component.text("It doesn't look like WorldEdit is installed on this server!").color(NamedTextColor.RED));
+                return CommandResult.success();
             }
 
-            return CommandResult.success();
         } else if (context.hasFlag("range")) {
             // -r <block range>
             int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
@@ -209,7 +212,7 @@ public class EspialServiceImpl implements EspialService {
             context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using a cuboid with a range of " + range + " blocks for this query.").color(NamedTextColor.WHITE)).build());
 
             builder.setMin(selection.getLeft());
-            builder.setMin(selection.getRight());
+            builder.setMax(selection.getRight());
         } else {
             // Ray trace block (playing is looking at target)
             // get the block the player is targeting
@@ -224,12 +227,12 @@ public class EspialServiceImpl implements EspialService {
                 context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
                 return CommandResult.success();
             }
+        }
 
-            try {
-                this.process(builder.build(), context.cause().audience(), context.hasFlag("s"));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            this.process(builder.build(), context.cause().audience(), context.hasFlag("s"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         return CommandResult.success();
