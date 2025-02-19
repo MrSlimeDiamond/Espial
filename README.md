@@ -15,7 +15,7 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
     * Permission: espial.command.lookup
     * Look up a block. Defaults to the block you are looking at.
     * Flags:
-      *  *[--single | -s]* - Do not group outputs
+      *  *[--spread | -s]* - Do not group outputs
       *  Everything from query command flags (below).
   * **near**
     * Permission: espial.command.lookup

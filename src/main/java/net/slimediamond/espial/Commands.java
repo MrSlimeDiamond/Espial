@@ -52,7 +52,7 @@ public class Commands {
                 .addChild(Command.builder()
                         .permission("espial.command.lookup")
                         .shortDescription(Component.text("Lookup a block or region"))
-                        .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
                         .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
                         .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
