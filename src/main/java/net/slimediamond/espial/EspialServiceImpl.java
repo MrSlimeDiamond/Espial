@@ -365,11 +365,15 @@ public class EspialServiceImpl implements EspialService {
             EspialTransaction transaction = new EspialTransaction(success, query.getType(), false);
             Espial.getInstance().addTransaction(audience, transaction);
 
-            var builder = Espial.prefix.append(Component.text()
-                    .append(Component.text(success.size()))
-                    .append(Component.text(" action(s) were "))
-                    .append(Component.text(msg))
-            ).color(NamedTextColor.WHITE);
+            TextComponent.Builder builder = Component.text();
+
+            if (!success.isEmpty()) {
+                builder.append(Component.text(success.size()))
+                       .append(Component.text(" action(s) were "))
+                       .append(Component.text(msg)).color(NamedTextColor.WHITE);
+            } else {
+                builder.append(Component.text("Nothing was " + msg).color(NamedTextColor.WHITE));
+            }
 
             if (skipped != 0) {
                 builder.append(Component.text(", with " + skipped + " skipped").color(NamedTextColor.WHITE));
@@ -377,10 +381,17 @@ public class EspialServiceImpl implements EspialService {
 
             builder.append(Component.text(".").color(NamedTextColor.WHITE));
 
-            audience.sendMessage(builder);
+            audience.sendMessage(Espial.prefix.append(builder.build()));
         } else if (query.getType() == QueryType.LOOKUP) {
+            List<Component> contents = this.generateLookupContents(actions, spread);
+
+            if (contents.isEmpty()) {
+                audience.sendMessage(Espial.prefix.append(Component.text("No data was found.").color(NamedTextColor.RED)));
+                return;
+            }
+
             PaginationList.builder().title(Espial.prefix.append(Component.text("Lookup results").color(NamedTextColor.WHITE)))
-                    .contents(this.generateLookupContents(actions, spread))
+                    .contents(contents)
                     .sendTo(audience);
         } else {
             // Some other query type that we don't currently support
