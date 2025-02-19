@@ -5,6 +5,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import net.slimediamond.espial.api.nbt.NBTDataParser;
@@ -34,7 +36,13 @@ public class SignInfoCommand implements CommandExecutor {
                     String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(block.blockState().type()).formatted();
 
                     try {
-                        List<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
+                        Query query = Query.builder()
+                                .setType(QueryType.LOOKUP)
+                                .setMin(location)
+                                .setBlockId(blockId)
+                                .build();
+                        
+                        List<BlockAction> blocks = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
                         BlockAction target = blocks.get(0); // top index
 
                         Component name = DisplayNameUtil.getDisplayName(target);
@@ -54,7 +62,7 @@ public class SignInfoCommand implements CommandExecutor {
                         builder.append(Component.text(" (...)").color(NamedTextColor.GRAY).hoverEvent(HoverEvent.showText(info)));
                         context.sendMessage(builder.build());
 
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         context.sendMessage(Espial.prefix.append(Component.text("SQLException. Not good. Tell an admin.").color(NamedTextColor.RED)));
                         throw new RuntimeException(e);
                     }

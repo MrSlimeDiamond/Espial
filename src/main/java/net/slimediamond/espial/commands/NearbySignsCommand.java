@@ -44,13 +44,13 @@ public class NearbySignsCommand implements CommandExecutor {
                         .setMin(locations.getLeft())
                         .setMax(locations.getRight())
                         .build();
-                List<BlockAction> signs = Espial.getInstance().getDatabase().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
+                List<BlockAction> signs = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
 
                 PaginationList.builder()
                         .title(Espial.prefix.append(Component.text("Nearby signs").color(NamedTextColor.WHITE)))
                         .contents(Espial.getInstance().getEspialService().generateLookupContents(signs, true))
                         .sendTo(player);
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
