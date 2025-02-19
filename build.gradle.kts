@@ -83,6 +83,12 @@ tasks.shadowJar {
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
 }
 
+tasks.register<Jar>("apiJar") {
+    archiveClassifier.set("api")
+    from(sourceSets.main.get().output)
+    include("net/slimediamond/espial/api/**")
+}
+
 tasks.build {
     dependsOn(tasks.shadowJar)
 }
