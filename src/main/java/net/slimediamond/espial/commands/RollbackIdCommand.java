@@ -3,16 +3,15 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.transaction.TransactionStatus;
-import net.slimediamond.espial.transaction.EspialTransaction;
-import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.EspialTransactionType;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class RollbackIdCommand implements CommandExecutor {
@@ -23,7 +22,7 @@ public class RollbackIdCommand implements CommandExecutor {
 
         try {
             BlockAction action = Espial.getInstance().getDatabase().queryId(id);
-            TransactionStatus status = Espial.getInstance().getBlockLogService().rollback(action);
+            TransactionStatus status = Espial.getInstance().getEspialService().rollback(action);
 
             if (status == TransactionStatus.SUCCESS) {
                 context.sendMessage(Component.text()
@@ -36,7 +35,7 @@ public class RollbackIdCommand implements CommandExecutor {
                 ids.add(id);
                 EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.ROLLBACK, false);
 
-                Espial.getInstance().getBlockLogService().addTransaction(context.cause().root(), transaction);
+//                Espial.getInstance().getEspialService().addTransaction(context.cause().root(), transaction);
 
                 return CommandResult.success();
             } else if (status == TransactionStatus.UNSUPPORTED) {
@@ -64,7 +63,7 @@ public class RollbackIdCommand implements CommandExecutor {
 
                 return CommandResult.success();
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

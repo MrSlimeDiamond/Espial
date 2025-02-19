@@ -1,4 +1,4 @@
-package net.slimediamond.espial.nbt;
+package net.slimediamond.espial.api.nbt;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

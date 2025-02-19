@@ -4,8 +4,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,6 +15,7 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
@@ -37,18 +39,17 @@ public class NearbySignsCommand implements CommandExecutor {
 
             Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
             try {
-                List<BlockAction> signs = Espial.getInstance().getDatabase().queryRange(
-                        locations.getLeft().worldKey().formatted(),
-                        locations.getLeft().blockX(),
-                        locations.getLeft().blockY(),
-                        locations.getLeft().blockZ(),
-                        locations.getRight().blockX(),
-                        locations.getRight().blockY(),
-                        locations.getRight().blockZ(),
-                        null, null, null
-                ).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
+                Query query = Query.builder()
+                        .setType(QueryType.LOOKUP)
+                        .setMin(locations.getLeft())
+                        .setMax(locations.getRight())
+                        .build();
+                List<BlockAction> signs = Espial.getInstance().getDatabase().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
 
-                Espial.getInstance().getBlockLogService().sendResultMessage(context.cause().audience(), signs, EspialTransactionType.LOOKUP, true);
+                PaginationList.builder()
+                        .title(Espial.prefix.append(Component.text("Nearby signs").color(NamedTextColor.WHITE)))
+                        .contents(Espial.getInstance().getEspialService().generateLookupContents(signs, true))
+                        .sendTo(player);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

@@ -7,7 +7,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.util.DisplayNameUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
@@ -130,13 +130,13 @@ public class InspectCommand implements CommandExecutor {
         }).interval(1, TimeUnit.SECONDS).plugin(Espial.getInstance().getContainer()).build();
 
         ScheduledTask scheduledTask = Sponge.game().asyncScheduler().submit(task);
-        Espial.getInstance().getBlockLogService().getBlockOutlines().put(player, scheduledTask);
+        Espial.getInstance().getBlockOutlines().put(player, scheduledTask);
     }
 
     private void stopOutline(Player player) {
-        if (Espial.getInstance().getBlockLogService().getBlockOutlines().containsKey(player)) {
-            Espial.getInstance().getBlockLogService().getBlockOutlines().get(player).cancel();
-            Espial.getInstance().getBlockLogService().getBlockOutlines().remove(player);
+        if (Espial.getInstance().getBlockOutlines().containsKey(player)) {
+            Espial.getInstance().getBlockOutlines().get(player).cancel();
+            Espial.getInstance().getBlockOutlines().remove(player);
         }
     }
 

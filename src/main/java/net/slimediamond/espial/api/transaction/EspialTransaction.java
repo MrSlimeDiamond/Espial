@@ -1,4 +1,4 @@
-package net.slimediamond.espial.transaction;
+package net.slimediamond.espial.api.transaction;
 
 import net.slimediamond.espial.Espial;
 
@@ -28,30 +28,30 @@ public class EspialTransaction {
         return undone;
     }
 
-    public void undo() throws SQLException {
+    public void undo() throws Exception {
         if (type == EspialTransactionType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().getBlockLogService().restore(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
         } else if (type == EspialTransactionType.RESTORE) {
             for (int id : ids) {
-                Espial.getInstance().getBlockLogService().rollback(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
         }
 
         this.undone = true;
     }
 
-    public void redo() throws SQLException {
+    public void redo() throws Exception {
         if (type == EspialTransactionType.RESTORE) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().getBlockLogService().restore(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
             }
         } else if (type == EspialTransactionType.ROLLBACK) {
             for (int id : ids) {
-                Espial.getInstance().getBlockLogService().rollback(Espial.getInstance().getDatabase().queryId(id));
+                Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
         }
 

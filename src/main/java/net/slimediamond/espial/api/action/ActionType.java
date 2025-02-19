@@ -1,4 +1,4 @@
-package net.slimediamond.espial.action;
+package net.slimediamond.espial.api.action;
 
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.block.transaction.Operations;

@@ -1,10 +1,9 @@
-package net.slimediamond.espial.nbt;
+package net.slimediamond.espial.api.nbt;
 
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 /**
  * Stored NBT data on a block.

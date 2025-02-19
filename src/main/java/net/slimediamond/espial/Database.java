@@ -2,10 +2,11 @@ package net.slimediamond.espial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.slimediamond.espial.action.ActionType;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.nbt.json.JsonNBTData;
-import net.slimediamond.espial.nbt.NBTData;
+import net.slimediamond.espial.api.action.ActionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.nbt.json.JsonNBTData;
+import net.slimediamond.espial.api.nbt.NBTData;
+import net.slimediamond.espial.api.query.Query;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
@@ -222,6 +223,63 @@ public class Database {
         }
     }
 
+    public ArrayList<BlockAction> query(Query query) throws SQLException {
+        Timestamp timestamp = query.getTimestamp() == null ? Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
+        String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
+
+        ArrayList<BlockAction> actions = new ArrayList<>();
+        ResultSet rs;
+
+        if (query.getMax() == null) {
+            // single. Query coords
+            queryCoords.setString(1, query.getMin().worldKey().formatted());
+            queryCoords.setInt(2, query.getMin().blockX());
+            queryCoords.setInt(3, query.getMin().blockY());
+            queryCoords.setInt(4, query.getMin().blockZ());
+            queryCoords.setString(5, uuid);
+            queryCoords.setString(6, query.getBlockId());
+            queryCoords.setTimestamp(7, timestamp);
+
+            rs = queryCoords.executeQuery();
+        } else {
+            // Ranged lookup
+
+            // Rearrange from smallest to biggest for things to actually get picked up
+            int[] x = {query.getMin().blockX(), query.getMax().blockX()};
+            int[] y = {query.getMin().blockY(), query.getMax().blockY()};
+            int[] z = {query.getMin().blockZ(), query.getMax().blockZ()};
+
+            // The smallest number would be at the start.
+            Arrays.sort(x);
+            Arrays.sort(y);
+            Arrays.sort(z);
+
+            queryRange.setString(1, query.getMin().worldKey().formatted());
+
+            queryRange.setInt(2, x[0]);
+            queryRange.setInt(3, x[1]);
+
+            queryRange.setInt(4, y[0]);
+            queryRange.setInt(5, y[1]);
+
+            queryRange.setInt(6, z[0]);
+            queryRange.setInt(7, z[1]);
+
+            queryRange.setString(8, uuid);
+            queryRange.setString(9, query.getBlockId());
+            queryRange.setTimestamp(10, timestamp);
+
+            rs = queryRange.executeQuery();
+        }
+
+        while (rs.next()) {
+            actions.add(blockFromRs(rs));
+        }
+
+        return actions;
+    }
+
+    @Deprecated(forRemoval = true)
     public ArrayList<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)
@@ -261,6 +319,7 @@ public class Database {
         return null;
     }
 
+    @Deprecated(forRemoval = true)
     public ArrayList<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
         if (timestamp == null) {
             // Please let me know if you are querying records from before 1970 :)

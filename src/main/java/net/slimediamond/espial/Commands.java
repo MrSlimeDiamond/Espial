@@ -2,8 +2,10 @@ package net.slimediamond.espial;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.commands.*;
-import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.api.transaction.EspialTransactionType;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.Command;
@@ -57,7 +59,7 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.LOOKUP))
+                        .executor(context -> Espial.getInstance().getEspialService().execute(context, QueryType.LOOKUP))
                         .build(), "lookup", "l"
                 )
                 .addChild(Command.builder()
@@ -66,7 +68,15 @@ public class Commands {
                         .executor(context -> {
                             if (context.cause().root() instanceof Player player) {
                                 Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
-                                Espial.getInstance().getBlockLogService().process(locations.getLeft(), locations.getRight(), context.cause().audience(), EspialTransactionType.LOOKUP, true, null, null, null, false);
+                                Query query = Query.builder()
+                                                .setMin(locations.getLeft())
+                                                .setMax(locations.getRight())
+                                                .build();
+                                try {
+                                    Espial.getInstance().getEspialService().process(query, player, false);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
                             } else {
                                 context.sendMessage(Component.text("You must be a player to use this.").color(NamedTextColor.RED));
                             }
@@ -83,7 +93,7 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.ROLLBACK))
+                        .executor(context -> Espial.getInstance().getEspialService().execute(context, QueryType.ROLLBACK))
                         .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
@@ -94,7 +104,7 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.RESTORE))
+                        .executor(context -> Espial.getInstance().getEspialService().execute(context, QueryType.RESTORE))
                         .build(), "restore", "rs"
                 )
                 .addChild(Command.builder()

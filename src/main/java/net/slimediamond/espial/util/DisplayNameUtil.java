@@ -3,7 +3,7 @@ package net.slimediamond.espial.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.api.action.BlockAction;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 

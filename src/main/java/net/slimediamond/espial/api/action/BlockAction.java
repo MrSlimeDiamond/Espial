@@ -1,21 +1,15 @@
-package net.slimediamond.espial.action;
+package net.slimediamond.espial.api.action;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.nbt.NBTData;
+import net.slimediamond.espial.api.nbt.NBTData;
 import org.spongepowered.api.ResourceKey;
-import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Keys;
-import org.spongepowered.api.data.value.ListValue;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,7 +21,8 @@ public interface BlockAction {
     int getId();
 
     /**
-     * Get the actor's UUID, for players, this is a normal UUID string. Server is "0", and other entities are just the names.
+     * Get the actor's UUID, for players, this is a normal UUID string.
+     * Server is "0", and other entities are just the names.
      * @return Actor UUID
      */
     String getUuid();

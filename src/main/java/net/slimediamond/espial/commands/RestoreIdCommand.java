@@ -3,10 +3,10 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.transaction.TransactionStatus;
-import net.slimediamond.espial.transaction.EspialTransaction;
-import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.EspialTransactionType;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -23,7 +23,7 @@ public class RestoreIdCommand implements CommandExecutor {
 
         try {
             BlockAction action = Espial.getInstance().getDatabase().queryId(id);
-            TransactionStatus status = Espial.getInstance().getBlockLogService().restore(action);
+            TransactionStatus status = Espial.getInstance().getEspialService().restore(action);
 
             if (status == TransactionStatus.SUCCESS) {
                 context.sendMessage(Component.text()
@@ -36,7 +36,7 @@ public class RestoreIdCommand implements CommandExecutor {
                 ids.add(id);
                 EspialTransaction transaction = new EspialTransaction(ids, EspialTransactionType.RESTORE, false);
 
-                Espial.getInstance().getBlockLogService().addTransaction(context.cause().root(), transaction);
+//                Espial.getInstance().getEspialService().addTransaction(context.cause().root(), transaction);
 
                 return CommandResult.success();
             } else if (status == TransactionStatus.UNSUPPORTED) {
@@ -64,7 +64,7 @@ public class RestoreIdCommand implements CommandExecutor {
 
                 return CommandResult.success();
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

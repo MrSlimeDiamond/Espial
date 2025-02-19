@@ -16,7 +16,7 @@ public class InteractiveToggleCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         if (context.cause().root() instanceof Player player) {
-            ArrayList<UUID> inspectingPlayers = Espial.getInstance().getBlockLogService().getInspectingPlayers();
+            ArrayList<UUID> inspectingPlayers = Espial.getInstance().getInspectingPlayers();
             if (inspectingPlayers.contains(player.profile().uuid())) {
                 // turn it off
                 inspectingPlayers.remove(player.profile().uuid());
