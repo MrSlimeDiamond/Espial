@@ -3,7 +3,6 @@ package net.slimediamond.espial.api.transaction;
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.user.User;
 
 import java.util.List;
 

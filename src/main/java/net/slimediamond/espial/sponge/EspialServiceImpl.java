@@ -18,9 +18,7 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
-import net.slimediamond.espial.api.user.User;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
-import net.slimediamond.espial.sponge.user.UserImpl;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -354,6 +352,8 @@ public class EspialServiceImpl implements EspialService {
     @Override
     public void submit(EspialTransaction transaction) throws Exception {
         this.addTransaction(transaction.getUser(), transaction);
+
+        // TODO: Asynchronous processing, and probably some queue
         this.process(transaction.getQuery(), transaction.getAudience());
     }
 
