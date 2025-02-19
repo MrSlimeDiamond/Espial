@@ -4,15 +4,18 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.user.User;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
+import net.slimediamond.espial.sponge.user.UserImpl;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +38,14 @@ public class RestoreIdCommand implements CommandExecutor {
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
-                EspialTransaction transaction = new EspialTransaction(ids, QueryType.RESTORE, false);
 
-                Espial.getInstance().addTransaction(context.cause().audience(), transaction);
+                Query query = Query.builder()
+                        .setType(QueryType.RESTORE)
+                        .setMin(action.getServerLocation())
+                        .build();
+
+                EspialTransaction transaction = new EspialTransactionImpl(ids, query, context.cause().root(), context.cause().audience());
+                Espial.getInstance().getEspialService().submit(transaction);
 
                 return CommandResult.success();
             } else if (status == TransactionStatus.UNSUPPORTED) {

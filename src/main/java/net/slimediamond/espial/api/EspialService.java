@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -24,7 +25,7 @@ public interface EspialService {
      * @param transaction The transaction to submit
      * @return The status of the submission ({@link TransactionStatus}
      */
-    TransactionStatus execute(EspialTransaction transaction);
+    TransactionStatus execute(EspialTransactionImpl transaction);
 
     /**
      * Set the sign data for a specific action.
@@ -75,6 +76,12 @@ public interface EspialService {
      * @param spread Whether to spread the results
      */
     void process(Query query, Audience audience, boolean spread) throws Exception;
+
+    /**
+     * Submit a transaction
+     * @param transaction Transaction to submit
+     */
+    void submit(EspialTransaction transaction) throws Exception;
 
     default void rollbackAll(List<BlockAction> actions) throws Exception {
         for (BlockAction action : actions) {

@@ -4,9 +4,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.*;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -34,9 +36,13 @@ public class RollbackIdCommand implements CommandExecutor {
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
-                EspialTransaction transaction = new EspialTransaction(ids, QueryType.ROLLBACK, false);
+                Query query = Query.builder()
+                        .setType(QueryType.ROLLBACK)
+                        .setMin(action.getServerLocation())
+                        .build();
 
-                Espial.getInstance().addTransaction(context.cause().audience(), transaction);
+                EspialTransaction transaction = new EspialTransactionImpl(ids, query, context.cause().root(), context.cause().audience());
+                Espial.getInstance().getEspialService().submit(transaction);
 
                 return CommandResult.success();
             } else if (status == TransactionStatus.UNSUPPORTED) {

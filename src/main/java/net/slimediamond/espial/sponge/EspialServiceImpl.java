@@ -1,4 +1,4 @@
-package net.slimediamond.espial;
+package net.slimediamond.espial.sponge;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -8,6 +8,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.slimediamond.espial.CommandParameters;
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
@@ -16,6 +18,9 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.user.User;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
+import net.slimediamond.espial.sponge.user.UserImpl;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -39,6 +44,20 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class EspialServiceImpl implements EspialService {
+    private Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
+
+    public void addTransaction(Object key, EspialTransaction transaction) {
+        if (this.transactions.containsKey(key)) {
+            // add to the existing arraylist with a new transaction:
+            this.transactions.get(key).add(transaction);
+        } else {
+            // create a new one with the source object
+            List<EspialTransaction> transactions = new ArrayList<>();
+            transactions.add(transaction);
+
+            this.transactions.put(key, transactions);
+        }
+    }
 
     private <T> T parseFilter(CommandContext context, String flag, Parameter.Value<T> parameter) {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
@@ -56,7 +75,7 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public TransactionStatus execute(EspialTransaction transaction) {
+    public TransactionStatus execute(EspialTransactionImpl transaction) {
         return null;
     }
 
@@ -332,6 +351,16 @@ public class EspialServiceImpl implements EspialService {
         return TransactionStatus.UNSUPPORTED;
     }
 
+    @Override
+    public void submit(EspialTransaction transaction) throws Exception {
+        this.addTransaction(transaction.getUser(), transaction);
+        this.process(transaction.getQuery(), transaction.getAudience());
+    }
+
+    public void process(Query query, Audience audience) throws Exception {
+        this.process(query, audience, false);
+    }
+
     public void process(Query query, Audience audience, boolean spread) throws Exception {
         List<BlockAction> actions = this.query(query);
 
@@ -361,9 +390,6 @@ public class EspialServiceImpl implements EspialService {
                     skipped++;
                 }
             }
-
-            EspialTransaction transaction = new EspialTransaction(success, query.getType(), false);
-            Espial.getInstance().addTransaction(audience, transaction);
 
             TextComponent.Builder builder = Component.text();
 
