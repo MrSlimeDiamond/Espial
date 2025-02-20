@@ -1,6 +1,5 @@
 package net.slimediamond.espial.commands;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
@@ -18,20 +17,13 @@ import java.util.List;
 
 public class TransactionCommands {
 
-    private static void sendResult(Audience audience, String verb, int actions) {
-        if (actions == 0) {
-            // nothing was undone
-            audience.sendMessage(Espial.prefix.append(Component.text("Nothing to undo.").color(NamedTextColor.RED)));
-            return;
-        }
-        audience.sendMessage(Espial.prefix.append(Component.text(actions + " action(s) have been " + verb).color(NamedTextColor.WHITE)));
-    }
     public static class Undo implements CommandExecutor {
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
             try {
                 int actions = Espial.getInstance().getTransactionManager().undo(context.cause().root());
-                sendResult(context.cause().audience(), "undone", actions);
+                context.sendMessage(Espial.prefix.append(Component.text(actions + " action(s) have been undone.").color(NamedTextColor.WHITE)));
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -45,7 +37,7 @@ public class TransactionCommands {
         public CommandResult execute(CommandContext context) throws CommandException {
             try {
                 int actions = Espial.getInstance().getTransactionManager().redo(context.cause().root());
-                sendResult(context.cause().audience(), "redone", actions);
+                context.sendMessage(Espial.prefix.append(Component.text(actions + " action(s) have been redone").color(NamedTextColor.WHITE)));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
