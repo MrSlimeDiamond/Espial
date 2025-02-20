@@ -8,7 +8,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.util.DisplayNameUtil;
+import net.slimediamond.espial.util.MessageUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandExecutor;
@@ -54,7 +54,7 @@ public class InspectCommand implements CommandExecutor {
 
             this.teleportPlayer(player, action);
 
-            Component displayName = DisplayNameUtil.getDisplayName(action);
+            Component displayName = MessageUtil.getDisplayName(action);
             String undoActionMessage;
             String undoCommand;
             if (action.isRolledBack()) {

@@ -42,36 +42,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class EspialServiceImpl implements EspialService {
-    private Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
-
-    public void addTransaction(Object key, EspialTransaction transaction) {
-        if (this.transactions.containsKey(key)) {
-            // add to the existing arraylist with a new transaction:
-            this.transactions.get(key).add(transaction);
-        } else {
-            // create a new one with the source object
-            List<EspialTransaction> transactions = new ArrayList<>();
-            transactions.add(transaction);
-
-            this.transactions.put(key, transactions);
-        }
-    }
-
-    private <T> T parseFilter(CommandContext context, String flag, Parameter.Value<T> parameter) {
-        return context.hasFlag(flag) ? context.requireOne(parameter) : null;
-    }
-
-    private Timestamp parseTimestamp(CommandContext context, QueryType type) {
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(CommandParameters.TIME);
-            return new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        }
-        if (type != QueryType.LOOKUP) {
-            context.sendMessage(Espial.prefix.append(Component.text("Defaults used: -t 3d").color(NamedTextColor.GRAY)));
-            return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-        } else return Timestamp.from(Instant.ofEpochMilli(0)); // gotta catch 'em all!
-    }
-
     @Override
     public void setSignData(BlockAction action) {
         action.getServerLocation().blockEntity().ifPresent(tileEntity -> {
@@ -90,170 +60,6 @@ public class EspialServiceImpl implements EspialService {
     @Override
     public List<BlockAction> query(Query query) throws SQLException {
         return Espial.getInstance().getDatabase().query(query);
-    }
-
-    @Override
-    public List<Component> generateLookupContents(List<BlockAction> actions, boolean spread) {
-        List<Component> contents = new ArrayList<>();
-
-        if (spread) {
-            // reverse chronological order
-            actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
-            actions.forEach(block -> {
-                Component displayName = DisplayNameUtil.getDisplayName(block);
-                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.getTimestamp().getTime()));
-                TextComponent.Builder msg = Component.text()
-                        .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
-                        .append(Component.space())
-                        .append(displayName)
-                        .append(Component.space())
-                        .append(Component.text(block.getActionType().getHumanReadableVerb()).color(NamedTextColor.GREEN))
-                        .append(Component.space())
-                        .append(Component.text(block.getBlockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.getId()))
-                        .hoverEvent(HoverEvent.showText(Espial.prefix
-                                .append(Component.newline())
-                                .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.getId()).color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.getActorItem()).color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
-                        ));
-
-                block.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
-                    msg.append(Component.text(" (...)")
-                            .color(NamedTextColor.GRAY)
-                            .hoverEvent(HoverEvent.showText(Espial.prefix.append(
-                                    Component.text().color(NamedTextColor.WHITE).append(component)))));
-                });
-
-                if (block.isRolledBack()) {
-                    msg.decorate(TextDecoration.STRIKETHROUGH);
-                }
-                contents.add(msg.build());
-            });
-        } else {
-            // Grouped output in reverse chronological order
-            Map<BlockTracker, Integer> groupedBlocks = new HashMap<>();
-            Map<BlockTracker, Long> latestTimes = new HashMap<>();
-
-            actions.forEach(block -> {
-                Component displayName = DisplayNameUtil.getDisplayName(block);
-                BlockTracker key = new BlockTracker(displayName, block.getActionType(), block.getBlockId());
-                groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
-                long time = block.getTimestamp().getTime();
-                latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
-            });
-
-            List<Map.Entry<BlockTracker, Integer>> sortedEntries = new ArrayList<>(groupedBlocks.entrySet());
-            sortedEntries.sort((e1, e2) ->
-                    Long.compare(latestTimes.get(e2.getKey()), latestTimes.get(e1.getKey()))
-            );
-
-            sortedEntries.forEach(entry -> {
-                BlockTracker key = entry.getKey();
-                int count = entry.getValue();
-                contents.add(Component.text()
-                        .append(key.name())
-                        .append(Component.space())
-                        .append(Component.text(key.actionType().getHumanReadableVerb()).color(NamedTextColor.GREEN))
-                        .append(Component.space())
-                        .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
-                        .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .build());
-            });
-        }
-        return contents;
-    }
-
-    @Override
-    public CommandResult execute(CommandContext context, QueryType type) {
-        Player player;
-        if (context.cause().root() instanceof Player) {
-            player = (Player) context.cause().root();
-        } else {
-            return CommandResult.error(Component.text("This command can only be used by players.").color(NamedTextColor.RED));
-        }
-
-        Timestamp timestamp;
-        try {
-            timestamp = parseTimestamp(context, type);
-        } catch (IllegalArgumentException e) {
-            context.sendMessage(Espial.prefix.append(Component.text().append(Component.text("Could not parse time argument '").append(Component.text(context.requireOne(CommandParameters.TIME)).append(Component.text("'.")))).color(NamedTextColor.RED)));
-            return CommandResult.success();
-        }
-        UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
-
-        Query.Builder builder = Query.builder()
-                .setType(type)
-                .setPlayerUUID(uuid)
-                .setUser(player)
-                .setSpread(context.hasFlag("s"))
-                .setAudience(player)
-                .setTimestamp(timestamp);
-
-        BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
-        if (blockState != null) {
-            String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(blockState.type()).formatted();
-            builder.setBlockId(blockId);
-        }
-
-        if (context.hasFlag("worldedit")) { // Range lookup
-            try {
-                Optional<Pair<ServerLocation, ServerLocation>> selectionOptional = WorldEditSelectionUtil.getWorldEditRegion(player);
-
-                if (selectionOptional.isPresent()) {
-                    Pair<ServerLocation, ServerLocation> selection = selectionOptional.get();
-                    context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
-                    builder.setMin(selection.getLeft());
-                    builder.setMax(selection.getRight());
-                } else {
-                    context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
-                    return CommandResult.success();
-                }
-            } catch (NoClassDefFoundError e) {
-                context.sendMessage(Component.text("It doesn't look like WorldEdit is installed on this server!").color(NamedTextColor.RED));
-                return CommandResult.success();
-            }
-
-        } else if (context.hasFlag("range")) {
-            // -r <block range>
-            int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
-
-            Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
-
-            context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using a cuboid with a range of " + range + " blocks for this query.").color(NamedTextColor.WHITE)).build());
-
-            builder.setMin(selection.getLeft());
-            builder.setMax(selection.getRight());
-        } else {
-            // Ray trace block (playing is looking at target)
-            // get the block the player is targeting
-
-            Optional<LocatableBlock> result = RayTraceUtil.getBlockFacingPlayer(player);
-
-            if (result.isPresent()) {
-                LocatableBlock block = result.get();
-
-                builder.setMin(block.serverLocation());
-            } else {
-                context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
-                return CommandResult.success();
-            }
-        }
-
-        try {
-            this.submit(builder.build());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return CommandResult.success();
     }
 
     public TransactionStatus rollback(BlockAction action) throws SQLException {
@@ -354,7 +160,12 @@ public class EspialServiceImpl implements EspialService {
         List<BlockAction> actions = this.query(query);
         List<Integer> ids = actions.stream().map(BlockAction::getId).toList();
         EspialTransaction transaction = new EspialTransactionImpl(ids, query);
-        Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+
+        // Commit a transaction but only if we will use it later
+        // for example: lookups won't be added here, but rollbacks will
+        if (query.getType().isReversible()) {
+            Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+        }
 
         // TODO: Asynchronous processing, and probably some queue
         this.process(actions, query.getType(), query.getAudience(), query.isSpread());
@@ -405,7 +216,7 @@ public class EspialServiceImpl implements EspialService {
 
             audience.sendMessage(Espial.prefix.append(builder.build()));
         } else if (type == QueryType.LOOKUP) {
-            List<Component> contents = this.generateLookupContents(actions, spread);
+            List<Component> contents = MessageUtil.generateLookupContents(actions, spread);
 
             if (contents.isEmpty()) {
                 audience.sendMessage(Espial.prefix.append(Component.text("No data was found.").color(NamedTextColor.RED)));
@@ -420,6 +231,4 @@ public class EspialServiceImpl implements EspialService {
             audience.sendMessage(Espial.prefix.append(Component.text("This query type is not currently supported.").color(NamedTextColor.RED)));
         }
     }
-
-    private record BlockTracker(Component name, ActionType actionType, String blockId) {}
 }

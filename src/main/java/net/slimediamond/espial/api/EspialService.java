@@ -1,12 +1,8 @@
 package net.slimediamond.espial.api;
 
-import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
-import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
-import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.parameter.CommandContext;
 
 import java.util.List;
 
@@ -27,22 +23,6 @@ public interface EspialService {
      * @param query Query
      */
     List<BlockAction> query(Query query) throws Exception;
-
-    /**
-     * Generate a {@link List} of components from some {@link BlockAction}s
-     * @param actions Actions to lookup
-     * @param spread Whether to spread the results
-     * @return Contents
-     */
-    List<Component> generateLookupContents(List<BlockAction> actions, boolean spread);
-
-    /**
-     * Execute a command which uses queries
-     * @param context Command context
-     * @param type Type to query
-     * @return Command result
-     */
-    CommandResult execute(CommandContext context, QueryType type);
 
     /**
      * Undo an action

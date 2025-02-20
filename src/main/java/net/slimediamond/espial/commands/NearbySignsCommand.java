@@ -8,6 +8,7 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.util.BlockUtil;
+import net.slimediamond.espial.util.MessageUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.CommandExecutor;
@@ -50,7 +51,7 @@ public class NearbySignsCommand implements CommandExecutor {
 
                 PaginationList.builder()
                         .title(Espial.prefix.append(Component.text("Nearby signs").color(NamedTextColor.WHITE)))
-                        .contents(Espial.getInstance().getEspialService().generateLookupContents(signs, true))
+                        .contents(MessageUtil.generateLookupContents(signs, true))
                         .sendTo(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
