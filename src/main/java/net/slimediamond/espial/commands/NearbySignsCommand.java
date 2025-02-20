@@ -43,6 +43,8 @@ public class NearbySignsCommand implements CommandExecutor {
                         .setType(QueryType.LOOKUP)
                         .setMin(locations.getLeft())
                         .setMax(locations.getRight())
+                        .setUser(player)
+                        .setAudience(player)
                         .build();
                 List<BlockAction> signs = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
 

@@ -8,8 +8,6 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.transaction.EspialTransaction;
-import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -21,6 +19,11 @@ import java.util.List;
 public class TransactionCommands {
 
     private static void sendResult(Audience audience, String verb, int actions) {
+        if (actions == 0) {
+            // nothing was undone
+            audience.sendMessage(Espial.prefix.append(Component.text("Nothing to undo.").color(NamedTextColor.RED)));
+            return;
+        }
         audience.sendMessage(Espial.prefix.append(Component.text(actions + " action(s) have been " + verb).color(NamedTextColor.WHITE)));
     }
     public static class Undo implements CommandExecutor {
@@ -63,9 +66,11 @@ public class TransactionCommands {
                 Query query = Query.builder()
                         .setType(QueryType.ROLLBACK)
                         .setMin(action.getServerLocation())
+                        .setUser(context.cause().root())
+                        .setAudience(context.cause().audience())
                         .build();
 
-                Espial.getInstance().getEspialService().submit(new EspialTransactionImpl(ids, query, context.cause().root(), context.cause().audience()));
+                Espial.getInstance().getEspialService().submit(query);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -86,9 +91,11 @@ public class TransactionCommands {
                 Query query = Query.builder()
                         .setType(QueryType.RESTORE)
                         .setMin(action.getServerLocation())
+                        .setUser(context.cause().root())
+                        .setAudience(context.cause().audience())
                         .build();
 
-                Espial.getInstance().getEspialService().submit(new EspialTransactionImpl(ids, query, context.cause().root(), context.cause().audience()));
+                Espial.getInstance().getEspialService().submit(query);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

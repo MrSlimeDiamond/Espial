@@ -16,12 +16,12 @@ public class EspialTransactionImpl implements EspialTransaction {
     private Audience audience;
     private boolean undone;
 
-    public EspialTransactionImpl(List<Integer> ids, Query query, Object user, Audience audience) {
+    public EspialTransactionImpl(List<Integer> ids, Query query) {
         this.ids = ids;
         this.type = query.getType();
         this.query = query;
-        this.user = user;
-        this.audience = audience;
+        this.user = query.getUser();
+        this.audience = query.getAudience();
         this.undone = false;
     }
 

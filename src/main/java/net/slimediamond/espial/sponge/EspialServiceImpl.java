@@ -18,6 +18,7 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -191,6 +192,9 @@ public class EspialServiceImpl implements EspialService {
         Query.Builder builder = Query.builder()
                 .setType(type)
                 .setPlayerUUID(uuid)
+                .setUser(player)
+                .setSpread(context.hasFlag("s"))
+                .setAudience(player)
                 .setTimestamp(timestamp);
 
         BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
@@ -244,7 +248,7 @@ public class EspialServiceImpl implements EspialService {
         }
 
         try {
-            this.process(builder.build(), context.cause().audience(), context.hasFlag("s"));
+            this.submit(builder.build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -285,7 +289,9 @@ public class EspialServiceImpl implements EspialService {
                 BlockState state = action.getState();
                 action.getServerLocation().setBlock(state);
 
-                List<BlockAction> actions = this.query(Query.builder().setMin(action.getServerLocation()).build()).stream().filter(a -> !a.isRolledBack()).toList();
+                List<BlockAction> actions = this.query(Query.builder()
+                        .setMin(action.getServerLocation())
+                        .build()).stream().filter(a -> !a.isRolledBack()).toList();
                 if (actions.size() >= 2) {
                     setSignData(actions.get(1));
                 }
@@ -344,24 +350,21 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public void submit(EspialTransaction transaction) throws Exception {
+    public void submit(Query query) throws Exception {
+        List<BlockAction> actions = this.query(query);
+        List<Integer> ids = actions.stream().map(BlockAction::getId).toList();
+        EspialTransaction transaction = new EspialTransactionImpl(ids, query);
         Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
 
         // TODO: Asynchronous processing, and probably some queue
-        this.process(transaction.getQuery(), transaction.getAudience());
+        this.process(actions, query.getType(), query.getAudience(), query.isSpread());
     }
 
-    public void process(Query query, Audience audience) throws Exception {
-        this.process(query, audience, false);
-    }
-
-    public void process(Query query, Audience audience, boolean spread) throws Exception {
-        List<BlockAction> actions = this.query(query);
-
-        if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
+    private void process(List<BlockAction> actions, QueryType type, Audience audience, boolean spread) throws Exception {
+        if (type == QueryType.ROLLBACK || type == QueryType.RESTORE) {
             String msg = "processed";
 
-            switch (query.getType()) {
+            switch (type) {
                 case ROLLBACK -> msg = "rolled back";
                 case RESTORE -> msg = "restored";
             }
@@ -371,7 +374,7 @@ public class EspialServiceImpl implements EspialService {
 
             for (BlockAction action : actions) {
                 TransactionStatus status;
-                switch (query.getType()) {
+                switch (type) {
                     case ROLLBACK -> status = this.rollback(action);
                     case RESTORE -> status = this.restore(action);
                     default -> status = TransactionStatus.UNSUPPORTED;
@@ -401,7 +404,7 @@ public class EspialServiceImpl implements EspialService {
             builder.append(Component.text(".").color(NamedTextColor.WHITE));
 
             audience.sendMessage(Espial.prefix.append(builder.build()));
-        } else if (query.getType() == QueryType.LOOKUP) {
+        } else if (type == QueryType.LOOKUP) {
             List<Component> contents = this.generateLookupContents(actions, spread);
 
             if (contents.isEmpty()) {

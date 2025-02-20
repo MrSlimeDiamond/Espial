@@ -40,6 +40,8 @@ public class SignInfoCommand implements CommandExecutor {
                                 .setType(QueryType.LOOKUP)
                                 .setMin(location)
                                 .setBlockId(blockId)
+                                .setUser(player)
+                                .setAudience(player)
                                 .build();
                         
                         List<BlockAction> blocks = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();

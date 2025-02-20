@@ -71,9 +71,11 @@ public class Commands {
                                                 .setType(QueryType.LOOKUP)
                                                 .setMin(locations.getLeft())
                                                 .setMax(locations.getRight())
+                                                .setUser(player)
+                                                .setAudience(player)
                                                 .build();
                                 try {
-                                    Espial.getInstance().getEspialService().process(query, player, false);
+                                    Espial.getInstance().getEspialService().submit(query);
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }

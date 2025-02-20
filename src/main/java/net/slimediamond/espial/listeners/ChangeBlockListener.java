@@ -43,8 +43,11 @@ public class ChangeBlockListener {
                     Query query = Query.builder()
                             .setType(QueryType.LOOKUP)
                             .setMin(location)
+                            .setUser(player)
+                            .setAudience(player)
+                            .setSpread(true)
                             .build();
-                    Espial.getInstance().getEspialService().process(query, player, true);
+                    Espial.getInstance().getEspialService().submit(query);
                 }
             }
         }
@@ -70,10 +73,13 @@ public class ChangeBlockListener {
                 BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
 
                 Query query = Query.builder()
-                                .setType(QueryType.LOOKUP)
-                                .setMin(block.location().get())
-                                .build();
-                Espial.getInstance().getEspialService().process(query, player, true);
+                        .setType(QueryType.LOOKUP)
+                        .setMin(block.location().get())
+                        .setUser(player)
+                        .setAudience(player)
+                        .setSpread(true)
+                        .build();
+                Espial.getInstance().getEspialService().submit(query);
                 return;
             }
         }

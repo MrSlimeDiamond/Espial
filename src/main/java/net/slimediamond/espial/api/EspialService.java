@@ -1,11 +1,9 @@
 package net.slimediamond.espial.api;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -61,18 +59,10 @@ public interface EspialService {
     TransactionStatus restore(BlockAction action) throws Exception;
 
     /**
-     * Process a query from a player
-     * @param query The query to process
-     * @param audience Where to send the output to
-     * @param spread Whether to spread the results
+     * Submit a query
+     * @param query The query to be submitted
      */
-    void process(Query query, Audience audience, boolean spread) throws Exception;
-
-    /**
-     * Submit a transaction
-     * @param transaction Transaction to submit
-     */
-    void submit(EspialTransaction transaction) throws Exception;
+    void submit(Query query) throws Exception;
 
     default void rollbackAll(List<BlockAction> actions) throws Exception {
         for (BlockAction action : actions) {

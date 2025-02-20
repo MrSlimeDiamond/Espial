@@ -1,6 +1,7 @@
 package net.slimediamond.espial.api.query;
 
-import org.spongepowered.api.block.BlockState;
+import net.kyori.adventure.audience.Audience;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import javax.annotation.Nullable;
@@ -46,6 +47,25 @@ public interface Query {
     @Nullable
     String getBlockId();
 
+    /**
+     * The user which called this
+     * Identified for 
+     * @return
+     */
+    Object getUser();
+
+    /**
+     * An audience to call back to
+     * @return Audience
+     */
+    Audience getAudience();
+
+    /**
+     * Whether to spread the results. Only looks on {@link QueryType} LOOKUP
+     * @return Spread
+     */
+    boolean isSpread();
+
     static Builder builder() {
         return new Builder();
     }
@@ -57,6 +77,9 @@ public interface Query {
         private Timestamp timestamp;
         private UUID playerUUID;
         private String blockId;
+        private Object user;
+        private Audience audience;
+        boolean spread;
 
         public Builder setType(QueryType type) {
             this.type = type;
@@ -85,6 +108,21 @@ public interface Query {
 
         public Builder setBlockId(@Nullable String blockId) {
             this.blockId = blockId;
+            return this;
+        }
+
+        public Builder setUser(@NonNull Object user) {
+            this.user = user;
+            return this;
+        }
+
+        public Builder setAudience(@NonNull Audience audience) {
+            this.audience = audience;
+            return this;
+        }
+
+        public Builder setSpread(boolean spread) {
+            this.spread= spread;
             return this;
         }
 
@@ -118,6 +156,21 @@ public interface Query {
                 @Override
                 public @Nullable String getBlockId() {
                     return blockId;
+                }
+
+                @Override
+                public Object getUser() {
+                    return user;
+                }
+
+                @Override
+                public Audience getAudience() {
+                    return audience;
+                }
+
+                @Override
+                public boolean isSpread() {
+                    return spread;
                 }
             };
         }
