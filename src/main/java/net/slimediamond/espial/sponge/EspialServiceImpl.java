@@ -18,7 +18,6 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
-import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -70,11 +69,6 @@ public class EspialServiceImpl implements EspialService {
             context.sendMessage(Espial.prefix.append(Component.text("Defaults used: -t 3d").color(NamedTextColor.GRAY)));
             return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
         } else return Timestamp.from(Instant.ofEpochMilli(0)); // gotta catch 'em all!
-    }
-
-    @Override
-    public TransactionStatus execute(EspialTransactionImpl transaction) {
-        return null;
     }
 
     @Override
@@ -351,7 +345,7 @@ public class EspialServiceImpl implements EspialService {
 
     @Override
     public void submit(EspialTransaction transaction) throws Exception {
-        this.addTransaction(transaction.getUser(), transaction);
+        Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
 
         // TODO: Asynchronous processing, and probably some queue
         this.process(transaction.getQuery(), transaction.getAudience());
@@ -367,20 +361,19 @@ public class EspialServiceImpl implements EspialService {
         if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
             String msg = "processed";
 
+            switch (query.getType()) {
+                case ROLLBACK -> msg = "rolled back";
+                case RESTORE -> msg = "restored";
+            }
+
             List<Integer> success = new ArrayList<>();
             int skipped = 0;
 
             for (BlockAction action : actions) {
                 TransactionStatus status;
                 switch (query.getType()) {
-                    case ROLLBACK -> {
-                        status = this.rollback(action);
-                        msg = "rolled back";
-                    }
-                    case RESTORE -> {
-                        status = this.restore(action);
-                        msg = "restored";
-                    }
+                    case ROLLBACK -> status = this.rollback(action);
+                    case RESTORE -> status = this.restore(action);
                     default -> status = TransactionStatus.UNSUPPORTED;
                 }
 

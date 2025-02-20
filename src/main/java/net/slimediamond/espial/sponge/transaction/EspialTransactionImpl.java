@@ -55,7 +55,7 @@ public class EspialTransactionImpl implements EspialTransaction {
         return this.undone;
     }
 
-    public void undo() throws Exception {
+    public int undo() throws Exception {
         if (type == QueryType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
@@ -68,9 +68,11 @@ public class EspialTransactionImpl implements EspialTransaction {
         }
 
         this.undone = true;
+
+        return ids.size();
     }
 
-    public void redo() throws Exception {
+    public int redo() throws Exception {
         if (type == QueryType.RESTORE) {
             // Restore all IDs
             for (int id : ids) {
@@ -83,5 +85,7 @@ public class EspialTransactionImpl implements EspialTransaction {
         }
 
         this.undone = false;
+
+        return ids.size();
     }
 }

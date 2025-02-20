@@ -46,10 +46,10 @@ public interface EspialTransaction {
     /**
      * Undo this transaction
      */
-    void undo() throws Exception;
+    int undo() throws Exception;
 
     /**
      * Redo this transaction
      */
-    void redo() throws Exception;
+    int redo() throws Exception;
 }

@@ -6,7 +6,6 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
-import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -19,14 +18,6 @@ import java.util.List;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public interface EspialService {
-
-    /**
-     * Submit a transaction (rollback or restore)
-     * @param transaction The transaction to submit
-     * @return The status of the submission ({@link TransactionStatus}
-     */
-    TransactionStatus execute(EspialTransactionImpl transaction);
-
     /**
      * Set the sign data for a specific action.
      * @param action Action to set sign data for
