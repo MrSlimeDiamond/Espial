@@ -1,4 +1,4 @@
-package net.slimediamond.espial;
+package net.slimediamond.espial.sponge;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -8,6 +8,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.slimediamond.espial.CommandParameters;
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
@@ -39,6 +41,20 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class EspialServiceImpl implements EspialService {
+    private Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
+
+    public void addTransaction(Object key, EspialTransaction transaction) {
+        if (this.transactions.containsKey(key)) {
+            // add to the existing arraylist with a new transaction:
+            this.transactions.get(key).add(transaction);
+        } else {
+            // create a new one with the source object
+            List<EspialTransaction> transactions = new ArrayList<>();
+            transactions.add(transaction);
+
+            this.transactions.put(key, transactions);
+        }
+    }
 
     private <T> T parseFilter(CommandContext context, String flag, Parameter.Value<T> parameter) {
         return context.hasFlag(flag) ? context.requireOne(parameter) : null;
@@ -53,11 +69,6 @@ public class EspialServiceImpl implements EspialService {
             context.sendMessage(Espial.prefix.append(Component.text("Defaults used: -t 3d").color(NamedTextColor.GRAY)));
             return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
         } else return Timestamp.from(Instant.ofEpochMilli(0)); // gotta catch 'em all!
-    }
-
-    @Override
-    public TransactionStatus execute(EspialTransaction transaction) {
-        return null;
     }
 
     @Override
@@ -332,11 +343,28 @@ public class EspialServiceImpl implements EspialService {
         return TransactionStatus.UNSUPPORTED;
     }
 
+    @Override
+    public void submit(EspialTransaction transaction) throws Exception {
+        Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+
+        // TODO: Asynchronous processing, and probably some queue
+        this.process(transaction.getQuery(), transaction.getAudience());
+    }
+
+    public void process(Query query, Audience audience) throws Exception {
+        this.process(query, audience, false);
+    }
+
     public void process(Query query, Audience audience, boolean spread) throws Exception {
         List<BlockAction> actions = this.query(query);
 
         if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
             String msg = "processed";
+
+            switch (query.getType()) {
+                case ROLLBACK -> msg = "rolled back";
+                case RESTORE -> msg = "restored";
+            }
 
             List<Integer> success = new ArrayList<>();
             int skipped = 0;
@@ -344,14 +372,8 @@ public class EspialServiceImpl implements EspialService {
             for (BlockAction action : actions) {
                 TransactionStatus status;
                 switch (query.getType()) {
-                    case ROLLBACK -> {
-                        status = this.rollback(action);
-                        msg = "rolled back";
-                    }
-                    case RESTORE -> {
-                        status = this.restore(action);
-                        msg = "restored";
-                    }
+                    case ROLLBACK -> status = this.rollback(action);
+                    case RESTORE -> status = this.restore(action);
                     default -> status = TransactionStatus.UNSUPPORTED;
                 }
 
@@ -361,9 +383,6 @@ public class EspialServiceImpl implements EspialService {
                     skipped++;
                 }
             }
-
-            EspialTransaction transaction = new EspialTransaction(success, query.getType(), false);
-            Espial.getInstance().addTransaction(audience, transaction);
 
             TextComponent.Builder builder = Component.text();
 

@@ -110,13 +110,13 @@ public class Commands {
                 .addChild(Command.builder()
                         .permission("espial.command.undo")
                         .shortDescription(Component.text("Undo what you just did"))
-                        .executor(new UndoCommand())
+                        .executor(new TransactionCommands.Undo())
                         .build(), "undo"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.redo")
                         .shortDescription(Component.text("Redo what you just undid"))
-                        .executor(new RedoCommand())
+                        .executor(new TransactionCommands.Redo())
                         .build(), "redo"
                 )
                 .addChild(Command.builder()
@@ -137,13 +137,13 @@ public class Commands {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollbackid")
-                        .executor(new RollbackIdCommand())
+                        .executor(new TransactionCommands.RollbackId())
                         .addParameter(CommandParameters.GENERIC_ID)
                         .build(), "rollbackid", "rbid"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.restoreid")
-                        .executor(new RestoreIdCommand())
+                        .executor(new TransactionCommands.RestoreId())
                         .addParameter(CommandParameters.GENERIC_ID)
                         .build(), "restoreid", "rsid"
                 )

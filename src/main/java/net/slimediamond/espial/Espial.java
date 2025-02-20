@@ -4,11 +4,14 @@ import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
-import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.TransactionManager;
+import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import net.slimediamond.espial.listeners.SignInteractEvent;
+import net.slimediamond.espial.sponge.EspialServiceImpl;
+import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -43,11 +46,12 @@ public class Espial {
     private final ConfigurationReference<CommentedConfigurationNode> reference;
     private final List<UUID> inspectingPlayers = new ArrayList<>();
     private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
-    private final Map<Object, List<EspialTransaction>> transactions = new HashMap<>();
+    private final Map<Object, List<EspialTransactionImpl>> transactions = new HashMap<>();
 
     private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
     private Database database;
     private EspialService espialService;
+    private TransactionManager transactionManager;
 
     @Inject
     Espial(final PluginContainer container, final Logger logger, final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode> reference) {
@@ -64,6 +68,7 @@ public class Espial {
         this.reference.save();
 
         espialService = new EspialServiceImpl();
+        transactionManager = new TransactionManagerImpl();
 
         database = new Database();
         database.open(this.config.get().jdbc());
@@ -116,6 +121,10 @@ public class Espial {
         return espialService;
     }
 
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
     public List<UUID> getInspectingPlayers() {
         return inspectingPlayers;
     }
@@ -124,24 +133,11 @@ public class Espial {
         return blockOutlines;
     }
 
-    public Map<Object, List<EspialTransaction>> getTransactions() {
+    public Map<Object, List<EspialTransactionImpl>> getTransactions() {
         return transactions;
     }
 
     public Logger getLogger() {
         return this.logger;
-    }
-
-    public void addTransaction(Object key, EspialTransaction transaction) {
-        if (this.transactions.containsKey(key)) {
-            // add to the existing arraylist with a new transaction:
-            this.transactions.get(key).add(transaction);
-        } else {
-            // create a new one with the source object
-            List<EspialTransaction> transactions = new ArrayList<>();
-            transactions.add(transaction);
-
-            this.transactions.put(key, transactions);
-        }
     }
 }

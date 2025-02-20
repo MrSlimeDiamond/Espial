@@ -18,14 +18,6 @@ import java.util.List;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public interface EspialService {
-
-    /**
-     * Submit a transaction (rollback or restore)
-     * @param transaction The transaction to submit
-     * @return The status of the submission ({@link TransactionStatus}
-     */
-    TransactionStatus execute(EspialTransaction transaction);
-
     /**
      * Set the sign data for a specific action.
      * @param action Action to set sign data for
@@ -75,6 +67,12 @@ public interface EspialService {
      * @param spread Whether to spread the results
      */
     void process(Query query, Audience audience, boolean spread) throws Exception;
+
+    /**
+     * Submit a transaction
+     * @param transaction Transaction to submit
+     */
+    void submit(EspialTransaction transaction) throws Exception;
 
     default void rollbackAll(List<BlockAction> actions) throws Exception {
         for (BlockAction action : actions) {
