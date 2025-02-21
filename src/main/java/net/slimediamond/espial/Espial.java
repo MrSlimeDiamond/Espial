@@ -46,7 +46,6 @@ public class Espial {
     private final ConfigurationReference<CommentedConfigurationNode> reference;
     private final List<UUID> inspectingPlayers = new ArrayList<>();
     private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
-    private final Map<Object, List<EspialTransactionImpl>> transactions = new HashMap<>();
 
     private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
     private Database database;
@@ -131,10 +130,6 @@ public class Espial {
 
     public Map<Player, ScheduledTask> getBlockOutlines() {
         return blockOutlines;
-    }
-
-    public Map<Object, List<EspialTransactionImpl>> getTransactions() {
-        return transactions;
     }
 
     public Logger getLogger() {
