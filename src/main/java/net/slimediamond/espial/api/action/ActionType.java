@@ -3,6 +3,9 @@ package net.slimediamond.espial.api.action;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.block.transaction.Operations;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum ActionType {
     BREAK(0),
     PLACE(1),
@@ -14,42 +17,40 @@ public enum ActionType {
     UNKNOWN(7),
     INTERACT(8);
 
+    private static final Map<Operation, ActionType> operations = Map.of(
+            Operations.BREAK.get(), BREAK,
+            Operations.PLACE.get(), PLACE,
+            Operations.DECAY.get(), DECAY,
+            Operations.GROWTH.get(), GROWTH,
+            Operations.LIQUID_DECAY.get(), LIQUID_DECAY,
+            Operations.LIQUID_SPREAD.get(), LIQUID_SPREAD,
+            Operations.MODIFY.get(), MODIFY
+    );
+
+    private static final Map<Integer, ActionType> ids = new HashMap<>();
+
+    static {
+        for (ActionType type : values()) {
+            ids.put(type.id, type);
+        }
+    }
+
     private int id;
 
     ActionType(int id) {
         this.id = id;
     }
 
-    public int id() {
+    public int getId() {
         return id;
     }
 
     public static ActionType fromOperation(Operation operation) {
-        if (operation.equals(Operations.BREAK.get())) {
-            return ActionType.BREAK;
-        } else if (operation.equals(Operations.PLACE.get())) {
-            return ActionType.PLACE;
-        } else if (operation.equals(Operations.DECAY.get())) {
-            return ActionType.DECAY;
-        } else if (operation.equals(Operations.GROWTH.get())) {
-            return ActionType.GROWTH;
-        } else if (operation.equals(Operations.LIQUID_DECAY.get())) {
-            return ActionType.LIQUID_DECAY;
-        } else if (operation.equals(Operations.LIQUID_SPREAD.get())) {
-            return ActionType.LIQUID_SPREAD;
-        } else if (operation.equals(Operations.MODIFY.get())) {
-            return ActionType.MODIFY;
-        }
-        return ActionType.UNKNOWN;
+        return operations.getOrDefault(operation, UNKNOWN);
     }
 
     public static ActionType fromId(int id) {
-        for (ActionType actionType : values()) {
-            if (actionType.id == id) {
-                return actionType;
-            }
-        }
-        return ActionType.UNKNOWN;
+        return ids.getOrDefault(id, UNKNOWN);
     }
 
     public String getHumanReadableVerb() {

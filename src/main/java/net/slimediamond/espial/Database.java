@@ -159,7 +159,7 @@ public class Database {
                 insertAction.setNull(14, Types.DOUBLE); // roll
             }
         }
-        insertAction.setInt(1, type.id());
+        insertAction.setInt(1, type.getId());
         insertAction.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
         insertAction.setString(3, uuid);
 
