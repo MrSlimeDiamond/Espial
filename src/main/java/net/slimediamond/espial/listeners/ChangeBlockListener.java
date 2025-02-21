@@ -2,13 +2,14 @@ package net.slimediamond.espial.listeners;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.nbt.NBTApplier;
-import net.slimediamond.espial.nbt.json.JsonNBTData;
-import net.slimediamond.espial.nbt.json.JsonSignData;
-import net.slimediamond.espial.transaction.EspialTransactionType;
+import net.slimediamond.espial.api.nbt.NBTApplier;
+import net.slimediamond.espial.api.nbt.json.JsonNBTData;
+import net.slimediamond.espial.api.nbt.json.JsonSignData;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.util.BlockUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -22,6 +23,7 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.util.Tristate;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,22 +33,29 @@ import java.util.Optional;
 public class ChangeBlockListener {
 
     @Listener(order = Order.EARLY)
-    public void preBlockAction(ChangeBlockEvent.Pre event) {
+    public void preBlockAction(ChangeBlockEvent.Pre event) throws Exception {
         if (event.cause().root() instanceof Player player) {
-            if (Espial.getInstance().getBlockLogService().getInspectingPlayers().contains(player.profile().uuid())) {
+            if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
 
                 event.setCancelled(true);
 
-                event.locations().forEach(location -> {
-                    Espial.getInstance().getBlockLogService().processSingle(location, player, EspialTransactionType.LOOKUP, null, null, null, true);
-                });
+                for (ServerLocation location : event.locations()) {
+                    Query query = Query.builder()
+                            .setType(QueryType.LOOKUP)
+                            .setMin(location)
+                            .setUser(player)
+                            .setAudience(player)
+                            .setSpread(true)
+                            .build();
+                    Espial.getInstance().getEspialService().submit(query);
+                }
             }
         }
     }
 
     @Listener(order = Order.LATE)
     @IsCancelled(Tristate.FALSE)
-    public void onBlockAction(ChangeBlockEvent.All event) {
+    public void onBlockAction(ChangeBlockEvent.All event) throws Exception {
         @Nullable Living living;
         Object source = event.cause().root();
 
@@ -57,13 +66,20 @@ public class ChangeBlockListener {
         }
 
         if (source instanceof Player player) {
-            if (Espial.getInstance().getBlockLogService().getInspectingPlayers().contains(player.profile().uuid())) {
+            if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
 
                 event.setCancelled(true);
 
                 BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
 
-                Espial.getInstance().getBlockLogService().processSingle(block.location().get(), player, EspialTransactionType.LOOKUP, null, null, null, true);
+                Query query = Query.builder()
+                        .setType(QueryType.LOOKUP)
+                        .setMin(block.location().get())
+                        .setUser(player)
+                        .setAudience(player)
+                        .setSpread(true)
+                        .build();
+                Espial.getInstance().getEspialService().submit(query);
                 return;
             }
         }

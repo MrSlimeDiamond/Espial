@@ -1,4 +1,4 @@
-package net.slimediamond.espial.transaction;
+package net.slimediamond.espial.api.transaction;
 
 public enum TransactionStatus {
     ALREADY_DONE,

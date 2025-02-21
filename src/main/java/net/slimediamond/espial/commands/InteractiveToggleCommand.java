@@ -10,13 +10,14 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class InteractiveToggleCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) throws CommandException {
         if (context.cause().root() instanceof Player player) {
-            ArrayList<UUID> inspectingPlayers = Espial.getInstance().getBlockLogService().getInspectingPlayers();
+            List<UUID> inspectingPlayers = Espial.getInstance().getInspectingPlayers();
             if (inspectingPlayers.contains(player.profile().uuid())) {
                 // turn it off
                 inspectingPlayers.remove(player.profile().uuid());

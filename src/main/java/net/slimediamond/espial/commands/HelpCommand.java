@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class HelpCommand implements CommandExecutor {
     @Override
     public CommandResult execute(CommandContext context) {
-        ArrayList<Component> contents = new ArrayList<>();
+        List<Component> contents = new ArrayList<>();
 
         // Show help for a specific command (if it exists)
         if (context.hasAny(CommandParameters.HELP_COMMAND)) {
@@ -43,7 +43,7 @@ public class HelpCommand implements CommandExecutor {
                        .append(Component.text("Aliases: ").color(NamedTextColor.YELLOW))
                        .append(Component.text(String.join(", ", subcommand.aliases())).color(NamedTextColor.WHITE));
 
-                ArrayList<Component> flags = new ArrayList<>();
+                List<Component> flags = new ArrayList<>();
                 subcommand.command().flags().forEach(flag -> {
                     Collection<String> aliases = flag.aliases();
                     String shortestAlias = aliases.stream().min(Comparator.comparingInt(String::length)).orElse("");

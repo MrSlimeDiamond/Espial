@@ -4,10 +4,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.action.BlockAction;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.util.BlockUtil;
-import net.slimediamond.espial.util.DisplayNameUtil;
-import net.slimediamond.espial.nbt.NBTDataParser;
+import net.slimediamond.espial.util.MessageUtil;
+import net.slimediamond.espial.api.nbt.NBTDataParser;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -17,10 +19,9 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.List;
 
 public class SignInfoCommand implements CommandExecutor {
     @Override
@@ -33,10 +34,18 @@ public class SignInfoCommand implements CommandExecutor {
                     String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(block.blockState().type()).formatted();
 
                     try {
-                        ArrayList<BlockAction> blocks = Espial.getInstance().getDatabase().queryBlock(location.world().key().formatted(), location.blockX(), location.blockY(), location.blockZ(), null, blockId, null);
+                        Query query = Query.builder()
+                                .setType(QueryType.LOOKUP)
+                                .setMin(location)
+                                .setBlockId(blockId)
+                                .setUser(player)
+                                .setAudience(player)
+                                .build();
+                        
+                        List<BlockAction> blocks = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
                         BlockAction target = blocks.get(0); // top index
 
-                        Component name = DisplayNameUtil.getDisplayName(target);
+                        Component name = MessageUtil.getDisplayName(target);
 
                         var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was last modified by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
 
@@ -53,7 +62,7 @@ public class SignInfoCommand implements CommandExecutor {
                         builder.append(Component.text(" (...)").color(NamedTextColor.GRAY).hoverEvent(HoverEvent.showText(info)));
                         context.sendMessage(builder.build());
 
-                    } catch (SQLException e) {
+                    } catch (Exception e) {
                         context.sendMessage(Espial.prefix.append(Component.text("SQLException. Not good. Tell an admin.").color(NamedTextColor.RED)));
                         throw new RuntimeException(e);
                     }

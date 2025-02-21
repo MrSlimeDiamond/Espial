@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "net.slimediamond"
-version = "1.1"
+version = "1.2"
 
 repositories {
     mavenCentral()
@@ -34,11 +34,6 @@ sponge {
         displayName("Espial")
         entrypoint("net.slimediamond.espial.Espial")
         description("Plugin for logging and viewing block actions")
-        links {
-            // homepageLink("https://spongepowered.org")
-            // sourceLink("https://spongepowered.org/source")
-            // issuesLink("https://spongepowered.org/issues")
-        }
         dependency("spongeapi") {
             loadOrder(PluginDependency.LoadOrder.AFTER)
             optional(false)
@@ -81,6 +76,13 @@ tasks.withType(AbstractArchiveTask::class).configureEach {
 tasks.shadowJar {
     mergeServiceFiles()
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
+}
+
+tasks.register<Jar>("apiJar") {
+    archiveClassifier.set("api")
+    from(sourceSets.main.get().output)
+    include("net/slimediamond/espial/api/**")
+    include("net/slimediamond/espial/Espial.class")
 }
 
 tasks.build {

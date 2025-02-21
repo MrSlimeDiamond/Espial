@@ -1,4 +1,4 @@
-package net.slimediamond.espial.nbt.json;
+package net.slimediamond.espial.api.nbt.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.slimediamond.espial.nbt.NBTData;
-import net.slimediamond.espial.nbt.SignData;
+import net.slimediamond.espial.api.nbt.NBTData;
+import net.slimediamond.espial.api.nbt.SignData;
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
 

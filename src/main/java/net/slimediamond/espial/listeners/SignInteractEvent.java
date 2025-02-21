@@ -2,12 +2,12 @@ package net.slimediamond.espial.listeners;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.action.ActionType;
+import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.nbt.NBTApplier;
-import net.slimediamond.espial.nbt.json.JsonNBTData;
-import net.slimediamond.espial.nbt.json.JsonSignData;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.nbt.NBTApplier;
+import net.slimediamond.espial.api.nbt.json.JsonNBTData;
+import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;

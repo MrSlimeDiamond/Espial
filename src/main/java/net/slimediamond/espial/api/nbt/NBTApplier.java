@@ -1,7 +1,7 @@
-package net.slimediamond.espial.nbt;
+package net.slimediamond.espial.api.nbt;
 
-import net.slimediamond.espial.action.BlockAction;
-import net.slimediamond.espial.nbt.json.JsonNBTData;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.Keys;
 

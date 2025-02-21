@@ -2,8 +2,9 @@ package net.slimediamond.espial;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.commands.*;
-import net.slimediamond.espial.transaction.EspialTransactionType;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.Command;
@@ -51,13 +52,13 @@ public class Commands {
                 .addChild(Command.builder()
                         .permission("espial.command.lookup")
                         .shortDescription(Component.text("Lookup a block or region"))
-                        .addFlag(Flag.builder().aliases("single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
+                        .addFlag(Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
                         .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
                         .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.LOOKUP))
+                        .executor(new TransactionCommands.Lookup())
                         .build(), "lookup", "l"
                 )
                 .addChild(Command.builder()
@@ -66,7 +67,18 @@ public class Commands {
                         .executor(context -> {
                             if (context.cause().root() instanceof Player player) {
                                 Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
-                                Espial.getInstance().getBlockLogService().process(locations.getLeft(), locations.getRight(), context.cause().audience(), EspialTransactionType.LOOKUP, true, null, null, null, false);
+                                Query query = Query.builder()
+                                                .setType(QueryType.LOOKUP)
+                                                .setMin(locations.getLeft())
+                                                .setMax(locations.getRight())
+                                                .setUser(player)
+                                                .setAudience(player)
+                                                .build();
+                                try {
+                                    Espial.getInstance().getEspialService().submit(query);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
                             } else {
                                 context.sendMessage(Component.text("You must be a player to use this.").color(NamedTextColor.RED));
                             }
@@ -83,7 +95,7 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.ROLLBACK))
+                        .executor(new TransactionCommands.Rollback())
                         .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
@@ -94,19 +106,19 @@ public class Commands {
                         .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
                         .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
                         .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
-                        .executor(context -> Espial.getInstance().getBlockLogService().doSelectiveCommand(context, EspialTransactionType.RESTORE))
+                        .executor(new TransactionCommands.Restore())
                         .build(), "restore", "rs"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.undo")
                         .shortDescription(Component.text("Undo what you just did"))
-                        .executor(new UndoCommand())
+                        .executor(new TransactionCommands.Undo())
                         .build(), "undo"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.redo")
                         .shortDescription(Component.text("Redo what you just undid"))
-                        .executor(new RedoCommand())
+                        .executor(new TransactionCommands.Redo())
                         .build(), "redo"
                 )
                 .addChild(Command.builder()
@@ -127,13 +139,13 @@ public class Commands {
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollbackid")
-                        .executor(new RollbackIdCommand())
+                        .executor(new TransactionCommands.RollbackId())
                         .addParameter(CommandParameters.GENERIC_ID)
                         .build(), "rollbackid", "rbid"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.restoreid")
-                        .executor(new RestoreIdCommand())
+                        .executor(new TransactionCommands.RestoreId())
                         .addParameter(CommandParameters.GENERIC_ID)
                         .build(), "restoreid", "rsid"
                 )

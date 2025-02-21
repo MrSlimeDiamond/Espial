@@ -1,9 +1,9 @@
-package net.slimediamond.espial.nbt.json;
+package net.slimediamond.espial.api.nbt.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.slimediamond.espial.nbt.SignData;
+import net.slimediamond.espial.api.nbt.SignData;
 
 import java.util.ArrayList;
 import java.util.List;
