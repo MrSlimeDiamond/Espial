@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.transaction.TransactionManager;
-import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.listeners.ChangeBlockListener;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;

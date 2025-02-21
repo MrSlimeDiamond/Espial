@@ -1,13 +1,12 @@
 package net.slimediamond.espial.commands;
 
 import net.kyori.adventure.text.Component;
-
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Commands;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.CommandParameters;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;

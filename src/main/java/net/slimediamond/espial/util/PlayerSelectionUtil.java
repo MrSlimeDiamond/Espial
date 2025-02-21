@@ -5,8 +5,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
-import java.util.Optional;
-
 public class PlayerSelectionUtil {
     public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(Player player, int range) {
         Vector3d pos = player.position();

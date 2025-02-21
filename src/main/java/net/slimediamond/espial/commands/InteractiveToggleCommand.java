@@ -9,7 +9,6 @@ import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 

@@ -19,7 +19,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class NearbySignsCommand implements CommandExecutor {
