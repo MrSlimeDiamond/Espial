@@ -13,12 +13,6 @@ import java.util.List;
  */
 public interface EspialService {
     /**
-     * Set the sign data for a specific action.
-     * @param action Action to set sign data for
-     */
-    void setSignData(BlockAction action);
-
-    /**
      * Query a block
      * @param query Query
      */

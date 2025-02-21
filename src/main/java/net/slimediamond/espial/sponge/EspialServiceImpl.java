@@ -43,21 +43,6 @@ import java.util.*;
 
 public class EspialServiceImpl implements EspialService {
     @Override
-    public void setSignData(BlockAction action) {
-        action.getServerLocation().blockEntity().ifPresent(tileEntity -> {
-            action.getNBT().ifPresent(nbtData -> {
-                if (nbtData.getSignData() != null) {
-                    List<Component> components = new ArrayList<>();
-
-                    nbtData.getSignData().getFrontText().forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
-
-                    tileEntity.offer(Keys.SIGN_LINES, components);
-                }
-            });
-        });
-    }
-
-    @Override
     public List<BlockAction> query(Query query) throws SQLException {
         return Espial.getInstance().getDatabase().query(query);
     }
@@ -72,7 +57,7 @@ public class EspialServiceImpl implements EspialService {
             action.getServerLocation().setBlock(action.getState());
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-                setSignData(action);
+                SignUtil.setSignData(action);
             }
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
@@ -99,7 +84,7 @@ public class EspialServiceImpl implements EspialService {
                         .setMin(action.getServerLocation())
                         .build()).stream().filter(a -> !a.isRolledBack()).toList();
                 if (actions.size() >= 2) {
-                    setSignData(actions.get(1));
+                    SignUtil.setSignData(actions.get(1));
                 }
 
                 Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
@@ -126,7 +111,7 @@ public class EspialServiceImpl implements EspialService {
             action.getServerLocation().setBlock(action.getState());
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-                setSignData(action);
+                SignUtil.setSignData(action);
             }
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
@@ -142,7 +127,7 @@ public class EspialServiceImpl implements EspialService {
                 List<BlockAction> actions = this.query(Query.builder().setMin(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
 
                 if (actions.size() >= 2) {
-                    setSignData(actions.get(1));
+                    SignUtil.setSignData(actions.get(1));
                 }
 
                 Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
