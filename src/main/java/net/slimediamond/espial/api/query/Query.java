@@ -48,6 +48,12 @@ public interface Query {
     String getBlockId();
 
     /**
+     * Get sorting order of this query
+     * @return Sort order
+     */
+    Sort getSort();
+
+    /**
      * The user which called this
      * Identified for 
      * @return
@@ -77,6 +83,7 @@ public interface Query {
         private Timestamp timestamp;
         private UUID playerUUID;
         private String blockId;
+        private Sort sort;
         private Object user;
         private Audience audience;
         boolean spread;
@@ -108,6 +115,11 @@ public interface Query {
 
         public Builder setBlockId(@Nullable String blockId) {
             this.blockId = blockId;
+            return this;
+        }
+
+        public Builder setSort(@NonNull Sort sort) {
+            this.sort = sort;
             return this;
         }
 
@@ -156,6 +168,11 @@ public interface Query {
                 @Override
                 public @Nullable String getBlockId() {
                     return blockId;
+                }
+
+                @Override
+                public Sort getSort() {
+                    return sort == null ? Sort.DEFAULT : sort;
                 }
 
                 @Override

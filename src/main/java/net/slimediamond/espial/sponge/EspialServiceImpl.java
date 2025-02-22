@@ -10,6 +10,7 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
@@ -122,7 +123,14 @@ public class EspialServiceImpl implements EspialService {
 
     @Override
     public void submit(Query query) throws Exception {
-        List<BlockAction> actions = this.query(query);
+        List<BlockAction> result = this.query(query);
+        List<BlockAction> actions = new ArrayList<>(result);
+        if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
+            actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
+        } else if (query.getSort() == Sort.CHRONOLOGICAL) {
+            actions.sort(Comparator.comparing(BlockAction::getTimestamp));
+        }
+
         List<Integer> ids = actions.stream().map(BlockAction::getId).toList();
         EspialTransaction transaction = new EspialTransactionImpl(ids, query);
 

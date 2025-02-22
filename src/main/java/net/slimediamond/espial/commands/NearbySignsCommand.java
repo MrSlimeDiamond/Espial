@@ -7,6 +7,7 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.MessageUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
@@ -43,14 +44,23 @@ public class NearbySignsCommand implements CommandExecutor {
                         .setType(QueryType.LOOKUP)
                         .setMin(locations.getLeft())
                         .setMax(locations.getRight())
+                        .setSort(Sort.REVERSE_CHRONOLOGICAL)
                         .setUser(player)
                         .setAudience(player)
                         .build();
+
                 List<BlockAction> signs = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
+
+                List<Component> contents = MessageUtil.generateLookupContents(signs, true);
+
+                if (contents.isEmpty()) {
+                    context.sendMessage(Espial.prefix.append(Component.text("Could not find any sign data nearby.").color(NamedTextColor.RED)));
+                    return CommandResult.success();
+                }
 
                 PaginationList.builder()
                         .title(Espial.prefix.append(Component.text("Nearby signs").color(NamedTextColor.WHITE)))
-                        .contents(MessageUtil.generateLookupContents(signs, true))
+                        .contents(contents)
                         .sendTo(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);

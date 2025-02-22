@@ -7,6 +7,7 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -27,7 +28,7 @@ import java.util.*;
 
 public class TransactionCommands {
 
-    public static CommandResult execute(CommandContext context, QueryType type) {
+    public static CommandResult execute(CommandContext context, QueryType type, Sort sort) {
         Player player;
         if (context.cause().root() instanceof Player) {
             player = (Player) context.cause().root();
@@ -47,6 +48,7 @@ public class TransactionCommands {
         Query.Builder builder = Query.builder()
                 .setType(type)
                 .setPlayerUUID(uuid)
+                .setSort(sort)
                 .setUser(player)
                 .setSpread(context.hasFlag("s"))
                 .setAudience(player)
@@ -208,21 +210,21 @@ public class TransactionCommands {
     public static class Lookup implements CommandExecutor {
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            return TransactionCommands.execute(context, QueryType.LOOKUP);
+            return TransactionCommands.execute(context, QueryType.LOOKUP, Sort.REVERSE_CHRONOLOGICAL);
         }
     }
 
     public static class Rollback implements CommandExecutor {
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            return TransactionCommands.execute(context, QueryType.ROLLBACK);
+            return TransactionCommands.execute(context, QueryType.ROLLBACK, Sort.REVERSE_CHRONOLOGICAL);
         }
     }
 
     public static class Restore implements CommandExecutor {
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            return TransactionCommands.execute(context, QueryType.RESTORE);
+            return TransactionCommands.execute(context, QueryType.RESTORE, Sort.CHRONOLOGICAL);
         }
     }
 }
