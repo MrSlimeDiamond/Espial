@@ -10,6 +10,7 @@ import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.util.BlockUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -43,6 +44,7 @@ public class ChangeBlockListener {
                     Query query = Query.builder()
                             .setType(QueryType.LOOKUP)
                             .setMin(location)
+                            .setSort(Sort.REVERSE_CHRONOLOGICAL)
                             .setUser(player)
                             .setAudience(player)
                             .setSpread(true)
@@ -76,6 +78,7 @@ public class ChangeBlockListener {
                         .setType(QueryType.LOOKUP)
                         .setMin(block.location().get())
                         .setUser(player)
+                        .setSort(Sort.REVERSE_CHRONOLOGICAL)
                         .setAudience(player)
                         .setSpread(true)
                         .build();
