@@ -20,7 +20,7 @@ public class EventTypes {
     private static final Map<Integer, EventType> ids = new HashMap<>();
 
     public static final EventType BREAK = EventType.builder()
-            .name("break")
+            .name("Break")
             .verb("broke")
             .description("Break a block")
             .action(ActionType.BLOCK)
@@ -28,7 +28,7 @@ public class EventTypes {
             .build();
 
     public static final EventType PLACE = EventType.builder()
-            .name("place")
+            .name("Place")
             .verb("placed")
             .description("Place a block")
             .action(ActionType.BLOCK)
@@ -36,7 +36,7 @@ public class EventTypes {
             .build();
 
     public static final EventType DECAY = EventType.builder()
-            .name("decay")
+            .name("Decay")
             .verb("decayed")
             .action(ActionType.BLOCK)
             .id(2)
@@ -51,21 +51,21 @@ public class EventTypes {
             .build();
 
     public static final EventType LIQUID_DECAY = EventType.builder()
-            .name("liquid_decay")
+            .name("Liquid Decay")
             .verb("decayed")
             .action(ActionType.BLOCK)
             .id(4)
             .build();
 
     public static final EventType LIQUID_SPREAD = EventType.builder()
-            .name("liquid_spread")
+            .name("Liquid Spread")
             .verb("spread")
             .action(ActionType.BLOCK)
             .id(5)
             .build();
 
     public static final EventType MODIFY = EventType.builder()
-            .name("modify")
+            .name("Modify")
             .verb("modified")
             .description("Change a block")
             .action(ActionType.BLOCK)
@@ -73,7 +73,7 @@ public class EventTypes {
             .build();
 
     public static final EventType INTERACT = EventType.builder()
-            .name("interact")
+            .name("Interact")
             .verb("used")
             .description("Interact with a block")
             .action(ActionType.BLOCK)

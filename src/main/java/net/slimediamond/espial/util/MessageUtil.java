@@ -157,6 +157,10 @@ public class MessageUtil {
         return Component.text(text).hoverEvent(
                 HoverEvent.showText(
                         Espial.prefix
+                                .append(Component.text("Event").color(NamedTextColor.YELLOW))
+                                .append(Component.newline())
+                                .append(Component.text("ID: ").color(NamedTextColor.GRAY))
+                                .append(Component.text(eventType.getId()).color(NamedTextColor.WHITE))
                                 .append(Component.newline())
                                 .append(Component.text("Name: ").color(NamedTextColor.GRAY))
                                 .append(Component.text(eventType.getName()).color(NamedTextColor.WHITE))
