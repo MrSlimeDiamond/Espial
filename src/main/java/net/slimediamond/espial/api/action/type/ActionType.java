@@ -36,22 +36,22 @@ public interface ActionType {
         private String description;
         private int id;
 
-        public Builder setName(String name) {
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder setVerb(String verb) {
+        public Builder verb(String verb) {
             this.verb = verb;
             return this;
         }
 
-        public Builder setDescription(String description) {
+        public Builder description(String description) {
             this.description = description;
             return this;
         }
 
-        public Builder setId(int id) {
+        public Builder id(int id) {
             this.id = id;
             return this;
         }

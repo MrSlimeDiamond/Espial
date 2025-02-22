@@ -68,11 +68,11 @@ public class Commands {
                             if (context.cause().root() instanceof Player player) {
                                 Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
                                 Query query = Query.builder()
-                                                .setType(QueryType.LOOKUP)
-                                                .setMin(locations.getLeft())
-                                                .setMax(locations.getRight())
-                                                .setUser(player)
-                                                .setAudience(player)
+                                                .type(QueryType.LOOKUP)
+                                                .min(locations.getLeft())
+                                                .max(locations.getRight())
+                                                .caller(player)
+                                                .audience(player)
                                                 .build();
                                 try {
                                     Espial.getInstance().getEspialService().submit(query);

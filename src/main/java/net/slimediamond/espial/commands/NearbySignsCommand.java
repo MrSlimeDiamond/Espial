@@ -41,12 +41,12 @@ public class NearbySignsCommand implements CommandExecutor {
             Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
             try {
                 Query query = Query.builder()
-                        .setType(QueryType.LOOKUP)
-                        .setMin(locations.getLeft())
-                        .setMax(locations.getRight())
-                        .setSort(Sort.REVERSE_CHRONOLOGICAL)
-                        .setUser(player)
-                        .setAudience(player)
+                        .type(QueryType.LOOKUP)
+                        .min(locations.getLeft())
+                        .max(locations.getRight())
+                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                        .caller(player)
+                        .audience(player)
                         .build();
 
                 List<BlockAction> signs = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();

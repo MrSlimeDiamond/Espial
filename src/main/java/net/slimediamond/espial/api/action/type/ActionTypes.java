@@ -19,56 +19,56 @@ public class ActionTypes {
     private static final Map<Integer, ActionType> ids = new HashMap<>();
 
     public static final ActionType BREAK = ActionType.builder()
-            .setName("break")
-            .setVerb("broke")
-            .setDescription("Break a block")
-            .setId(0)
+            .name("break")
+            .verb("broke")
+            .description("Break a block")
+            .id(0)
             .build();
 
     public static final ActionType PLACE = ActionType.builder()
-            .setName("place")
-            .setVerb("placed")
-            .setDescription("Place a block")
-            .setId(1)
+            .name("place")
+            .verb("placed")
+            .description("Place a block")
+            .id(1)
             .build();
 
     public static final ActionType DECAY = ActionType.builder()
-            .setName("decay")
-            .setVerb("decayed")
-            .setId(2)
+            .name("decay")
+            .verb("decayed")
+            .id(2)
             .build();
 
     public static final ActionType GROWTH = ActionType.builder()
-            .setName("growth")
-            .setVerb("grew")
-            .setDescription("Grow a block")
-            .setId(3)
+            .name("growth")
+            .verb("grew")
+            .description("Grow a block")
+            .id(3)
             .build();
 
     public static final ActionType LIQUID_DECAY = ActionType.builder()
-            .setName("liquid_decay")
-            .setVerb("decayed")
-            .setId(4)
+            .name("liquid_decay")
+            .verb("decayed")
+            .id(4)
             .build();
 
     public static final ActionType LIQUID_SPREAD = ActionType.builder()
-            .setName("liquid_spread")
-            .setVerb("spread")
-            .setId(5)
+            .name("liquid_spread")
+            .verb("spread")
+            .id(5)
             .build();
 
     public static final ActionType MODIFY = ActionType.builder()
-            .setName("modify")
-            .setVerb("modified")
-            .setDescription("Change a block")
-            .setId(6)
+            .name("modify")
+            .verb("modified")
+            .description("Change a block")
+            .id(6)
             .build();
 
     public static final ActionType INTERACT = ActionType.builder()
-            .setName("interact")
-            .setVerb("used")
-            .setDescription("Interact with a block")
-            .setId(8) // backwards compatibility
+            .name("interact")
+            .verb("used")
+            .description("Interact with a block")
+            .id(8) // backwards compatibility
             .build();
 
     static {

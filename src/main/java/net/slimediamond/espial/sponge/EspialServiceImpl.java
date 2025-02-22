@@ -1,6 +1,5 @@
 package net.slimediamond.espial.sponge;
 
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -62,7 +61,7 @@ public class EspialServiceImpl implements EspialService {
                 action.getServerLocation().setBlock(state);
 
                 List<BlockAction> actions = this.query(Query.builder()
-                        .setMin(action.getServerLocation())
+                        .min(action.getServerLocation())
                         .build()).stream().filter(a -> !a.isRolledBack()).toList();
                 if (actions.size() >= 2) {
                     SignUtil.setSignData(actions.get(1));
@@ -105,7 +104,7 @@ public class EspialServiceImpl implements EspialService {
                 BlockState state = action.getState();
                 action.getServerLocation().setBlock(state);
 
-                List<BlockAction> actions = this.query(Query.builder().setMin(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
+                List<BlockAction> actions = this.query(Query.builder().min(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
 
                 if (actions.size() >= 2) {
                     SignUtil.setSignData(actions.get(1));

@@ -48,18 +48,18 @@ public class TransactionCommands {
         UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
 
         Query.Builder builder = Query.builder()
-                .setType(type)
-                .setPlayerUUID(uuid)
-                .setSort(sort)
-                .setUser(player)
-                .setSpread(context.hasFlag("s"))
-                .setAudience(player)
-                .setTimestamp(timestamp);
+                .type(type)
+                .player(uuid)
+                .sort(sort)
+                .caller(player)
+                .spread(context.hasFlag("s"))
+                .audience(player)
+                .after(timestamp);
 
         BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
         if (blockState != null) {
             String blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(blockState.type()).formatted();
-            builder.setBlockId(blockId);
+            builder.block(blockId);
         }
 
         if (context.hasFlag("worldedit")) { // Range lookup
@@ -69,8 +69,8 @@ public class TransactionCommands {
                 if (selectionOptional.isPresent()) {
                     Pair<ServerLocation, ServerLocation> selection = selectionOptional.get();
                     context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using your WorldEdit selection for this query.").color(NamedTextColor.WHITE)).build());
-                    builder.setMin(selection.getLeft());
-                    builder.setMax(selection.getRight());
+                    builder.min(selection.getLeft());
+                    builder.max(selection.getRight());
                 } else {
                     context.sendMessage(Espial.prefix.append(Component.text("You do not have a WorldEdit selection active!").color(NamedTextColor.RED)));
                     return CommandResult.success();
@@ -88,8 +88,8 @@ public class TransactionCommands {
 
             context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using a cuboid with a range of " + range + " blocks for this query.").color(NamedTextColor.WHITE)).build());
 
-            builder.setMin(selection.getLeft());
-            builder.setMax(selection.getRight());
+            builder.min(selection.getLeft());
+            builder.max(selection.getRight());
         } else {
             // Ray trace block (playing is looking at target)
             // get the block the player is targeting
@@ -99,7 +99,7 @@ public class TransactionCommands {
             if (result.isPresent()) {
                 LocatableBlock block = result.get();
 
-                builder.setMin(block.serverLocation());
+                builder.min(block.serverLocation());
             } else {
                 context.sendMessage(Espial.prefix.append(Component.text("Could not detect a block. Move closer, perhaps?").color(NamedTextColor.RED)));
                 return CommandResult.success();

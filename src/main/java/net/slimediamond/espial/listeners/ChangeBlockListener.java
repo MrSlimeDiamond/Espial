@@ -42,12 +42,12 @@ public class ChangeBlockListener {
 
                 for (ServerLocation location : event.locations()) {
                     Query query = Query.builder()
-                            .setType(QueryType.LOOKUP)
-                            .setMin(location)
-                            .setSort(Sort.REVERSE_CHRONOLOGICAL)
-                            .setUser(player)
-                            .setAudience(player)
-                            .setSpread(true)
+                            .type(QueryType.LOOKUP)
+                            .min(location)
+                            .sort(Sort.REVERSE_CHRONOLOGICAL)
+                            .caller(player)
+                            .audience(player)
+                            .spread(true)
                             .build();
                     Espial.getInstance().getEspialService().submit(query);
                 }
@@ -75,12 +75,12 @@ public class ChangeBlockListener {
                 BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
 
                 Query query = Query.builder()
-                        .setType(QueryType.LOOKUP)
-                        .setMin(block.location().get())
-                        .setUser(player)
-                        .setSort(Sort.REVERSE_CHRONOLOGICAL)
-                        .setAudience(player)
-                        .setSpread(true)
+                        .type(QueryType.LOOKUP)
+                        .min(block.location().get())
+                        .caller(player)
+                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                        .audience(player)
+                        .spread(true)
                         .build();
                 Espial.getInstance().getEspialService().submit(query);
                 return;

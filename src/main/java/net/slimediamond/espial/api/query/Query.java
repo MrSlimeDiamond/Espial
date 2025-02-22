@@ -88,53 +88,53 @@ public interface Query {
         private Audience audience;
         boolean spread;
 
-        public Builder setType(QueryType type) {
+        public Builder type(QueryType type) {
             this.type = type;
             return this;
         }
 
-        public Builder setMin(ServerLocation min) {
+        public Builder min(ServerLocation min) {
             this.min = min;
             return this;
         }
 
-        public Builder setMax(ServerLocation max) {
+        public Builder max(ServerLocation max) {
             this.max = max;
             return this;
         }
 
-        public Builder setTimestamp(@Nullable Timestamp timestamp) {
+        public Builder after(@Nullable Timestamp timestamp) {
             this.timestamp = timestamp;
             return this;
         }
 
-        public Builder setPlayerUUID(@Nullable UUID playerUUID) {
+        public Builder player(@Nullable UUID playerUUID) {
             this.playerUUID = playerUUID;
             return this;
         }
 
-        public Builder setBlockId(@Nullable String blockId) {
+        public Builder block(@Nullable String blockId) {
             this.blockId = blockId;
             return this;
         }
 
-        public Builder setSort(@NonNull Sort sort) {
+        public Builder sort(@NonNull Sort sort) {
             this.sort = sort;
             return this;
         }
 
-        public Builder setUser(@NonNull Object user) {
+        public Builder caller(@NonNull Object user) {
             this.user = user;
             return this;
         }
 
-        public Builder setAudience(@NonNull Audience audience) {
+        public Builder audience(@NonNull Audience audience) {
             this.audience = audience;
             return this;
         }
 
-        public Builder setSpread(boolean spread) {
-            this.spread= spread;
+        public Builder spread(boolean spread) {
+            this.spread = spread;
             return this;
         }
 
