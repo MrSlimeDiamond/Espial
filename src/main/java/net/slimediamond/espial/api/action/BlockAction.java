@@ -157,12 +157,12 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
                 }
 
                 @Override
-                public void setNBT(NBTData data) throws JsonProcessingException, SQLException {
+                public void setNBT(NBTData data) {
                     nbtData = data;
                 }
 
                 @Override
-                public Optional<NBTData> getNBT() throws SQLException, JsonProcessingException {
+                public Optional<NBTData> getNBT() {
                     return Optional.ofNullable(nbtData);
                 }
             };

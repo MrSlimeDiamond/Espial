@@ -85,24 +85,13 @@ public class MessageUtil {
                         .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                 ));
 
-                try {
-                    if (record.getAction() instanceof NBTStorable nbt) {
-                        nbt.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
-                            msg.append(Component.text(" (...)")
-                                    .color(NamedTextColor.GRAY)
-                                    .hoverEvent(HoverEvent.showText(Espial.prefix.append(
-                                            Component.text().color(NamedTextColor.WHITE).append(component)))));
-                        });
-                    }
-                } catch (Exception e) {
-                    msg.append(Component.text(" (!!!)")
-                            .color(NamedTextColor.RED)
-                            .hoverEvent(HoverEvent.showText(Espial.prefix.append(
-                                    Component.newline()
-                                            .append(Component.text("An error occurred while processing NBT data!").color(NamedTextColor.RED))
-                            )))
-                    );
-                    e.printStackTrace();
+                if (record.getAction() instanceof NBTStorable nbt) {
+                    nbt.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
+                        msg.append(Component.text(" (...)")
+                                .color(NamedTextColor.GRAY)
+                                .hoverEvent(HoverEvent.showText(Espial.prefix.append(
+                                        Component.text().color(NamedTextColor.WHITE).append(component)))));
+                    });
                 }
 
                 if (record.isRolledBack()) {
