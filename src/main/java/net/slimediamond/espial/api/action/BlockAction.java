@@ -1,110 +1,30 @@
 package net.slimediamond.espial.api.action;
 
-import net.slimediamond.espial.api.action.type.ActionType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTData;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.submittable.Submittable;
+import net.slimediamond.espial.api.submittable.SubmittableResult;
+import net.slimediamond.espial.api.user.EspialActor;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
-import org.spongepowered.math.vector.Vector3d;
 
-import java.sql.Timestamp;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public interface BlockAction {
-    /**
-     * The ID (primary key value) of the record.
-     * @return Internal ID
-     */
-    int getId();
-
-    /**
-     * Get the actor's UUID, for players, this is a normal UUID string.
-     * Server is "0", and other entities are just the names.
-     * @return Actor UUID
-     */
-    String getUuid();
-
-    /**
-     * Get the time this action happened
-     * @return Timestamp
-     */
-    Timestamp getTimestamp();
-
-    /**
-     * Get the type of action this is
-     * @return Action type
-     */
-    ActionType getType();
-
+public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecord> {
     /**
      * Get the block ID (such as minecraft:string)
      * @return Block ID
      */
     String getBlockId();
-
-    /**
-     * Get the world string (such as minecraft:overworld)
-     * @return World
-     */
-    String getWorld();
-
-    /**
-     * Get the position of the actor
-     * @return actor position
-     */
-    Vector3d getActorPosition();
-
-    /**
-     * Get the actor's rotation when this happened
-     * @return Actor rotation
-     */
-    Vector3d getActorRotation();
-
-    /**
-     * Get the item the actor had in their hand
-     * @return Actor item in hand
-     */
-    String getActorItem();
-
-    /**
-     * Get the X coordinate of the modified block.
-     * @return Block X
-     */
-    int getX();
-
-    /**
-     * Get the Y coordinate of the modified block.
-     * @return Block Y
-     */
-    int getY();
-
-    /**
-     * Get the Z coordinate of the modified block.
-     * @return Block Z
-     */
-    int getZ();
-
-    /**
-     * Whether the block has been rolled back
-     * @return Rollback status
-     */
-    boolean isRolledBack();
-
-    /**
-     * Set the NBT data for this action.
-     * @param data The {@link NBTData} to set it to.
-     */
-    void setNBT(NBTData data);
-
-    /**
-     * Get the NBT data if it is available.
-     * @return A {@link Optional} of the block's {@link NBTData}
-     */
-    Optional<NBTData> getNBT();
 
     default ServerLocation getServerLocation() {
         return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
@@ -118,15 +38,126 @@ public interface BlockAction {
 
     default BlockState getState() {
         AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
-        this.getNBT().ifPresent(nbtData -> {
-            if (nbtData.getDirection() != null) {
-                blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
-            }
+        try {
+            this.getNBT().ifPresent(nbtData -> {
+                if (nbtData.getDirection() != null) {
+                    blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+                }
 
-            if (nbtData.getAxis() != null) {
-                blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
-            }
-        });
+                if (nbtData.getAxis() != null) {
+                    blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return blockState.get();
+    }
+
+    static Builder builder() {
+        return new Builder();
+    }
+
+    class Builder {
+        private String blockId;
+        private EspialActor actor;
+        private int x, y, z;
+        private String world;
+        private EventType type;
+        private NBTData nbtData;
+
+        public Builder blockId(String blockId) {
+            this.blockId = blockId;
+            return this;
+        }
+
+        public Builder actor(EspialActor actor) {
+            this.actor = actor;
+            return this;
+        }
+
+        public Builder x(int x) {
+            this.x = x;
+            return this;
+        }
+
+        public Builder y(int y) {
+            this.y = y;
+            return this;
+        }
+
+        public Builder z(int z) {
+            this.z = z;
+            return this;
+        }
+
+        public Builder world(String world) {
+            this.world = world;
+            return this;
+        }
+
+        public Builder type(EventType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder withNBTData(NBTData nbtData) {
+            this.nbtData = nbtData;
+            return this;
+        }
+
+        public BlockAction build() {
+            return new BlockAction() {
+                @Override
+                public SubmittableResult<BlockRecord> submit() throws Exception {
+                    return (SubmittableResult<BlockRecord>) Espial.getInstance().getEspialService().submitAction(this);
+                }
+
+                @Override
+                public String getBlockId() {
+                    return blockId;
+                }
+
+                @Override
+                public EspialActor getActor() {
+                    return actor;
+                }
+
+                @Override
+                public int getX() {
+                    return x;
+                }
+
+                @Override
+                public int getY() {
+                    return y;
+                }
+
+                @Override
+                public int getZ() {
+                    return z;
+                }
+
+                @Override
+                public String getWorld() {
+                    return world;
+                }
+
+                @Override
+                public EventType getEventType() {
+                    return type;
+                }
+
+                @Override
+                public void setNBT(NBTData data) throws JsonProcessingException, SQLException {
+                    nbtData = data;
+                }
+
+                @Override
+                public Optional<NBTData> getNBT() throws SQLException, JsonProcessingException {
+                    return Optional.ofNullable(nbtData);
+                }
+            };
+        }
     }
 }

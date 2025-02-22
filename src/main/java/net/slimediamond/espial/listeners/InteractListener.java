@@ -1,7 +1,8 @@
 package net.slimediamond.espial.listeners;
 
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.type.ActionTypes;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.util.BlockUtil;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
@@ -9,13 +10,12 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 
-import java.sql.SQLException;
 import java.util.HashSet;
 
 public class InteractListener {
 
     @Listener(order = Order.LATE)
-    public void onInteract(InteractBlockEvent.Secondary event) throws SQLException {
+    public void onInteract(InteractBlockEvent.Secondary event) throws Exception {
         if (!Espial.getInstance().getConfig().get().logInteractions()) return;
 
         if (event.cause().root() instanceof Player) {
@@ -25,12 +25,13 @@ public class InteractListener {
             HashSet<BlockType> blocksToCheck = BlockUtil.builder().add(BlockUtil.CONTAINERS).add(BlockUtil.INTERACTIVE).build();
 
             if (blocksToCheck.contains(blockType)) {
-                Espial.getInstance().getDatabase().insertAction(
-                        ActionTypes.INTERACT,
-                        player,
-                        event.block().world().formatted(),
-                        null,
-                        event.block());
+                BlockAction.builder()
+                        .type(EventTypes.MODIFY)
+                        .world(event.block().world().formatted())
+                        .x(event.block().location().get().blockX())
+                        .y(event.block().location().get().blockY())
+                        .z(event.block().location().get().blockZ())
+                        .build().submit();
             }
         }
     }

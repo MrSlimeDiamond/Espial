@@ -1,15 +1,20 @@
 package net.slimediamond.espial.sponge;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
+import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.type.ActionTypes;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
@@ -23,15 +28,37 @@ import java.util.*;
 
 public class EspialServiceImpl implements EspialService {
     @Override
-    public List<BlockAction> query(Query query) throws SQLException {
+    public List<EspialRecord> query(Query query) throws SQLException, JsonProcessingException {
         return Espial.getInstance().getDatabase().query(query);
     }
 
-    public TransactionStatus rollback(BlockAction action) throws SQLException {
-        if (action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
+    @Override
+    public void submitQuery(Query query) throws Exception {
+        List<EspialRecord> result = this.query(query);
+        List<EspialRecord> actions = new ArrayList<>(result);
+        if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
+            actions.sort(Comparator.comparing(EspialRecord::getTimestamp).reversed());
+        } else if (query.getSort() == Sort.CHRONOLOGICAL) {
+            actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
+        }
+
+        // TODO: Asynchronous processing, and probably some queue
+        this.process(actions, query);
+    }
+
+    @Override
+    public SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception {
+        Optional<EspialRecord> result =  Espial.getInstance().getDatabase().submit(action);
+        return result.<SubmittableResult<? extends EspialRecord>>map(SubmittableResult::new).orElse(null);
+    }
+
+    public TransactionStatus rollbackBlock(BlockRecord record) throws Exception {
+        if (record.isRolledBack()) return TransactionStatus.ALREADY_DONE;
+
+        BlockAction action = (BlockAction) record.getAction();
 
         // roll back this specific ID to another state
-        if (action.getType() == ActionTypes.BREAK) {
+        if (action.getEventType() == EventTypes.BREAK) {
             // place the block which was broken at that location
 
             action.getServerLocation().setBlock(action.getState());
@@ -40,18 +67,18 @@ public class EspialServiceImpl implements EspialService {
                 SignUtil.setSignData(action);
             }
 
-            Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
+            Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
 
             return TransactionStatus.SUCCESS;
-        } if (action.getType() == ActionTypes.PLACE) {
+        } if (action.getEventType() == EventTypes.PLACE) {
             // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
             // (it'll be fine, probably)
 
             action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
-            Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
+            Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
             return TransactionStatus.SUCCESS;
-        } else if (action.getType() == ActionTypes.MODIFY) {
+        } else if (action.getEventType() == EventTypes.MODIFY) {
             // Rolling back a modification action will entail going to its previous state of modification
             // (if it's present), so let's look for that.
 
@@ -60,14 +87,14 @@ public class EspialServiceImpl implements EspialService {
                 BlockState state = action.getState();
                 action.getServerLocation().setBlock(state);
 
-                List<BlockAction> actions = this.query(Query.builder()
+                List<EspialRecord> records = this.query(Query.builder()
                         .min(action.getServerLocation())
                         .build()).stream().filter(a -> !a.isRolledBack()).toList();
-                if (actions.size() >= 2) {
-                    SignUtil.setSignData(actions.get(1));
+                if (records.size() >= 2) {
+                    SignUtil.setSignData((BlockAction)records.get(1).getAction());
                 }
 
-                Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
+                Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
 
                 return TransactionStatus.SUCCESS;
             }
@@ -75,66 +102,57 @@ public class EspialServiceImpl implements EspialService {
         return TransactionStatus.UNSUPPORTED;
     }
 
-    public TransactionStatus restore(BlockAction action) throws SQLException {
-        if (!action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
+    public TransactionStatus restoreBlock(BlockRecord record) throws Exception {
+        if (record.isRolledBack()) return TransactionStatus.ALREADY_DONE;
+        BlockAction action = (BlockAction) record.getAction();
 
-        // roll forwards this specific ID to another state
-        if (action.getType() == ActionTypes.BREAK) {
+        // roll back this specific ID to another state
+        if (action.getEventType() == EventTypes.PLACE) {
             // place the block which was broken at that location
 
-            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
-
-            Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
-
-            return TransactionStatus.SUCCESS;
-        } if (action.getType() == ActionTypes.PLACE) {
             action.getServerLocation().setBlock(action.getState());
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {
                 SignUtil.setSignData(action);
             }
 
-            Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
+            Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
+
             return TransactionStatus.SUCCESS;
-        } if (action.getType() == ActionTypes.MODIFY) {
-            // Because this is a restore, let's get the one after this which is rolled back
+        } if (action.getEventType() == EventTypes.BREAK) {
+            // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
+            // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
+            // (it'll be fine, probably)
+
+            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
+            Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
+            return TransactionStatus.SUCCESS;
+        } else if (action.getEventType() == EventTypes.MODIFY) {
+            // Rolling back a modification action will entail going to its previous state of modification
+            // (if it's present), so let's look for that.
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {
 
                 BlockState state = action.getState();
                 action.getServerLocation().setBlock(state);
 
-                List<BlockAction> actions = this.query(Query.builder().min(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
+                List<EspialRecord> actions = this.query(Query.builder().min(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
 
                 if (actions.size() >= 2) {
-                    SignUtil.setSignData(actions.get(1));
+                    SignUtil.setSignData((BlockAction)actions.get(1).getAction());
                 }
 
-                Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
+                Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
 
                 return TransactionStatus.SUCCESS;
             }
 
         }
-
         return TransactionStatus.UNSUPPORTED;
     }
 
-    @Override
-    public void submit(Query query) throws Exception {
-        List<BlockAction> result = this.query(query);
-        List<BlockAction> actions = new ArrayList<>(result);
-        if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
-            actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
-        } else if (query.getSort() == Sort.CHRONOLOGICAL) {
-            actions.sort(Comparator.comparing(BlockAction::getTimestamp));
-        }
 
-        // TODO: Asynchronous processing, and probably some queue
-        this.process(actions, query);
-    }
-
-    private void process(List<BlockAction> actions, Query query) throws Exception {
+    private void process(List<EspialRecord> records, Query query) throws Exception {
         if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
             String msg = "processed";
 
@@ -146,16 +164,16 @@ public class EspialServiceImpl implements EspialService {
             List<Integer> success = new ArrayList<>();
             int skipped = 0;
 
-            for (BlockAction action : actions) {
+            for (EspialRecord record : records) {
                 TransactionStatus status;
                 switch (query.getType()) {
-                    case ROLLBACK -> status = this.rollback(action);
-                    case RESTORE -> status = this.restore(action);
+                    case ROLLBACK -> status = record.rollback();
+                    case RESTORE -> status = record.restore();
                     default -> status = TransactionStatus.UNSUPPORTED;
                 }
 
                 if (status == TransactionStatus.SUCCESS) {
-                    success.add(action.getId());
+                    success.add(record.getId());
                 } else {
                     skipped++;
                 }
@@ -187,7 +205,7 @@ public class EspialServiceImpl implements EspialService {
 
             query.getAudience().sendMessage(Espial.prefix.append(builder.build()));
         } else if (query.getType() == QueryType.LOOKUP) {
-            List<Component> contents = MessageUtil.generateLookupContents(actions, query.isSpread());
+            List<Component> contents = MessageUtil.generateLookupContents(records, query.isSpread());
 
             if (contents.isEmpty()) {
                 query.getAudience().sendMessage(Espial.prefix.append(Component.text("No data was found.").color(NamedTextColor.RED)));

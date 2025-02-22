@@ -1,30 +1,38 @@
-package net.slimediamond.espial.api.action.type;
+package net.slimediamond.espial.api.action.event;
 
-public interface ActionType {
+import net.slimediamond.espial.api.action.ActionType;
+
+public interface EventType {
 
     /**
-     * The name of the action
-     * @return Action type name
+     * The name of the event
+     * @return Event type name
      */
     String getName();
 
     /**
-     * The verb for the action
-     * @return Action type verb
+     * The verb for the event
+     * @return Event type verb
      */
     String getVerb();
 
     /**
-     * Get the description of this action type
-     * @return Action type description
+     * Get the description of this event type
+     * @return Event type description
      */
     String getDescription();
 
     /**
-     * Get action ID
-     * @return Action ID
+     * Get event ID
+     * @return Event ID
      */
     int getId();
+
+    /**
+     * Get the event's action type
+     * @return Action type
+     */
+    ActionType getActionType();
 
     static Builder builder() {
         return new Builder();
@@ -34,6 +42,7 @@ public interface ActionType {
         private String name;
         private String verb;
         private String description;
+        private ActionType actionType;
         private int id;
 
         public Builder name(String name) {
@@ -51,13 +60,18 @@ public interface ActionType {
             return this;
         }
 
+        public Builder action(ActionType actionType) {
+            this.actionType = actionType;
+            return this;
+        }
+
         public Builder id(int id) {
             this.id = id;
             return this;
         }
 
-        public ActionType build() {
-            return new ActionType() {
+        public EventType build() {
+            return new EventType() {
                 @Override
                 public String getName() {
                     return name;
@@ -76,6 +90,11 @@ public interface ActionType {
                 @Override
                 public int getId() {
                     return id;
+                }
+
+                @Override
+                public ActionType getActionType() {
+                    return actionType;
                 }
             };
         }

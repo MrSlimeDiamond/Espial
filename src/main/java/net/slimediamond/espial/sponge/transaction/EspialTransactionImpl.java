@@ -4,6 +4,8 @@ import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 
 import java.util.List;
@@ -68,11 +70,17 @@ public class EspialTransactionImpl implements EspialTransaction {
         if (type == QueryType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    Espial.getInstance().getEspialService().restoreBlock((BlockRecord)record);
+                }
             }
         } else if (type == QueryType.RESTORE) {
             for (int id : ids) {
-                Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    Espial.getInstance().getEspialService().rollbackBlock((BlockRecord)record);
+                }
             }
         }
 
@@ -80,14 +88,20 @@ public class EspialTransactionImpl implements EspialTransaction {
     }
 
     public static int redo(List<Integer> ids, QueryType type) throws Exception {
-        if (type == QueryType.RESTORE) {
+        if (type == QueryType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
-                Espial.getInstance().getEspialService().restore(Espial.getInstance().getDatabase().queryId(id));
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    Espial.getInstance().getEspialService().rollbackBlock((BlockRecord)record);
+                }
             }
-        } else if (type == QueryType.ROLLBACK) {
+        } else if (type == QueryType.RESTORE) {
             for (int id : ids) {
-                Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    Espial.getInstance().getEspialService().restoreBlock((BlockRecord)record);
+                }
             }
         }
 

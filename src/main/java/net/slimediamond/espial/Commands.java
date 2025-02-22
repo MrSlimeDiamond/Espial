@@ -75,7 +75,7 @@ public class Commands {
                                                 .audience(player)
                                                 .build();
                                 try {
-                                    Espial.getInstance().getEspialService().submit(query);
+                                    Espial.getInstance().getEspialService().submitQuery(query);
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
@@ -156,17 +156,11 @@ public class Commands {
                 .executor(new WhoPlacedThisCommand())
                 .shortDescription(Component.text("Show who placed a block"))
                 .build());
-
-        commands.add(Command.builder()
-                .permission("espial.command.signinfo")
-                .executor(new SignInfoCommand())
-                .build());
     }
 
     public static void register(PluginContainer container, RegisterCommandEvent<Command.Parameterized> event) {
         event.register(container, commands.get(0), "espial", "es");
         event.register(container, commands.get(1), "whoplacedthis");
-        event.register(container, commands.get(2), "signinfo");
         event.register(container, nearbysigns, "nearbysigns", "signs", "signsnear", "signsnearby");
         event.register(container, isthisblockmine, "isthisblockmine", "isthismyblock", "myblock");
     }

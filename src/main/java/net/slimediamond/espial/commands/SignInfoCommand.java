@@ -7,6 +7,7 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.MessageUtil;
 import net.slimediamond.espial.api.nbt.NBTDataParser;
@@ -41,11 +42,17 @@ public class SignInfoCommand implements CommandExecutor {
                                 .caller(player)
                                 .audience(player)
                                 .build();
-                        
-                        List<BlockAction> blocks = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
-                        BlockAction target = blocks.get(0); // top index
 
-                        Component name = MessageUtil.getDisplayName(target);
+                        List<BlockRecord> blocks = Espial.getInstance().getEspialService().query(query)
+                                .stream()
+                                .filter(record -> record instanceof BlockRecord)
+                                .map(record -> (BlockRecord) record) // Cast safely
+                                .filter(blockRecord -> BlockUtil.SIGNS.contains(((BlockAction)blockRecord.getAction()).getBlockType()))
+                                .toList();
+
+                        BlockRecord target = blocks.get(0); // top index
+
+                        Component name = MessageUtil.getDisplayName(target.getAction());
 
                         var builder = Component.text().append(Espial.prefix.append(Component.text("That sign was last modified by ").color(NamedTextColor.WHITE).append(name.color(NamedTextColor.YELLOW))));
 
@@ -57,7 +64,7 @@ public class SignInfoCommand implements CommandExecutor {
                         info.append(Component.newline());
                         info.append(Component.text("Date: ").color(NamedTextColor.DARK_AQUA).append(Component.text(date).color(NamedTextColor.WHITE)));
 
-                        target.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(info::append);
+                        ((BlockAction)target.getAction()).getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(info::append);
 
                         builder.append(Component.text(" (...)").color(NamedTextColor.GRAY).hoverEvent(HoverEvent.showText(info)));
                         context.sendMessage(builder.build());

@@ -2,15 +2,17 @@ package net.slimediamond.espial.listeners;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.type.ActionTypes;
-import net.slimediamond.espial.api.nbt.NBTApplier;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.event.EventType;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
+import net.slimediamond.espial.api.user.EspialActor;
+import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import net.slimediamond.espial.util.BlockUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -23,13 +25,12 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class ChangeBlockListener {
 
@@ -49,7 +50,7 @@ public class ChangeBlockListener {
                             .audience(player)
                             .spread(true)
                             .build();
-                    Espial.getInstance().getEspialService().submit(query);
+                    Espial.getInstance().getEspialService().submitQuery(query);
                 }
             }
         }
@@ -82,7 +83,7 @@ public class ChangeBlockListener {
                         .audience(player)
                         .spread(true)
                         .build();
-                Espial.getInstance().getEspialService().submit(query);
+                Espial.getInstance().getEspialService().submitQuery(query);
                 return;
             }
         }
@@ -101,61 +102,65 @@ public class ChangeBlockListener {
             if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
 
             try {
-                Optional<BlockAction> actionOptional = Espial.getInstance().getDatabase().insertAction(
-                        ActionTypes.fromSponge(transaction.operation()),
-                        living,
-                        transaction.finalReplacement().world().formatted(),
-                        transaction,
-                        null
-                );
+                EventType type = EventTypes.fromSponge(transaction.operation());
+                BlockSnapshot snapshot;
 
-                actionOptional.ifPresent(action -> {
-                    BlockSnapshot blockSnapshot;
-                    if (transaction.operation().equals(Operations.PLACE.get())) {
-                        blockSnapshot = transaction.defaultReplacement();
-                    } else {
-                        blockSnapshot = transaction.original();
-                    }
+                if (transaction.operation().equals(Operations.PLACE.get())) {
+                    snapshot = transaction.finalReplacement();
+                } else {
+                    snapshot = transaction.original();
+                }
 
-                    JsonNBTData nbtData = new JsonNBTData();
+                JsonNBTData nbtData = new JsonNBTData();
 
-                    if (BlockUtil.SIGNS.contains(blockSnapshot.state().type())) {
-                        blockSnapshot.createArchetype().ifPresent(blockEntity -> {
-                            List<Component> frontComponents = null;
-                            List<Component> backComponents = null;
+                if (BlockUtil.SIGNS.contains(snapshot.state().type())) {
+                    snapshot.createArchetype().ifPresent(blockEntity -> {
+                        List<Component> frontComponents = null;
+                        List<Component> backComponents = null;
 
-                            if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
-                                frontComponents = blockEntity.get(Keys.SIGN_FRONT_TEXT)
-                                        .map(text -> new ArrayList<>(text.lines().get()))
-                                        .orElseGet(ArrayList::new);
-                            }
+                        if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
+                            frontComponents = blockEntity.get(Keys.SIGN_FRONT_TEXT)
+                                    .map(text -> new ArrayList<>(text.lines().get()))
+                                    .orElseGet(ArrayList::new);
+                        }
 
-                            if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
-                                backComponents = blockEntity.get(Keys.SIGN_BACK_TEXT)
-                                        .map(text -> new ArrayList<>(text.lines().get()))
-                                        .orElseGet(ArrayList::new);
-                            }
+                        if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
+                            backComponents = blockEntity.get(Keys.SIGN_BACK_TEXT)
+                                    .map(text -> new ArrayList<>(text.lines().get()))
+                                    .orElseGet(ArrayList::new);
+                        }
 
-                            List<String> frontText = null;
-                            List<String> backText = null;
+                        List<String> frontText = null;
+                        List<String> backText = null;
 
-                            if (frontComponents != null) {
-                                frontText = frontComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
-                            }
+                        if (frontComponents != null) {
+                            frontText = frontComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                        }
 
-                            if (backComponents != null) {
-                                backText = backComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
-                            }
+                        if (backComponents != null) {
+                            backText = backComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                        }
 
-                            if (frontComponents != null && backComponents != null) {
-                                nbtData.setSignData(new JsonSignData(frontText, backText));
-                            }
-                        });
-                    }
+                        if (frontComponents != null && backComponents != null) {
+                            nbtData.setSignData(new JsonSignData(frontText, backText));
+                        }
+                    });
+                }
 
-                    NBTApplier.applyData(nbtData, blockSnapshot.state(), action);
-                });
-            } catch (SQLException e) {
+                EspialActor actor = new EspialActorImpl(living);
+
+                BlockAction.builder()
+                        .blockId(snapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted())
+                        .type(type)
+                        .actor(actor)
+                        .type(EventTypes.fromSponge(transaction.operation()))
+                        .x(snapshot.location().get().blockX())
+                        .y(snapshot.location().get().blockY())
+                        .z(snapshot.location().get().blockZ())
+                        .world(snapshot.location().get().worldKey().formatted())
+                        .withNBTData(nbtData)
+                        .build().submit();
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });

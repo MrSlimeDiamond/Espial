@@ -2,17 +2,22 @@ package net.slimediamond.espial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.type.ActionType;
-import net.slimediamond.espial.api.action.type.ActionTypes;
+import net.slimediamond.espial.api.action.NBTStorable;
+import net.slimediamond.espial.api.action.event.EventType;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.query.Query;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.user.EspialActor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.Living;
@@ -95,7 +100,23 @@ public class Database {
         // Backwards compatibility
         //conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN DEFAULT FALSE").execute();
 
-        insertAction = conn.prepareStatement("INSERT INTO blocklog (type, time, player_uuid, block_id, world, x, y, z, player_x, player_y, player_z, player_pitch, player_yaw, player_roll, player_tool, rolled_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
+        insertAction = conn.prepareStatement("INSERT INTO blocklog " +
+                "(type, " +
+                "time, " +
+                "player_uuid, " +
+                "block_id, " +
+                "world, " +
+                "x, y, z, " +
+                "player_x, " +
+                "player_y, " +
+                "player_z, " +
+                "player_pitch, " +
+                "player_yaw, " +
+                "player_roll, " +
+                "player_tool, " +
+                "rolled_back" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
+
         queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
         queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
@@ -105,6 +126,71 @@ public class Database {
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
     }
 
+    public Optional<EspialRecord> submit(Action action) throws SQLException, JsonProcessingException {
+        insertAction.setInt(1, action.getEventType().getId()); // Type
+        insertAction.setTimestamp(2, Timestamp.from(Instant.now())); // Timestamp
+        insertAction.setString(3, action.getActor().getUUID()); // Actor UUID
+
+        // Block ID
+        if (action instanceof BlockAction block) {
+            insertAction.setString(4, block.getBlockId());
+        } else {
+            insertAction.setString(4, ""); // apparently this can't be null?
+        }
+
+        insertAction.setString(5, action.getWorld()); // World
+        insertAction.setInt(6, action.getX());
+        insertAction.setInt(7, action.getY());
+        insertAction.setInt(8, action.getZ());
+
+        EspialActor actor = action.getActor();
+
+        if (logPlayerPosition) {
+            insertAction.setDouble(9,  actor.getPosition().x());
+            insertAction.setDouble(10, actor.getPosition().y());
+            insertAction.setDouble(11, actor.getPosition().z());
+
+            insertAction.setDouble(12, actor.getRotation().x());
+            insertAction.setDouble(13, actor.getRotation().y());
+            insertAction.setDouble(14, actor.getRotation().z());
+        } else {
+            insertAction.setNull(9, Types.DOUBLE);
+            insertAction.setNull(10, Types.DOUBLE);
+            insertAction.setNull(11, Types.DOUBLE);
+
+            insertAction.setNull(12, Types.DOUBLE);
+            insertAction.setNull(13, Types.DOUBLE);
+            insertAction.setNull(14, Types.DOUBLE);
+        }
+
+        insertAction.setString(15, actor.getItem());
+
+        insertAction.execute();
+
+        ResultSet rs;
+
+        try {
+            rs = insertAction.getGeneratedKeys();
+        } catch (SQLFeatureNotSupportedException e) {
+            // Try to use another approach (this should work for sqlite)
+            rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
+        }
+
+        if (rs.next()) {
+            int id = rs.getInt(1);
+
+            if (action instanceof NBTStorable nbtStorable) {
+                if (nbtStorable.getNBT().isPresent()) {
+                    this.setNBTdata(id, JsonNBTData.serialize(nbtStorable.getNBT().get()));
+                }
+            }
+
+            return Optional.of(this.queryId(id));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     /**
      * Insert an action
      * @param type Type of action
@@ -112,10 +198,16 @@ public class Database {
      * @param world The world which the action happened in
      * @param transaction Block transaction (for ChangeBlockEvent)
      * @param blockSnapshot Block snapshot (for InteractBlockEvent)
-     * @return {@link Optional} for a {@link BlockAction} that was created
+     * @return {@link Optional} for a {@link BlockRecord} that was created
      * @throws SQLException
      */
-    public Optional<BlockAction> insertAction(@Nullable ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+    private Optional<EspialRecord> insertAction(
+            @Nullable EventType type,
+            @Nullable Living living, 
+            @Nullable String world,
+            @Nullable BlockTransaction transaction, 
+            @Nullable BlockSnapshot blockSnapshot
+    ) throws SQLException, JsonProcessingException {
         // Don't do anything if we have no idea what
         // we are even inserting
         if (type == null) return Optional.empty();
@@ -175,7 +267,7 @@ public class Database {
         int z = 0;
 
         if (transaction != null) {
-            if (type.equals(ActionTypes.PLACE)) {
+            if (type.equals(EventTypes.PLACE)) {
                 blockId = transaction.defaultReplacement().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
             } else {
                 blockId = transaction.original().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
@@ -229,11 +321,11 @@ public class Database {
         }
     }
 
-    public List<BlockAction> query(Query query) throws SQLException {
+    public List<EspialRecord> query(Query query) throws SQLException, JsonProcessingException {
         Timestamp timestamp = query.getTimestamp() == null ? Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
         String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
 
-        List<BlockAction> actions = new ArrayList<>();
+        List<EspialRecord> actions = new ArrayList<>();
         ResultSet rs;
 
         if (query.getMax() == null) {
@@ -285,36 +377,7 @@ public class Database {
         return actions;
     }
 
-    @Deprecated(forRemoval = true)
-    public List<BlockAction> queryBlock(String world, int x, int y, int z, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
-        if (timestamp == null) {
-            // Please let me know if you are querying records from before 1970 :)
-            timestamp = Timestamp.from(Instant.ofEpochMilli(0));
-        }
-
-        queryCoords.setString(1, world);
-        queryCoords.setInt(2, x);
-        queryCoords.setInt(3, y);
-        queryCoords.setInt(4, z);
-
-        queryCoords.setString(5, uuid);
-        queryCoords.setString(6, blockId);
-        queryCoords.setTimestamp(7, timestamp);
-
-        ResultSet rs = queryCoords.executeQuery();
-
-        List<BlockAction> blocks = new ArrayList<>();
-
-        while (rs.next()) {
-            blocks.add(this.blockFromRs(rs));
-        }
-
-        Collections.reverse(blocks); // Reverse order so we have newest first
-        return blocks;
-
-    }
-
-    public BlockAction queryId(int id) throws SQLException {
+    public EspialRecord queryId(int id) throws SQLException, JsonProcessingException {
         queryId.setInt(1, id);
 
         ResultSet rs = queryId.executeQuery();
@@ -323,50 +386,6 @@ public class Database {
             return this.blockFromRs(rs);
         }
         return null;
-    }
-
-    @Deprecated(forRemoval = true)
-    public List<BlockAction> queryRange(String world, int startX, int startY, int startZ, int endX, int endY, int endZ, @Nullable String uuid, @Nullable String blockId, @Nullable Timestamp timestamp) throws SQLException {
-        if (timestamp == null) {
-            // Please let me know if you are querying records from before 1970 :)
-            timestamp = Timestamp.from(Instant.ofEpochMilli(0));
-        }
-
-        // Rearrange from smallest to biggest for things to actually get picked up
-        int[] x = {startX, endX};
-        int[] y = {startY, endY};
-        int[] z = {startZ, endZ};
-
-        // The smallest number would be at the start.
-        Arrays.sort(x);
-        Arrays.sort(y);
-        Arrays.sort(z);
-
-        queryRange.setString(1, world);
-
-        queryRange.setInt(2, x[0]);
-        queryRange.setInt(3, x[1]);
-
-        queryRange.setInt(4, y[0]);
-        queryRange.setInt(5, y[1]);
-
-        queryRange.setInt(6, z[0]);
-        queryRange.setInt(7, z[1]);
-
-        queryRange.setString(8, uuid);
-        queryRange.setString(9, blockId);
-        queryRange.setTimestamp(10, timestamp);
-
-        ResultSet rs = queryRange.executeQuery();
-
-        List<BlockAction> blocks = new ArrayList<>();
-
-        while (rs.next()) {
-            blocks.add(this.blockFromRs(rs));
-        }
-
-        Collections.reverse(blocks); // Reverse order so we have newest first
-        return blocks;
     }
 
     public Optional<User> getBlockOwner(int x, int y, int z) throws SQLException, ExecutionException, InterruptedException {
@@ -391,7 +410,7 @@ public class Database {
         }
     }
 
-    private BlockAction blockFromRs(ResultSet rs) throws SQLException {
+    private EspialRecord blockFromRs(ResultSet rs) throws SQLException, JsonProcessingException {
         int uid = rs.getInt("id");
         int type = rs.getInt("type");
         Timestamp timestamp = rs.getTimestamp("time");
@@ -430,41 +449,17 @@ public class Database {
         double finalPlayerYaw = playerYaw;
         double finalPlayerPitch = playerPitch;
 
+
         boolean rolledBack = rs.getBoolean("rolled_back");
 
-        return (new BlockAction() {
+        EspialActor actor = new EspialActor() {
             @Override
-            public int getId() {
-                return uid;
-            }
-
-            @Override
-            public String getUuid() {
+            public String getUUID() {
                 return playerUUID;
             }
 
             @Override
-            public Timestamp getTimestamp() {
-                return timestamp;
-            }
-
-            @Override
-            public ActionType getType() {
-                return ActionTypes.fromId(type);
-            }
-
-            @Override
-            public String getBlockId() {
-                return blockId;
-            }
-
-            @Override
-            public String getWorld() {
-                return world;
-            }
-
-            @Override
-            public @Nullable Vector3d getActorPosition() {
+            public @Nullable Vector3d getPosition() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
                 } else {
@@ -473,7 +468,7 @@ public class Database {
             }
 
             @Override
-            public Vector3d getActorRotation() {
+            public @Nullable Vector3d getRotation() {
                 if (logPlayerPosition) {
                     return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
                 } else {
@@ -482,23 +477,40 @@ public class Database {
             }
 
             @Override
-            public String getActorItem() {
+            public String getItem() {
                 return itemInHand;
             }
+        };
 
+        EventType eventType = EventTypes.fromId(type);
+        BlockAction action = BlockAction.builder()
+                .blockId(blockId)
+                .actor(actor)
+                .type(eventType)
+                .world(world)
+                .x(x)
+                .y(y)
+                .z(z)
+                .withNBTData(getNBTdata(uid).orElse(null))
+                .build();
+
+        if (eventType != null) {
+            if (eventType.getActionType().equals(ActionType.BLOCK)) {
+                // Make a new BlockRecord
+                return new BlockRecord(uid, timestamp, rolledBack, action);
+            }
+        }
+
+        // FIXME: generic record class
+        return new EspialRecord() {
             @Override
-            public int getX() {
-                return x;
+            public int getId() {
+                return uid;
             }
 
             @Override
-            public int getY() {
-                return y;
-            }
-
-            @Override
-            public int getZ() {
-                return z;
+            public Timestamp getTimestamp() {
+                return timestamp;
             }
 
             @Override
@@ -507,23 +519,20 @@ public class Database {
             }
 
             @Override
-            public void setNBT(NBTData data) {
-                try {
-                    setNBTdata(uid, JsonNBTData.serialize(data));
-                } catch (SQLException | JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+            public Action getAction() {
+                return action;
             }
 
             @Override
-            public Optional<NBTData> getNBT() {
-                try {
-                    return getNBTdata(uid);
-                } catch (SQLException | JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+            public TransactionStatus rollback() throws Exception {
+                return TransactionStatus.UNSUPPORTED;
             }
-        });
+
+            @Override
+            public TransactionStatus restore() throws Exception {
+                return TransactionStatus.UNSUPPORTED;
+            }
+        };
     }
 
     public void setRolledBack(int id, boolean status) throws SQLException {

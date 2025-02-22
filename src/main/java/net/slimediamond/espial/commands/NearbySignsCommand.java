@@ -8,6 +8,8 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.MessageUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
@@ -49,7 +51,11 @@ public class NearbySignsCommand implements CommandExecutor {
                         .audience(player)
                         .build();
 
-                List<BlockAction> signs = Espial.getInstance().getEspialService().query(query).stream().filter(action -> BlockUtil.SIGNS.contains(action.getBlockType())).toList();
+                List<EspialRecord> signs = Espial.getInstance().getEspialService().query(query)
+                        .stream()
+                        .filter(record -> record instanceof BlockRecord)
+                        .filter(record -> BlockUtil.SIGNS.contains(((BlockAction)record.getAction()).getBlockType()))
+                        .toList();
 
                 List<Component> contents = MessageUtil.generateLookupContents(signs, true);
 
