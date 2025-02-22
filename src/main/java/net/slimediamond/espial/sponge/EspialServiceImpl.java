@@ -21,10 +21,13 @@ import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.util.*;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
     @Override
@@ -151,6 +154,11 @@ public class EspialServiceImpl implements EspialService {
 
         }
         return TransactionStatus.UNSUPPORTED;
+    }
+
+    @Override
+    public Optional<User> getBlockOwner(int x, int y, int z) throws SQLException, ExecutionException, InterruptedException {
+        return Espial.getInstance().getDatabase().getBlockOwner(x, y, z);
     }
 
 
