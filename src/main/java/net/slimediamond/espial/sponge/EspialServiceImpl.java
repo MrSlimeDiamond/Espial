@@ -131,24 +131,15 @@ public class EspialServiceImpl implements EspialService {
             actions.sort(Comparator.comparing(BlockAction::getTimestamp));
         }
 
-        List<Integer> ids = actions.stream().map(BlockAction::getId).toList();
-        EspialTransaction transaction = new EspialTransactionImpl(ids, query);
-
-        // Commit a transaction but only if we will use it later
-        // for example: lookups won't be added here, but rollbacks will
-        if (query.getType().isReversible()) {
-            Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
-        }
-
         // TODO: Asynchronous processing, and probably some queue
-        this.process(actions, query.getType(), query.getAudience(), query.isSpread());
+        this.process(actions, query);
     }
 
-    private void process(List<BlockAction> actions, QueryType type, Audience audience, boolean spread) throws Exception {
-        if (type == QueryType.ROLLBACK || type == QueryType.RESTORE) {
+    private void process(List<BlockAction> actions, Query query) throws Exception {
+        if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
             String msg = "processed";
 
-            switch (type) {
+            switch (query.getType()) {
                 case ROLLBACK -> msg = "rolled back";
                 case RESTORE -> msg = "restored";
             }
@@ -158,7 +149,7 @@ public class EspialServiceImpl implements EspialService {
 
             for (BlockAction action : actions) {
                 TransactionStatus status;
-                switch (type) {
+                switch (query.getType()) {
                     case ROLLBACK -> status = this.rollback(action);
                     case RESTORE -> status = this.restore(action);
                     default -> status = TransactionStatus.UNSUPPORTED;
@@ -177,6 +168,14 @@ public class EspialServiceImpl implements EspialService {
                 builder.append(Component.text(success.size()))
                        .append(Component.text(" action(s) were "))
                        .append(Component.text(msg)).color(NamedTextColor.WHITE);
+
+                // Commit a transaction but only if we will use it later
+                // for example: lookups won't be added here, but rollbacks will
+                if (query.getType().isReversible()) {
+                    EspialTransaction transaction = new EspialTransactionImpl(success, query);
+                    Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+                }
+
             } else {
                 builder.append(Component.text("Nothing was " + msg).color(NamedTextColor.WHITE));
             }
@@ -187,21 +186,21 @@ public class EspialServiceImpl implements EspialService {
 
             builder.append(Component.text(".").color(NamedTextColor.WHITE));
 
-            audience.sendMessage(Espial.prefix.append(builder.build()));
-        } else if (type == QueryType.LOOKUP) {
-            List<Component> contents = MessageUtil.generateLookupContents(actions, spread);
+            query.getAudience().sendMessage(Espial.prefix.append(builder.build()));
+        } else if (query.getType() == QueryType.LOOKUP) {
+            List<Component> contents = MessageUtil.generateLookupContents(actions, query.isSpread());
 
             if (contents.isEmpty()) {
-                audience.sendMessage(Espial.prefix.append(Component.text("No data was found.").color(NamedTextColor.RED)));
+                query.getAudience().sendMessage(Espial.prefix.append(Component.text("No data was found.").color(NamedTextColor.RED)));
                 return;
             }
 
             PaginationList.builder().title(Espial.prefix.append(Component.text("Lookup results").color(NamedTextColor.WHITE)))
                     .contents(contents)
-                    .sendTo(audience);
+                    .sendTo(query.getAudience());
         } else {
             // Some other query type that we don't currently support
-            audience.sendMessage(Espial.prefix.append(Component.text("This query type is not currently supported.").color(NamedTextColor.RED)));
+            query.getAudience().sendMessage(Espial.prefix.append(Component.text("This query type is not currently supported.").color(NamedTextColor.RED)));
         }
     }
 }
