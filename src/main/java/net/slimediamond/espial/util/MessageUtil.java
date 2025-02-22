@@ -52,9 +52,11 @@ public class MessageUtil {
         List<Component> contents = new ArrayList<>();
 
         if (spread) {
-            // reverse chronological order
-            actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
-            actions.forEach(action -> {
+            // Clone it in case it's immutable
+            List<BlockAction> actionsCloned = new ArrayList<>(actions);
+
+            actionsCloned.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
+            actionsCloned.forEach(action -> {
                 Component displayName = getDisplayName(action);
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
                 String formattedDate = dateFormat.format(new Date(action.getTimestamp().getTime()));
