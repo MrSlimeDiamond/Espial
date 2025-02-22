@@ -38,6 +38,8 @@ public class Commands {
                 .permission("espial.command.base")
                 .executor(new BaseCommand())
                 .shortDescription(Component.text("Base command for Espial"))
+                .addChild(nearbysigns, "nearbysigns", "signs", "signsnear")
+                .addChild(isthisblockmine, "isthisblockmine", "isthismyblock", "myblock")
                 .addChild(Command.builder()
                         .executor(new BaseCommand())
                         .shortDescription(Component.text("Show information about the plugin"))
@@ -75,7 +77,7 @@ public class Commands {
                                                 .audience(player)
                                                 .build();
                                 try {
-                                    Espial.getInstance().getEspialService().submit(query);
+                                    query.submit();
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
@@ -85,8 +87,6 @@ public class Commands {
                             return CommandResult.success();
                         }).build(), "near"
                 )
-                .addChild(nearbysigns, "nearbysigns", "signs", "signsnear")
-                .addChild(isthisblockmine, "isthisblockmine", "isthismyblock", "myblock")
                 .addChild(Command.builder()
                         .permission("espial.command.rollback")
                         .shortDescription(Component.text("Roll back changes made by players"))

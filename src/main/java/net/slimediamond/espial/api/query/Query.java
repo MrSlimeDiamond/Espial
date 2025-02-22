@@ -1,14 +1,19 @@
 package net.slimediamond.espial.api.query;
 
 import net.kyori.adventure.audience.Audience;
+import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.submittable.Submittable;
+import net.slimediamond.espial.api.submittable.SubmittableResult;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.UUID;
 
-public interface Query {
+public interface Query extends Submittable<List<EspialRecord>> {
     /**
      * Get query type
      * @return Query type
@@ -140,6 +145,11 @@ public interface Query {
 
         public Query build() {
             return new Query() {
+                @Override
+                public SubmittableResult<List<EspialRecord>> submit() throws Exception {
+                    return Espial.getInstance().getEspialService().submitQuery(this);
+                }
+
                 @Override
                 public QueryType getType() {
                     return type;

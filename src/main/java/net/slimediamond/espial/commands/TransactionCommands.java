@@ -4,10 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
+import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.BasicEspialTransaction;
 import net.slimediamond.espial.util.*;
@@ -107,7 +107,7 @@ public class TransactionCommands {
         }
 
         try {
-            Espial.getInstance().getEspialService().submit(builder.build());
+            builder.build().submit();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -164,12 +164,12 @@ public class TransactionCommands {
         public CommandResult execute(CommandContext context) throws CommandException {
             int id = context.requireOne(CommandParameters.GENERIC_ID);
             try {
-                BlockAction action = Espial.getInstance().getDatabase().queryId(id);
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
 
-                TransactionStatus status = Espial.getInstance().getEspialService().rollback(action);
+                TransactionStatus status = record.rollback();
 
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Espial.prefix.append(Component.text(ids.size() + " action(s) have been rolled back.")
@@ -197,12 +197,12 @@ public class TransactionCommands {
         public CommandResult execute(CommandContext context) throws CommandException {
             int id = context.requireOne(CommandParameters.GENERIC_ID);
             try {
-                BlockAction action = Espial.getInstance().getDatabase().queryId(id);
+                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
 
-                TransactionStatus status = Espial.getInstance().getEspialService().restore(action);
+                TransactionStatus status = record.restore();
 
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Espial.prefix.append(Component.text(ids.size() + " action(s) have been restored.")
