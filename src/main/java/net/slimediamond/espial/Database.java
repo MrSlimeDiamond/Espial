@@ -12,6 +12,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.living.Living;

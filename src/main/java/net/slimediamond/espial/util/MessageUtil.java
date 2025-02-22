@@ -54,40 +54,40 @@ public class MessageUtil {
         if (spread) {
             // reverse chronological order
             actions.sort(Comparator.comparing(BlockAction::getTimestamp).reversed());
-            actions.forEach(block -> {
-                Component displayName = getDisplayName(block);
+            actions.forEach(action -> {
+                Component displayName = getDisplayName(action);
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
-                String formattedDate = dateFormat.format(new Date(block.getTimestamp().getTime()));
+                String formattedDate = dateFormat.format(new Date(action.getTimestamp().getTime()));
                 TextComponent.Builder msg = Component.text()
                         .append(Component.text(formattedDate).color(NamedTextColor.GRAY))
                         .append(Component.space())
                         .append(displayName)
                         .append(Component.space())
-                        .append(makeHoverableAction(block.getType(), true).color(NamedTextColor.GREEN))
+                        .append(makeHoverableAction(action.getType(), true).color(NamedTextColor.GREEN))
                         .append(Component.space())
-                        .append(Component.text(block.getBlockId().split(":")[1]).color(NamedTextColor.GREEN))
-                        .clickEvent(ClickEvent.runCommand("/espial inspect " + block.getId()))
+                        .append(action.getBlockType().asComponent().color(NamedTextColor.GREEN))
+                        .clickEvent(ClickEvent.runCommand("/espial inspect " + action.getId()))
                         .hoverEvent(HoverEvent.showText(Espial.prefix
                                 .append(Component.newline())
                                 .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.getId()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(action.getId()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                                .append(Component.text(block.getActorItem()).color(NamedTextColor.DARK_GRAY))
+                                .append(Component.text(action.getActorItem()).color(NamedTextColor.DARK_GRAY))
                                 .append(Component.newline())
                                 .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                         ));
 
-                block.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
+                action.getNBT().flatMap(NBTDataParser::parseNBT).ifPresent(component -> {
                     msg.append(Component.text(" (...)")
                             .color(NamedTextColor.GRAY)
                             .hoverEvent(HoverEvent.showText(Espial.prefix.append(
                                     Component.text().color(NamedTextColor.WHITE).append(component)))));
                 });
 
-                if (block.isRolledBack()) {
+                if (action.isRolledBack()) {
                     msg.decorate(TextDecoration.STRIKETHROUGH);
                 }
                 contents.add(msg.build());
@@ -99,7 +99,7 @@ public class MessageUtil {
 
             actions.forEach(block -> {
                 Component displayName = getDisplayName(block);
-                BlockTracker key = new BlockTracker(displayName, block.getType(), block.getBlockId());
+                BlockTracker key = new BlockTracker(displayName, block.getType(), block.getBlockType().asComponent());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
                 long time = block.getTimestamp().getTime();
                 latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
@@ -119,7 +119,7 @@ public class MessageUtil {
                         .append(makeHoverableAction(entry.getKey().actionType(), true).color(NamedTextColor.GREEN))
                         .append(Component.space())
                         .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
-                        .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
+                        .append(entry.getKey().block().color(NamedTextColor.GREEN))
                         .build());
             });
         }
@@ -140,5 +140,5 @@ public class MessageUtil {
                 ));
     }
 
-    private record BlockTracker(Component name, ActionType actionType, String blockId) {}
+    private record BlockTracker(Component name, ActionType actionType, Component block) {}
 }
