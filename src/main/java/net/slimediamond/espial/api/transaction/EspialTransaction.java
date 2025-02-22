@@ -1,7 +1,6 @@
 package net.slimediamond.espial.api.transaction;
 
 import net.kyori.adventure.audience.Audience;
-import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 
 import java.util.List;
@@ -12,12 +11,6 @@ public interface EspialTransaction {
      * @return Transaction type
      */
     QueryType getType();
-
-    /**
-     * Get the query used to make the transaction
-     * @return Query
-     */
-    Query getQuery();
 
     /**
      * Get the user

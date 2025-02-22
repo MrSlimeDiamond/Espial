@@ -36,11 +36,6 @@ public class EspialTransactionImpl implements EspialTransaction {
     }
 
     @Override
-    public Query getQuery() {
-        return this.query;
-    }
-
-    @Override
     public Object getUser() {
         return this.user;
     }
@@ -55,7 +50,21 @@ public class EspialTransactionImpl implements EspialTransaction {
         return this.undone;
     }
 
+    @Override
     public int undo() throws Exception {
+        this.undone = true;
+
+        return undo(ids, type);
+    }
+
+    @Override
+    public int redo() throws Exception {
+        this.undone = false;
+
+        return redo(ids, type);
+    }
+
+    public static int undo(List<Integer> ids, QueryType type) throws Exception {
         if (type == QueryType.ROLLBACK) {
             // Restore all IDs
             for (int id : ids) {
@@ -67,12 +76,10 @@ public class EspialTransactionImpl implements EspialTransaction {
             }
         }
 
-        this.undone = true;
-
         return ids.size();
     }
 
-    public int redo() throws Exception {
+    public static int redo(List<Integer> ids, QueryType type) throws Exception {
         if (type == QueryType.RESTORE) {
             // Restore all IDs
             for (int id : ids) {
@@ -83,8 +90,6 @@ public class EspialTransactionImpl implements EspialTransaction {
                 Espial.getInstance().getEspialService().rollback(Espial.getInstance().getDatabase().queryId(id));
             }
         }
-
-        this.undone = false;
 
         return ids.size();
     }

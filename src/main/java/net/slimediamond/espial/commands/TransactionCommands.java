@@ -8,6 +8,8 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
+import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.sponge.transaction.BasicEspialTransaction;
 import net.slimediamond.espial.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockState;
@@ -166,14 +168,22 @@ public class TransactionCommands {
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
-                Query query = Query.builder()
-                        .setType(QueryType.ROLLBACK)
-                        .setMin(action.getServerLocation())
-                        .setUser(context.cause().root())
-                        .setAudience(context.cause().audience())
-                        .build();
 
-                Espial.getInstance().getEspialService().submit(query);
+                TransactionStatus status = Espial.getInstance().getEspialService().rollback(action);
+
+                if (status == TransactionStatus.SUCCESS) {
+                    context.sendMessage(Espial.prefix.append(Component.text(ids.size() + " action(s) have been rolled back.")
+                            .color(NamedTextColor.WHITE)));
+
+                    Espial.getInstance().getTransactionManager().add(context.cause().root(),
+                            new BasicEspialTransaction(QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
+                } else if (status == TransactionStatus.ALREADY_DONE) {
+                    context.sendMessage(Espial.prefix.append(Component.text("That action has already been rolled back!").
+                            color(NamedTextColor.RED)));
+                } else if (status == TransactionStatus.UNSUPPORTED) {
+                    context.sendMessage(Espial.prefix.append(Component.text("Rolling back this kind of action is not currently supported.")
+                            .color(NamedTextColor.RED)));
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -191,14 +201,24 @@ public class TransactionCommands {
 
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
-                Query query = Query.builder()
-                        .setType(QueryType.RESTORE)
-                        .setMin(action.getServerLocation())
-                        .setUser(context.cause().root())
-                        .setAudience(context.cause().audience())
-                        .build();
 
-                Espial.getInstance().getEspialService().submit(query);
+                TransactionStatus status = Espial.getInstance().getEspialService().restore(action);
+
+                if (status == TransactionStatus.SUCCESS) {
+                    context.sendMessage(Espial.prefix.append(Component.text(ids.size() + " action(s) have been restored.")
+                            .color(NamedTextColor.WHITE)));
+
+                    Espial.getInstance().getTransactionManager().add(context.cause().root(),
+                            new BasicEspialTransaction(QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
+                } else if (status == TransactionStatus.ALREADY_DONE) {
+                    context.sendMessage(Espial.prefix.append(Component.text("That action has already been restored!")
+                            .color(NamedTextColor.RED)));
+                } else if (status == TransactionStatus.UNSUPPORTED) {
+                    context.sendMessage(Espial.prefix.append(Component.text("Restoring this kind of action is not currently supported.")
+                            .color(NamedTextColor.RED)));
+                }
+
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
