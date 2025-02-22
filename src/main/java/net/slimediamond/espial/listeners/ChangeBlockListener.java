@@ -3,8 +3,8 @@ package net.slimediamond.espial.listeners;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.api.nbt.NBTApplier;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
@@ -99,7 +99,7 @@ public class ChangeBlockListener {
 
             try {
                 Optional<BlockAction> actionOptional = Espial.getInstance().getDatabase().insertAction(
-                        ActionType.fromOperation(transaction.operation()),
+                        ActionTypes.fromSponge(transaction.operation()),
                         living,
                         transaction.finalReplacement().world().formatted(),
                         transaction,

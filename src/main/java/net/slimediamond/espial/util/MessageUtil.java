@@ -7,8 +7,8 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.type.ActionType;
 import net.slimediamond.espial.api.nbt.NBTDataParser;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
@@ -63,7 +63,7 @@ public class MessageUtil {
                         .append(Component.space())
                         .append(displayName)
                         .append(Component.space())
-                        .append(Component.text(block.getActionType().getHumanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(makeHoverableAction(block.getType(), true).color(NamedTextColor.GREEN))
                         .append(Component.space())
                         .append(Component.text(block.getBlockId().split(":")[1]).color(NamedTextColor.GREEN))
                         .clickEvent(ClickEvent.runCommand("/espial inspect " + block.getId()))
@@ -99,7 +99,7 @@ public class MessageUtil {
 
             actions.forEach(block -> {
                 Component displayName = getDisplayName(block);
-                BlockTracker key = new BlockTracker(displayName, block.getActionType(), block.getBlockId());
+                BlockTracker key = new BlockTracker(displayName, block.getType(), block.getBlockId());
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
                 long time = block.getTimestamp().getTime();
                 latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
@@ -116,7 +116,7 @@ public class MessageUtil {
                 contents.add(Component.text()
                         .append(key.name())
                         .append(Component.space())
-                        .append(Component.text(key.actionType().getHumanReadableVerb()).color(NamedTextColor.GREEN))
+                        .append(makeHoverableAction(entry.getKey().actionType(), true).color(NamedTextColor.GREEN))
                         .append(Component.space())
                         .append(Component.text((count > 1 ? count + "x " : "")).color(NamedTextColor.WHITE))
                         .append(Component.text(key.blockId().split(":")[1]).color(NamedTextColor.GREEN))
@@ -124,6 +124,20 @@ public class MessageUtil {
             });
         }
         return contents;
+    }
+
+    public static Component makeHoverableAction(ActionType actionType, boolean useVerb) {
+        String text = useVerb ? actionType.getVerb() : actionType.getName();
+        return Component.text(text).hoverEvent(
+                HoverEvent.showText(
+                        Espial.prefix
+                                .append(Component.newline())
+                                .append(Component.text("Name: ").color(NamedTextColor.GRAY))
+                                .append(Component.text(actionType.getName()).color(NamedTextColor.WHITE))
+                                .append(Component.newline())
+                                .append(Component.text("Description: ").color(NamedTextColor.GRAY))
+                                .append(Component.text(actionType.getDescription()).color(NamedTextColor.WHITE))
+                ));
     }
 
     private record BlockTracker(Component name, ActionType actionType, String blockId) {}

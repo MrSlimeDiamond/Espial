@@ -1,5 +1,6 @@
 package net.slimediamond.espial.api.action;
 
+import net.slimediamond.espial.api.action.type.ActionType;
 import net.slimediamond.espial.api.nbt.NBTData;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
@@ -37,7 +38,7 @@ public interface BlockAction {
      * Get the type of action this is
      * @return Action type
      */
-    ActionType getActionType();
+    ActionType getType();
 
     /**
      * Get the block ID (such as minecraft:string)

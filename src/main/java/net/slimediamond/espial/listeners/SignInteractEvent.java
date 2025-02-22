@@ -2,9 +2,9 @@ package net.slimediamond.espial.listeners;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.api.nbt.NBTApplier;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
@@ -21,7 +21,7 @@ public class SignInteractEvent {
     @Listener(order = Order.LATE)
     public void onSignChangeEvent(ChangeSignEvent event) throws SQLException {
         if (event.cause().root() instanceof Living source) {
-            Optional<BlockAction> block = Espial.getInstance().getDatabase().insertAction(ActionType.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
+            Optional<BlockAction> block = Espial.getInstance().getDatabase().insertAction(ActionTypes.MODIFY, source, event.sign().serverLocation().world().key().formatted(), null, event.sign().serverLocation().createSnapshot());
 
             if (block.isPresent()) {
                 List<Component> newText = event.text().get();

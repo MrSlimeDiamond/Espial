@@ -91,7 +91,7 @@ public class InspectCommand implements CommandExecutor {
                         .append(displayName)
                         .append(Component.newline())
                         .append(Component.text("Type: ").color(NamedTextColor.GREEN))
-                        .append(Component.text(action.getActionType().toString()).color(NamedTextColor.YELLOW))
+                        .append(MessageUtil.makeHoverableAction(action.getType(), false).color(NamedTextColor.YELLOW))
                         .append(Component.newline())
                         .append(Component.text("Coordinates: ").color(NamedTextColor.GREEN))
                         .append(Component.text(action.getX() + " " + action.getY() + " " + action.getZ()).color(NamedTextColor.YELLOW))
@@ -99,7 +99,7 @@ public class InspectCommand implements CommandExecutor {
                         .append(Component.text("Item in hand: ").color(NamedTextColor.GREEN))
                         .append(Component.text(action.getActorItem()).color(NamedTextColor.YELLOW))
                         .build()
-                    ).sendTo((Audience) context.cause().root());
+                    ).sendTo(context.cause().audience());
 
             // We should cancel an existing particle effect if there is one
             this.stopOutline(player);

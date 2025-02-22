@@ -2,8 +2,9 @@ package net.slimediamond.espial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.type.ActionType;
+import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.query.Query;
@@ -113,7 +114,11 @@ public class Database {
      * @return {@link Optional} for a {@link BlockAction} that was created
      * @throws SQLException
      */
-    public Optional<BlockAction> insertAction(@NonNull ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+    public Optional<BlockAction> insertAction(@Nullable ActionType type, @Nullable Living living, @Nullable String world, @Nullable BlockTransaction transaction, @Nullable BlockSnapshot blockSnapshot) throws SQLException {
+        // Don't do anything if we have no idea what
+        // we are even inserting
+        if (type == null) return Optional.empty();
+
         String uuid;
 
         if (living == null) { // Server (or similar)
@@ -169,7 +174,7 @@ public class Database {
         int z = 0;
 
         if (transaction != null) {
-            if (type.equals(ActionType.PLACE)) {
+            if (type.equals(ActionTypes.PLACE)) {
                 blockId = transaction.defaultReplacement().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
             } else {
                 blockId = transaction.original().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
@@ -443,8 +448,8 @@ public class Database {
             }
 
             @Override
-            public ActionType getActionType() {
-                return ActionType.fromId(type);
+            public ActionType getType() {
+                return ActionTypes.fromId(type);
             }
 
             @Override

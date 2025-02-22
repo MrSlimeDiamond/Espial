@@ -6,8 +6,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
@@ -31,7 +31,7 @@ public class EspialServiceImpl implements EspialService {
         if (action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
 
         // roll back this specific ID to another state
-        if (action.getActionType() == ActionType.BREAK) {
+        if (action.getType() == ActionTypes.BREAK) {
             // place the block which was broken at that location
 
             action.getServerLocation().setBlock(action.getState());
@@ -43,7 +43,7 @@ public class EspialServiceImpl implements EspialService {
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
 
             return TransactionStatus.SUCCESS;
-        } if (action.getActionType() == ActionType.PLACE) {
+        } if (action.getType() == ActionTypes.PLACE) {
             // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
             // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
             // (it'll be fine, probably)
@@ -51,7 +51,7 @@ public class EspialServiceImpl implements EspialService {
             action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), true);
             return TransactionStatus.SUCCESS;
-        } else if (action.getActionType() == ActionType.MODIFY) {
+        } else if (action.getType() == ActionTypes.MODIFY) {
             // Rolling back a modification action will entail going to its previous state of modification
             // (if it's present), so let's look for that.
 
@@ -79,7 +79,7 @@ public class EspialServiceImpl implements EspialService {
         if (!action.isRolledBack()) return TransactionStatus.ALREADY_DONE;
 
         // roll forwards this specific ID to another state
-        if (action.getActionType() == ActionType.BREAK) {
+        if (action.getType() == ActionTypes.BREAK) {
             // place the block which was broken at that location
 
             action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
@@ -87,7 +87,7 @@ public class EspialServiceImpl implements EspialService {
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
 
             return TransactionStatus.SUCCESS;
-        } if (action.getActionType() == ActionType.PLACE) {
+        } if (action.getType() == ActionTypes.PLACE) {
             action.getServerLocation().setBlock(action.getState());
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {
@@ -96,7 +96,7 @@ public class EspialServiceImpl implements EspialService {
 
             Espial.getInstance().getDatabase().setRolledBack(action.getId(), false);
             return TransactionStatus.SUCCESS;
-        } if (action.getActionType() == ActionType.MODIFY) {
+        } if (action.getType() == ActionTypes.MODIFY) {
             // Because this is a restore, let's get the one after this which is rolled back
 
             if (BlockUtil.SIGNS.contains(action.getBlockType())) {

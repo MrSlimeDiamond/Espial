@@ -1,7 +1,7 @@
 package net.slimediamond.espial.listeners;
 
-import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.action.type.ActionTypes;
 import net.slimediamond.espial.util.BlockUtil;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
@@ -26,7 +26,7 @@ public class InteractListener {
 
             if (blocksToCheck.contains(blockType)) {
                 Espial.getInstance().getDatabase().insertAction(
-                        ActionType.INTERACT,
+                        ActionTypes.INTERACT,
                         player,
                         event.block().world().formatted(),
                         null,
