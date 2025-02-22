@@ -7,7 +7,6 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.NBTApplier;
-import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.query.Query;
@@ -151,9 +150,9 @@ public class ChangeBlockListener {
 
                 BlockAction.Builder builder = BlockAction.builder()
                         .blockId(snapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted())
-                        .type(type)
+                        .event(type)
                         .actor(actor)
-                        .type(EventTypes.fromSponge(transaction.operation()))
+                        .event(EventTypes.fromSponge(transaction.operation()))
                         .location(snapshot.location().get())
                         .world(snapshot.location().get().worldKey().formatted());
 

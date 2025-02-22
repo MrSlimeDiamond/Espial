@@ -9,7 +9,6 @@ import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.user.EspialActor;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -51,7 +50,7 @@ public class SignInteractEvent {
             EspialActor actor = new EspialActorImpl(source);
 
             BlockAction.builder()
-                    .type(EventTypes.MODIFY)
+                    .event(EventTypes.MODIFY)
                     .world(event.sign().serverLocation().worldKey().formatted())
                     .blockId(BlockTypes.registry().valueKey(event.sign().block().type()).formatted())
                     .actor(actor)

@@ -1,7 +1,6 @@
 package net.slimediamond.espial.api.action;
 
 import net.slimediamond.espial.api.action.event.EventType;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.api.user.EspialActor;
 
 public interface Action {

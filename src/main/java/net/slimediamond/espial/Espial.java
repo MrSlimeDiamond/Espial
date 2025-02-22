@@ -5,10 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.transaction.TransactionManager;
-import net.slimediamond.espial.listeners.ChangeBlockListener;
-import net.slimediamond.espial.listeners.InteractListener;
-import net.slimediamond.espial.listeners.PlayerLeaveListener;
-import net.slimediamond.espial.listeners.SignInteractEvent;
+import net.slimediamond.espial.listeners.*;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import org.apache.logging.log4j.Logger;
@@ -92,6 +89,7 @@ public class Espial {
         Sponge.eventManager().registerListeners(container, new InteractListener());
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());
+        Sponge.eventManager().registerListeners(container, new AttackEntityListener());
     }
 
     @Listener

@@ -1,30 +1,27 @@
 package net.slimediamond.espial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.action.ActionType;
-import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.NBTStorable;
+import net.slimediamond.espial.api.action.*;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.api.user.EspialActor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.transaction.BlockTransaction;
-import org.spongepowered.api.data.type.HandTypes;
-import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.registry.RegistryTypes;
-import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 import java.sql.*;
@@ -133,7 +130,7 @@ public class Database {
      * @throws SQLException If the database errors.
      * @throws JsonProcessingException If JSON errors.
      */
-    public Optional<EspialRecord> submit(Action action) throws SQLException, JsonProcessingException {
+    public Optional<EspialRecord> submit(Action action) throws Exception {
         insertAction.setInt(1, action.getEventType().getId()); // Type
         insertAction.setTimestamp(2, Timestamp.from(Instant.now())); // Timestamp
         insertAction.setString(3, action.getActor().getUUID()); // Actor UUID
@@ -141,6 +138,8 @@ public class Database {
         // Block ID
         if (action instanceof BlockAction block) {
             insertAction.setString(4, block.getBlockId());
+        } else if (action instanceof HangingDeathAction) {
+            insertAction.setString(4, ((HangingDeathAction) action).getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
         } else {
             insertAction.setString(4, ""); // apparently this can't be null?
         }
@@ -198,7 +197,7 @@ public class Database {
         }
     }
 
-    public List<EspialRecord> query(Query query) throws SQLException, JsonProcessingException {
+    public List<EspialRecord> query(Query query) throws Exception {
         Timestamp timestamp = query.getTimestamp() == null ? Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
         String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
 
@@ -254,7 +253,7 @@ public class Database {
         return actions;
     }
 
-    public EspialRecord queryId(int id) throws SQLException, JsonProcessingException {
+    public EspialRecord queryId(int id) throws Exception {
         queryId.setInt(1, id);
 
         ResultSet rs = queryId.executeQuery();
@@ -287,7 +286,7 @@ public class Database {
         }
     }
 
-    private EspialRecord blockFromRs(ResultSet rs) throws SQLException, JsonProcessingException {
+    private EspialRecord blockFromRs(ResultSet rs) throws Exception {
         int uid = rs.getInt("id");
         int type = rs.getInt("type");
         Timestamp timestamp = rs.getTimestamp("time");
@@ -360,56 +359,47 @@ public class Database {
         };
 
         EventType eventType = EventTypes.fromId(type);
-        BlockAction action = BlockAction.builder()
-                .blockId(blockId)
-                .actor(actor)
-                .type(eventType)
-                .world(world)
-                .x(x)
-                .y(y)
-                .z(z)
-                .withNBTData(getNBTdata(uid).orElse(null))
-                .build();
+
+        Action action;
 
         if (eventType != null) {
             if (eventType.getActionType().equals(ActionType.BLOCK)) {
+                action = BlockAction.builder()
+                        .blockId(blockId)
+                        .actor(actor)
+                        .event(eventType)
+                        .world(world)
+                        .x(x)
+                        .y(y)
+                        .z(z)
+                        .withNBTData(getNBTdata(uid).orElse(null))
+                        .build();
+
                 // Make a new BlockRecord
                 return new BlockRecord(uid, timestamp, rolledBack, action);
+            } if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
+                EntityType<?> entityType = EntityTypes.registry().value(ResourceKey.of(
+                            blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
+                            blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+
+                action = HangingDeathAction.builder()
+                        .actor(actor)
+                        .entity(entityType)
+                        .event(eventType)
+                        .world(world)
+                        .x(x)
+                        .y(y)
+                        .z(z)
+                        .withNBTData(getNBTdata(uid).orElse(null))
+                        .build();
+
+                return new EntityRecord(uid, timestamp, rolledBack, action);
+            } else {
+                throw new Exception("Unsupported event type");
             }
+        } else {
+            throw new Exception("Event type cannot be null");
         }
-
-        // FIXME: generic record class
-        return new EspialRecord() {
-            @Override
-            public int getId() {
-                return uid;
-            }
-
-            @Override
-            public Timestamp getTimestamp() {
-                return timestamp;
-            }
-
-            @Override
-            public boolean isRolledBack() {
-                return rolledBack;
-            }
-
-            @Override
-            public Action getAction() {
-                return action;
-            }
-
-            @Override
-            public TransactionStatus rollback() throws Exception {
-                return TransactionStatus.UNSUPPORTED;
-            }
-
-            @Override
-            public TransactionStatus restore() throws Exception {
-                return TransactionStatus.UNSUPPORTED;
-            }
-        };
     }
 
     public void setRolledBack(int id, boolean status) throws SQLException {

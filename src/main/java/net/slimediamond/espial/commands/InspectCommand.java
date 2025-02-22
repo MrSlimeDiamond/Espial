@@ -113,6 +113,8 @@ public class InspectCommand implements CommandExecutor {
             return CommandResult.success();
         } catch (SQLException | JsonProcessingException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

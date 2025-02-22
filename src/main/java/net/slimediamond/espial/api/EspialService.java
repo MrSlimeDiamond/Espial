@@ -7,7 +7,6 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
 import java.util.List;

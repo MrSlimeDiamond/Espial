@@ -23,7 +23,6 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
-import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -31,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
     @Override
-    public List<EspialRecord> query(Query query) throws SQLException, JsonProcessingException {
+    public List<EspialRecord> query(Query query) throws Exception {
         return Espial.getInstance().getDatabase().query(query);
     }
 

@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.HangingDeathAction;
 import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTDataParser;
@@ -65,24 +66,20 @@ public class MessageUtil {
                         .append(displayName)
                         .append(Component.space())
                         .append(makeHoverableAction(record.getAction().getEventType(), true).color(NamedTextColor.GREEN))
-                        .append(Component.space());
-
-                if (record.getAction() instanceof BlockAction blockAction) {
-                    msg.append(blockAction.getBlockType().asComponent().color(NamedTextColor.GREEN));
-                }
-
-                msg.clickEvent(ClickEvent.runCommand("/espial inspect " + record.getId()))
-                .hoverEvent(HoverEvent.showText(Espial.prefix
-                        .append(Component.newline())
-                        .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
-                        .append(Component.newline())
-                        .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
-                        .append(Component.text(record.getId()).color(NamedTextColor.DARK_GRAY))
-                        .append(Component.newline())
-                        .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
-                        .append(Component.text(record.getAction().getActor().getItem()).color(NamedTextColor.DARK_GRAY))
-                        .append(Component.newline())
-                        .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
+                        .append(Component.space())
+                        .append(getItemDisplayname(record))
+                        .clickEvent(ClickEvent.runCommand("/espial inspect " + record.getId()))
+                        .hoverEvent(HoverEvent.showText(Espial.prefix
+                            .append(Component.newline())
+                            .append(Component.text("Click to teleport!").color(NamedTextColor.GRAY))
+                            .append(Component.newline())
+                            .append(Component.text("Internal ID: ").color(NamedTextColor.GRAY))
+                            .append(Component.text(record.getId()).color(NamedTextColor.DARK_GRAY))
+                            .append(Component.newline())
+                            .append(Component.text("Item in hand: ").color(NamedTextColor.GRAY))
+                            .append(Component.text(record.getAction().getActor().getItem()).color(NamedTextColor.DARK_GRAY))
+                            .append(Component.newline())
+                            .append(Component.text(formattedDate).color(NamedTextColor.DARK_GRAY))
                 ));
 
                 if (record.getAction() instanceof NBTStorable nbt) {
@@ -106,15 +103,9 @@ public class MessageUtil {
 
             records.forEach(record -> {
                 Component displayName = getDisplayName(record.getAction());
-                Component blockType = Component.text("(unknown)")
-                        .color(NamedTextColor.GRAY)
-                        .decorate(TextDecoration.ITALIC);
 
-                if (record.getAction() instanceof BlockAction blockAction) {
-                    blockType = blockAction.getBlockType().asComponent();
-                }
 
-                BlockTracker key = new BlockTracker(displayName, record.getAction().getEventType(), blockType);
+                BlockTracker key = new BlockTracker(displayName, record.getAction().getEventType(), getItemDisplayname(record));
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
                 long time = record.getTimestamp().getTime();
                 latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
@@ -157,6 +148,20 @@ public class MessageUtil {
                                 .append(Component.text("Description: ").color(NamedTextColor.GRAY))
                                 .append(Component.text(eventType.getDescription()).color(NamedTextColor.WHITE))
                 ));
+    }
+
+    public static Component getItemDisplayname(EspialRecord record) {
+        Component displayName = Component.text("(unknown)")
+                .color(NamedTextColor.GRAY)
+                .decorate(TextDecoration.ITALIC);
+
+        if (record.getAction() instanceof BlockAction blockAction) {
+            displayName = blockAction.getBlockType().asComponent();
+        } else if (record.getAction() instanceof HangingDeathAction hangingDeathAction) {
+            displayName = hangingDeathAction.getEntityType().asComponent();
+        }
+
+        return displayName;
     }
 
     private record BlockTracker(Component name, EventType eventType, Component block) {}

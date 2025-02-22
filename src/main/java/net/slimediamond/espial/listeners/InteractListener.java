@@ -26,7 +26,7 @@ public class InteractListener {
 
             if (blocksToCheck.contains(blockType)) {
                 BlockAction.builder()
-                        .type(EventTypes.MODIFY)
+                        .event(EventTypes.MODIFY)
                         .blockId(BlockTypes.registry().valueKey(blockType).formatted())
                         .world(event.block().world().formatted())
                         .location(event.block().location().get())

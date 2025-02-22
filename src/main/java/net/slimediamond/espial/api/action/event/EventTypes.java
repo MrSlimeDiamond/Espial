@@ -80,6 +80,14 @@ public class EventTypes {
             .id(8) // backwards compatibility
             .build();
 
+    public static final EventType HANGING_DEATH = EventType.builder()
+            .name("Hanging Death")
+            .verb("killed")
+            .description("Kill a hanging entity, such as an item frame")
+            .action(ActionType.HANGING_DEATH)
+            .id(9)
+            .build();
+
     static {
         types.add(BREAK);
         types.add(PLACE);
@@ -89,6 +97,7 @@ public class EventTypes {
         types.add(LIQUID_SPREAD);
         types.add(MODIFY);
         types.add(INTERACT);
+        types.add(HANGING_DEATH);
 
         for (EventType type : types) {
             ids.put(type.getId(), type);

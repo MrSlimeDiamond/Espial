@@ -1,6 +1,5 @@
 package net.slimediamond.espial.api.action;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTData;
@@ -15,7 +14,6 @@ import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -104,7 +102,7 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
             return this;
         }
 
-        public Builder type(EventType type) {
+        public Builder event(EventType type) {
             this.type = type;
             return this;
         }
