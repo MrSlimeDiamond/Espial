@@ -3,6 +3,8 @@ package net.slimediamond.espial.listeners;
 import net.slimediamond.espial.api.action.HangingDeathAction;
 import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
 import net.slimediamond.espial.api.action.event.EventTypes;
+import net.slimediamond.espial.api.nbt.NBTApplier;
+import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import org.spongepowered.api.entity.hanging.Hanging;
@@ -23,12 +25,15 @@ public class EntityListeners {
             // Hanging entity death (like an item frame)
             if (event.entity() instanceof Hanging hanging) {
                 try {
+                    NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
+
                     HangingDeathAction.builder()
                             .actor(new EspialActorImpl(player))
                             .entity(hanging.type())
                             .world(event.entity().serverLocation().worldKey().formatted())
                             .location(event.entity().serverLocation())
                             .event(EventTypes.HANGING_DEATH)
+                            .withNBTData(nbtData)
                             .build().submit();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
