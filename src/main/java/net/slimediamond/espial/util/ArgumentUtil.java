@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class ArgumentUtil {
 
-    public static Result parse(CommandContext context, QueryType type) {
+    public static Requirements parse(CommandContext context, QueryType type) {
         UUID uuid =
                 parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
 
@@ -27,7 +27,7 @@ public class ArgumentUtil {
         } catch (IllegalArgumentException e) {
             context.sendMessage(Format.error("Could not parse time argument " +
                     "'" + context.requireOne(CommandParameters.TIME) + "'."));
-            return new Result(null, null, null, false);
+            return new Requirements(null, null, null, false);
         }
 
         String blockId = null;
@@ -38,7 +38,7 @@ public class ArgumentUtil {
                         .formatted();
         }
 
-        return new Result(timestamp, uuid, blockId, true);
+        return new Requirements(timestamp, uuid, blockId, true);
     }
 
     private static <T> T parseFilter(CommandContext context, String flag,
@@ -61,13 +61,13 @@ public class ArgumentUtil {
         }
     }
 
-    public static final class Result {
+    public static final class Requirements {
         private Timestamp timestamp;
         private UUID uuid;
         private String blockId;
         private boolean shouldContinue;
 
-        public Result(Timestamp timestamp, UUID uuid, String blockId, boolean shouldContinue) {
+        public Requirements(Timestamp timestamp, UUID uuid, String blockId, boolean shouldContinue) {
             this.timestamp = timestamp;
             this.uuid = uuid;
             this.blockId = blockId;

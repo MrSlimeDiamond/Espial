@@ -16,14 +16,19 @@ import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
+import net.slimediamond.espial.util.ArgumentUtil;
 import net.slimediamond.espial.util.Format;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -56,8 +61,27 @@ public class EspialServiceImpl implements EspialService {
             actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
         }
 
+        StringBuilder argsPreview = new StringBuilder();
+
+        if (query.getPlayerUUID() != null) {
+            argsPreview.append("Player: ")
+                    .append(Sponge.server().player(query.getPlayerUUID()).get()
+                            .name());
+        }
+
+        if (query.getBlockId() != null) {
+            if (!argsPreview.isEmpty()) argsPreview.append(" ");
+            argsPreview.append("Block: ").append(query.getBlockId());
+        }
+
+        if (!Objects.equals(query.getTimestamp(),
+                Timestamp.from(Instant.ofEpochMilli(0))) && query.getTimestamp() != null) {
+            if (!argsPreview.isEmpty()) argsPreview.append(" ");
+            argsPreview.append("After: ").append(query.getTimestamp().toString());
+        }
+
         // TODO: Asynchronous processing, and probably some queue
-        this.process(actions, query);
+        this.process(actions, query, argsPreview.toString());
 
         return SubmittableResult.of(actions);
     }
@@ -78,7 +102,8 @@ public class EspialServiceImpl implements EspialService {
     }
 
 
-    private void process(List<EspialRecord> records, Query query)
+    private void process(List<EspialRecord> records, Query query,
+                         String argsPreview)
             throws Exception {
         if (query.getType() == QueryType.ROLLBACK ||
                 query.getType() == QueryType.RESTORE) {
@@ -149,9 +174,18 @@ public class EspialServiceImpl implements EspialService {
                 return;
             }
 
-            PaginationList.builder().title(Format.text("Lookup results"))
-                    .contents(contents)
-                    .sendTo(query.getAudience());
+          PaginationList.Builder builder = PaginationList.builder()
+                  .title(Format.title("Lookup results"))
+                  .padding(Component.text("=").color(Format.PADDING_COLOR));
+
+          if (!argsPreview.isEmpty()) {
+              builder.header(
+                      Format.truncate(Component.text("Parameters: ")
+                              .color(NamedTextColor.LIGHT_PURPLE)
+                              .append(Component.text(argsPreview).color(NamedTextColor.GRAY))));
+          }
+          builder.contents(contents).sendTo(query.getAudience());
+
         } else {
             // Some other query type that we don't currently support
             query.getAudience().sendMessage(Format.error("This query type is " +

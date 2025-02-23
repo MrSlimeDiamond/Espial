@@ -1,12 +1,14 @@
 package net.slimediamond.espial.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.Espial;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.HangingDeathAction;
@@ -33,8 +35,31 @@ public class Format {
     /* No initialization */
     private Format() {}
 
+    public static boolean SHOW_DATE_IN_LOOKUP = false;
+    public static NamedTextColor MAIN_COLOR = NamedTextColor.GREEN;
+    public static NamedTextColor TITLE_COLOR = NamedTextColor.GOLD;
+    public static NamedTextColor NAME_COLOR = NamedTextColor.WHITE;
+    public static NamedTextColor STACK_COLOR = NamedTextColor.WHITE;
+    public static NamedTextColor PADDING_COLOR = NamedTextColor.GRAY;
+    public static NamedTextColor DATE_COLOR = NamedTextColor.DARK_GRAY;
+    public static NamedTextColor ITEM_COLOR = NamedTextColor.GREEN;
+    public static NamedTextColor SPREAD_ITEM_COLOR = NamedTextColor.WHITE;
+    public static NamedTextColor ACTION_COLOR = MAIN_COLOR;
+
+    private static final int MAX_WIDTH = 320; // Max chat width in pixels
+
+    // Character pixel widths based on Minecraft's font
+    private static final int DEFAULT_WIDTH = 6;
+    private static final int SPACE_WIDTH = 4;
+    private static final int DOT_WIDTH = 3;
+    private static final int WIDE_WIDTH = 9;
+    private static final java.util.Map<Character, Integer> CHAR_WIDTHS = java.util.Map.of(
+            'i', 3, 'l', 3, '.', 3, ' ', 4,
+            'M', 9, 'W', 9, '@', 9
+    );
+
     public static Component prefix =
-            Component.text("Espial › ").color(NamedTextColor.GREEN);
+            Component.text("Espial › ").color(MAIN_COLOR);
 
     public static Component component(Component component) {
         return prefix.append(component);
@@ -64,11 +89,43 @@ public class Format {
         return component(Component.text("Defaults used: " + defaults).color(NamedTextColor.GRAY));
     }
 
+    public static Component truncate(Component message) {
+        List<Component> components = new ArrayList<>();
+        int currentWidth = 0;
+
+        for (Component part : message.children()) {
+            String text = PlainTextComponentSerializer.plainText().serialize(part);
+            TextColor color = part.color(); // Preserve color
+            TextComponent.Builder newComponent = Component.text().color(color);
+
+            for (char c : text.toCharArray()) {
+                int charWidth = CHAR_WIDTHS.getOrDefault(c, DEFAULT_WIDTH);
+                if (currentWidth + charWidth > MAX_WIDTH - SPACE_WIDTH + 9) {
+                    newComponent.append(Component.text(" ...", color));
+                    components.add(newComponent.build());
+                    return Component.join(JoinConfiguration.noSeparators(), components);
+                }
+                newComponent.append(Component.text(c, color));
+                currentWidth += charWidth;
+            }
+            components.add(newComponent.build());
+        }
+
+        return Component.join(JoinConfiguration.noSeparators(), components);
+    }
+
+    public static Component title(String text) {
+        return Component.text()
+                .append(prefix)
+                .append(Component.text(text).color(TITLE_COLOR))
+                .build();
+    }
+
     public static Component getDisplayName(Action action) {
         String uuidString = action.getActor().getUUID();
 
         if (uuidString.equals("0")) {
-            return Component.text("(server)").color(NamedTextColor.YELLOW)
+            return Component.text("(server)").color(NAME_COLOR)
                     .decorate(TextDecoration.ITALIC);
         }
 
@@ -80,7 +137,7 @@ public class Format {
                     .append(Component.text("("))
                     .append(Component.text(uuidString))
                     .append(Component.text(")"))
-                    .build().color(NamedTextColor.YELLOW)
+                    .build().color(NAME_COLOR)
                     .decorate(TextDecoration.ITALIC);
         }
 
@@ -92,9 +149,9 @@ public class Format {
         }
 
         return user.map(value -> Component.text(value.name())
-                        .color(NamedTextColor.YELLOW))
+                        .color(NAME_COLOR))
                 .orElseGet(() -> Component.text(uuidString)
-                        .color(NamedTextColor.YELLOW));
+                        .color(NAME_COLOR));
     }
 
     public static List<Component> generateLookupContents(
@@ -107,40 +164,44 @@ public class Format {
                 DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
                 String formattedDate = dateFormat.format(
                         new Date(record.getTimestamp().getTime()));
-                TextComponent.Builder msg = Component.text()
-                        .append(Component.text(formattedDate)
-                                .color(NamedTextColor.GRAY))
-                        .append(Component.space())
-                        .append(displayName)
-                        .append(Component.space())
-                        .append(makeHoverableAction(
-                                record.getAction().getEventType(), true).color(
-                                NamedTextColor.GREEN))
-                        .append(Component.space())
-                        .append(getItemDisplayname(record))
-                        .clickEvent(ClickEvent.runCommand(
-                                "/espial inspect " + record.getId()))
-                        .hoverEvent(HoverEvent.showText(component(
-                                Component.text()
-                                    .append(Component.newline())
-                                    .append(Component.text("Click to teleport!")
-                                            .color(NamedTextColor.GRAY))
-                                    .append(Component.newline())
-                                    .append(Component.text("Internal ID: ")
-                                            .color(NamedTextColor.GRAY))
-                                    .append(Component.text(record.getId())
-                                            .color(NamedTextColor.DARK_GRAY))
-                                    .append(Component.newline())
-                                    .append(Component.text("Item in hand: ")
-                                            .color(NamedTextColor.GRAY))
-                                    .append(Component.text(
-                                                    record.getAction().getActor().getItem())
-                                            .color(NamedTextColor.DARK_GRAY))
-                                    .append(Component.newline())
-                                    .append(Component.text(formattedDate)
-                                            .color(NamedTextColor.DARK_GRAY))
-                                    .build()
-                        )));
+                TextComponent.Builder msg = Component.text();
+
+                if (SHOW_DATE_IN_LOOKUP) {
+                    msg.append(Component.text(formattedDate)
+                            .color(DATE_COLOR))
+                            .append(Component.space());
+                }
+
+                msg.append(displayName)
+                .append(Component.space())
+                .append(makeHoverableAction(
+                        record.getAction().getEventType(), true).color(
+                        ACTION_COLOR))
+                .append(Component.space())
+                .append(getItemDisplayName(record).color(SPREAD_ITEM_COLOR))
+                .clickEvent(ClickEvent.runCommand(
+                        "/espial inspect " + record.getId()))
+                .hoverEvent(HoverEvent.showText(component(
+                        Component.text()
+                            .append(Component.newline())
+                            .append(Component.text("Click to teleport!")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.newline())
+                            .append(Component.text("Internal ID: ")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.text(record.getId())
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .append(Component.newline())
+                            .append(Component.text("Item in hand: ")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.text(
+                                            record.getAction().getActor().getItem())
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .append(Component.newline())
+                            .append(Component.text(formattedDate)
+                                    .color(NamedTextColor.DARK_GRAY))
+                            .build()
+                )));
 
                 if (record.getAction() instanceof NBTStorable nbt) {
                     nbt.getNBT().flatMap(NBTDataParser::parseNBT)
@@ -171,7 +232,7 @@ public class Format {
 
                 BlockTracker key = new BlockTracker(displayName,
                         record.getAction().getEventType(),
-                        getItemDisplayname(record));
+                        getItemDisplayName(record).color(ITEM_COLOR));
                 groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
                 long time = record.getTimestamp().getTime();
                 latestTimes.put(key,
@@ -192,12 +253,12 @@ public class Format {
                         .append(key.name())
                         .append(Component.space())
                         .append(makeHoverableAction(entry.getKey().eventType(),
-                                true).color(NamedTextColor.GREEN))
+                                true).color(ACTION_COLOR))
                         .append(Component.space())
                         .append(Component.text((count > 1 ? count + "x " : ""))
-                                .color(NamedTextColor.WHITE))
+                                .color(STACK_COLOR))
                         .append(entry.getKey().block()
-                                .color(NamedTextColor.GREEN))
+                                .color(ITEM_COLOR))
                         .build());
             });
         }
@@ -211,7 +272,7 @@ public class Format {
                 HoverEvent.showText(
                         component(Component.text()
                             .append(Component.text("Event")
-                                    .color(NamedTextColor.YELLOW))
+                                    .color(TITLE_COLOR))
                             .append(Component.newline())
                             .append(Component.text("ID: ")
                                     .color(NamedTextColor.GRAY))
@@ -231,7 +292,7 @@ public class Format {
                 )));
     }
 
-    public static Component getItemDisplayname(EspialRecord record) {
+    public static Component getItemDisplayName(EspialRecord record) {
         Component displayName = Component.text("(unknown)")
                 .color(NamedTextColor.GRAY)
                 .decorate(TextDecoration.ITALIC);

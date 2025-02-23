@@ -41,7 +41,7 @@ public class TransactionCommands {
                             .color(NamedTextColor.RED));
         }
 
-        ArgumentUtil.Result args = ArgumentUtil.parse(context, type);
+        ArgumentUtil.Requirements args = ArgumentUtil.parse(context, type);
         if (!args.shouldContinue()) return CommandResult.success();
 
         Query.Builder builder = Query.builder()
