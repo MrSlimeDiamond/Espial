@@ -63,16 +63,23 @@ public class Database {
     }
 
     public void open(String connectionString) throws SQLException {
+        Espial.getInstance().getLogger().info("Opening database...");
         conn = DriverManager.getConnection(connectionString);
 
         String sql;
 
         // Databases need to be made differently on different databases.
         if (connectionString.contains("sqlite")) {
+            Espial.getInstance().getLogger().info("Detected database type: " +
+                    "sqlite");
             sql =
                     "CREATE TABLE IF NOT EXISTS blocklog (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
         } else {
             // Probably MySQL/MariaDB or whatever. use a different statement
+
+            Espial.getInstance().getLogger().info("Detected database type: " +
+                    "MySQL/MariaDB");
+
             sql =
                     "CREATE TABLE IF NOT EXISTS blocklog (id INT AUTO_INCREMENT PRIMARY KEY, ";
         }
@@ -145,6 +152,8 @@ public class Database {
         insertNBTdata = conn.prepareStatement(
                 "INSERT INTO nbt (id, data) VALUES (?, ?)");
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
+
+        Espial.getInstance().getLogger().info("Database loaded.");
     }
 
     /**

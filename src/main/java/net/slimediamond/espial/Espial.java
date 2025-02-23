@@ -72,6 +72,8 @@ public class Espial {
     @Listener
     public void onConstructPlugin(final ConstructPluginEvent event)
             throws ConfigurateException, SQLException {
+        showPluginSplash();
+
         this.config = this.reference.referenceTo(EspialConfiguration.class);
         this.reference.save();
 
@@ -119,6 +121,16 @@ public class Espial {
     public void onRegisterCommands(
             final RegisterCommandEvent<Command.Parameterized> event) {
         Commands.register(this.container, event);
+    }
+
+    public void showPluginSplash() {
+        logger.info("⠀⠀⡠⣀⣤⡥⢦⣥⣔⡀⠀⠀");
+        logger.info("⠀⣪⣾⣿⢶⡖⣒⢾⣿⡻⣆⠀   Espial - Version " + container.metadata().version().toString());
+        logger.info("⢄⣿⣿⣳⡞⠉⠉⠱⣮⣿⣿⡎   by SlimeDiamond");
+        logger.info("⠎⣿⣿⣽⣇⡀⠀⢤⣿⣿⣿⠇");
+        logger.info("⠐⠹⣿⣿⣯⣍⣀⣽⣿⣿⢟⠂   HELLO DAVE.");
+        logger.info("⠀⠈⠈⠹⡻⠿⠿⠟⠛⠑⠁⠀");
+        logger.info("");
     }
 
     public PluginContainer getContainer() {
