@@ -41,20 +41,20 @@ public class TransactionCommands {
                             .color(NamedTextColor.RED));
         }
 
-        ArgumentUtil.Result result = ArgumentUtil.parse(context, type);
-        if (!result.shouldContinue()) return CommandResult.success();
+        ArgumentUtil.Result args = ArgumentUtil.parse(context, type);
+        if (!args.shouldContinue()) return CommandResult.success();
 
         Query.Builder builder = Query.builder()
                 .type(type)
-                .player(result.getUUID())
+                .player(args.getUUID())
                 .sort(sort)
                 .caller(player)
                 .spread(context.hasFlag("s"))
                 .audience(player)
-                .after(result.getTimestamp());
+                .after(args.getTimestamp());
 
-        if (result.getBlockId() != null) {
-            builder.block(result.getBlockId());
+        if (args.getBlockId() != null) {
+            builder.block(args.getBlockId());
         }
 
         if (context.hasFlag("worldedit")) { // Range lookup
