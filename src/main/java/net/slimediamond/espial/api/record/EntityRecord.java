@@ -23,6 +23,7 @@ public class EntityRecord extends AbstractRecord {
     public TransactionStatus rollback() throws Exception {
         if (isRolledBack()) return TransactionStatus.ALREADY_DONE;
         if (this.action instanceof HangingDeathAction deathAction) {
+            try {
             Entity entity = deathAction
                         .getServerLocation()
                         .world()
@@ -35,6 +36,9 @@ public class EntityRecord extends AbstractRecord {
             Espial.getInstance().getDatabase().setRolledBack(getId(), true);
 
             return TransactionStatus.SUCCESS;
+            } catch (IllegalArgumentException e) {
+                return TransactionStatus.FAILURE; // skip
+            }
         }
 
         return TransactionStatus.UNSUPPORTED;
