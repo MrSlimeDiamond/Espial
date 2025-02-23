@@ -1,6 +1,5 @@
 package net.slimediamond.espial.sponge;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
