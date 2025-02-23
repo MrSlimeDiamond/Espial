@@ -132,6 +132,8 @@ public class EspialServiceImpl implements EspialService {
             if (contents.isEmpty()) {
                 query.getAudience().sendMessage(Format.error("No data was " +
                         "found."));
+
+                return;
             }
 
             PaginationList.builder().title(Format.text("Lookup results"))
