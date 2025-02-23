@@ -11,7 +11,7 @@ import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.util.BlockUtil;
-import net.slimediamond.espial.util.MessageUtil;
+import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.CommandExecutor;
@@ -35,9 +35,7 @@ public class NearbySignsCommand implements CommandExecutor {
                 range = context.requireOne(CommandParameters.LOOKUP_RANGE);
             } else {
                 // Default to 5 blocks
-                context.sendMessage(Espial.prefix.append(
-                        Component.text("Defaults used: -r 5")
-                                .color(NamedTextColor.GRAY)));
+                context.sendMessage(Format.defaults("-r 5"));
                 range = 5;
             }
 
@@ -62,19 +60,16 @@ public class NearbySignsCommand implements CommandExecutor {
                                 .toList();
 
                 List<Component> contents =
-                        MessageUtil.generateLookupContents(signs, true);
+                        Format.generateLookupContents(signs, true);
 
                 if (contents.isEmpty()) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "Could not find any sign data nearby.")
-                            .color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("Could not find any " +
+                            "signs nearby."));
                     return CommandResult.success();
                 }
 
                 PaginationList.builder()
-                        .title(Espial.prefix.append(
-                                Component.text("Nearby signs")
-                                        .color(NamedTextColor.WHITE)))
+                        .title(Format.text("Nearby signs"))
                         .contents(contents)
                         .sendTo(player);
             } catch (Exception e) {

@@ -1,8 +1,5 @@
 package net.slimediamond.espial.util;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.slimediamond.espial.Espial;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.server.ServerLocation;
@@ -12,11 +9,8 @@ public class PlayerSelectionUtil {
     public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(
             Player player, int range) {
 
-        player.sendMessage(Component.text().append(Espial.prefix)
-                .append(Component.text(
-                                "Using a cuboid with a range of " + range +
-                                        " blocks for this query.")
-                        .color(NamedTextColor.WHITE)).build());
+        player.sendMessage(Format.text("Using a cuboid with a range of " +
+                range + "blocks for this query."));
 
         Vector3d pos = player.position();
 

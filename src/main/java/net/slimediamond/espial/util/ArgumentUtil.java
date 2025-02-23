@@ -28,12 +28,8 @@ public class ArgumentUtil {
         try {
             timestamp = parseTimestamp(context, type);
         } catch (IllegalArgumentException e) {
-            context.sendMessage(Espial.prefix.append(Component.text()
-                    .append(Component.text("Could not parse time argument '")
-                            .append(Component.text(
-                                            context.requireOne(CommandParameters.TIME))
-                                    .append(Component.text("'."))))
-                    .color(NamedTextColor.RED)));
+            context.sendMessage(Format.error("Could not parse time argument " +
+                    "'" + context.requireOne(CommandParameters.TIME) + "'."));
             return new Result(null, null, null, null, false);
         }
 
@@ -60,9 +56,7 @@ public class ArgumentUtil {
             return new Timestamp(DurationParser.parseDurationAndSubtract(time));
         }
         if (type != QueryType.LOOKUP) {
-            context.sendMessage(Espial.prefix.append(
-                    Component.text("Defaults used: -t 3d")
-                            .color(NamedTextColor.GRAY)));
+            context.sendMessage(Format.defaults("-t 3d"));
             return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
         } else {
             return Timestamp.from(

@@ -12,6 +12,7 @@ import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
+import net.slimediamond.espial.util.Format;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -41,8 +42,6 @@ import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
 public class Espial {
-    public static Component prefix =
-            Component.text("Espial › ").color(NamedTextColor.GREEN);
     private static Espial instance;
     private final PluginContainer container;
     private final Logger logger;
@@ -82,14 +81,15 @@ public class Espial {
         database = new Database();
         database.open(this.config.get().jdbc());
 
-        Component message = Espial.prefix
-                .append(Component.text(
-                                "Interactive mode is enabled. Disable it with ")
-                        .color(NamedTextColor.WHITE)
-                        .append(Component.text("/es i")
-                                .color(NamedTextColor.YELLOW))
-                        .append(Component.text(".").color(NamedTextColor.WHITE))
-                );
+        Component message = Format.component(
+                Component.text()
+                    .append(Component.text(
+                                    "Interactive mode is enabled. Disable it with ")
+                            .color(NamedTextColor.WHITE)
+                            .append(Component.text("/es i")
+                                    .color(NamedTextColor.YELLOW))
+                            .append(Component.text(".").color(NamedTextColor.WHITE))
+                    ));
         Task task = Task.builder().execute(() ->
                 inspectingPlayers.forEach(uuid -> {
                     Sponge.server().player(uuid).ifPresent(player -> {

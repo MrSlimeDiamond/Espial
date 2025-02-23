@@ -1,8 +1,7 @@
 package net.slimediamond.espial.commands;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -22,19 +21,13 @@ public class InteractiveToggleCommand implements CommandExecutor {
             if (inspectingPlayers.contains(player.profile().uuid())) {
                 // turn it off
                 inspectingPlayers.remove(player.profile().uuid());
-                context.sendMessage(Espial.prefix.append(
-                        Component.text("Interactive mode disabled.")
-                                .color(NamedTextColor.WHITE)));
+                context.sendMessage(Format.text("Interactive mode disabled."));
             } else {
                 inspectingPlayers.add(player.profile().uuid());
-                context.sendMessage(Espial.prefix.append(
-                        Component.text("Interactive mode enabled.")
-                                .color(NamedTextColor.WHITE)));
+                context.sendMessage(Format.text("Interactive mode enabled."));
             }
         } else {
-            context.sendMessage(
-                    Component.text("You must be a player to run this!")
-                            .color(NamedTextColor.RED));
+            context.sendMessage(Format.playersOnly());
         }
 
         return CommandResult.success();

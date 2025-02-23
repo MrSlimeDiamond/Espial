@@ -3,6 +3,7 @@ package net.slimediamond.espial.commands;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -34,7 +35,7 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                                     block.location().blockY(),
                                     block.location().blockZ())
                             .ifPresentOrElse(user -> {
-                                context.sendMessage(Espial.prefix
+                                context.sendMessage(Format.component(Component.text()
                                         .append(Component.text(user.name())
                                                 .color(NamedTextColor.YELLOW)
                                                 .append(Component.space())
@@ -50,26 +51,21 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                                                         .color(NamedTextColor.YELLOW))
                                                 .append(Component.text(".")
                                                         .color(NamedTextColor.WHITE))
-                                        ));
+                                        )));
                             }, () -> {
-                                context.sendMessage(Espial.prefix.append(
-                                        Component.text(
-                                                        "Could not determine a player block owner.")
-                                                .color(NamedTextColor.RED)));
+                                context.sendMessage(Format.error("Could not " +
+                                        "find a block owner which was a " +
+                                        "player."));
                             });
                 } catch (SQLException | ExecutionException |
                          InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             } else {
-                context.sendMessage(Espial.prefix.append(Component.text(
-                                "Could not detect a block. Move closer, perhaps?")
-                        .color(NamedTextColor.RED)));
+                context.sendMessage(Format.noBlockFound());
             }
         } else {
-            context.sendMessage(Component.text(
-                            "This command can currently only be executed by players.")
-                    .color(NamedTextColor.RED));
+            context.sendMessage(Format.playersOnly());
         }
 
         return CommandResult.success();

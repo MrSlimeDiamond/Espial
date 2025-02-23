@@ -10,7 +10,7 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.util.BlockUtil;
-import net.slimediamond.espial.util.MessageUtil;
+import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -58,16 +58,16 @@ public class SignInfoCommand implements CommandExecutor {
                         BlockRecord target = blocks.get(0); // top index
 
                         Component name =
-                                MessageUtil.getDisplayName(target.getAction());
+                                Format.getDisplayName(target.getAction());
 
                         var builder = Component.text()
-                                .append(Espial.prefix.append(Component.text(
+                                .append(Format.component(Component.text(
                                                 "That sign was last modified by ")
                                         .color(NamedTextColor.WHITE)
                                         .append(name.color(
                                                 NamedTextColor.YELLOW))));
 
-                        var info = Component.text().append(Espial.prefix);
+                        var info = Component.text().append(Format.prefix);
 
                         DateFormat dateFormat =
                                 new SimpleDateFormat("dd/MM/yy HH:mm");
@@ -89,25 +89,18 @@ public class SignInfoCommand implements CommandExecutor {
                         context.sendMessage(builder.build());
 
                     } catch (Exception e) {
-                        context.sendMessage(Espial.prefix.append(Component.text(
-                                        "SQLException. Not good. Tell an admin.")
-                                .color(NamedTextColor.RED)));
                         throw new RuntimeException(e);
                     }
 
                 } else {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "The block you are looking at is not a sign.")
-                            .color(NamedTextColor.YELLOW)));
+                    context.sendMessage(Format.error("The block you are " +
+                            "looking at is not a sign."));
                 }
             }, () -> {
-                context.sendMessage(Espial.prefix.append(Component.text(
-                                "Could not find the block you are looking at. Move closer, perhaps?")
-                        .color(NamedTextColor.RED)));
+                context.sendMessage(Format.noBlockFound());
             });
         } else {
-            context.sendMessage(
-                    Component.text("This command can only be run by players"));
+            context.sendMessage(Format.playersOnly());
         }
 
         return CommandResult.success();

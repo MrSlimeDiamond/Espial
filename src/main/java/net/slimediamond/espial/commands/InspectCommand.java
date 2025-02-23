@@ -10,7 +10,7 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.util.MessageUtil;
+import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandExecutor;
@@ -62,7 +62,7 @@ public class InspectCommand implements CommandExecutor {
             this.teleportPlayer(player, record.getAction());
 
             Component displayName =
-                    MessageUtil.getDisplayName(record.getAction());
+                    Format.getDisplayName(record.getAction());
             String undoActionMessage;
             String undoCommand;
             if (record.isRolledBack()) {
@@ -74,9 +74,7 @@ public class InspectCommand implements CommandExecutor {
             }
 
             PaginationList.builder()
-                    .title(Espial.prefix.append(
-                            Component.text("Looking closer at an action...")
-                                    .color(NamedTextColor.WHITE)))
+                    .title(Format.text("Looking closer at an action..."))
                     .contents(Component.text()
                             .append(Component.text("[")
                                     .color(NamedTextColor.GRAY)
@@ -120,7 +118,7 @@ public class InspectCommand implements CommandExecutor {
                             .append(Component.newline())
                             .append(Component.text("Type: ")
                                     .color(NamedTextColor.GREEN))
-                            .append(MessageUtil.makeHoverableAction(
+                            .append(Format.makeHoverableAction(
                                             record.getAction().getEventType(), false)
                                     .color(NamedTextColor.YELLOW))
                             .append(Component.newline())

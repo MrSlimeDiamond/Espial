@@ -14,7 +14,7 @@ import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
-import net.slimediamond.espial.util.MessageUtil;
+import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
 
@@ -123,30 +123,24 @@ public class EspialServiceImpl implements EspialService {
 
             builder.append(Component.text(".").color(NamedTextColor.WHITE));
 
-            query.getAudience()
-                    .sendMessage(Espial.prefix.append(builder.build()));
+            query.getAudience().sendMessage(Format.component(builder.build()));
         } else if (query.getType() == QueryType.LOOKUP) {
             List<Component> contents =
-                    MessageUtil.generateLookupContents(records,
+                    Format.generateLookupContents(records,
                             query.isSpread());
 
             if (contents.isEmpty()) {
-                query.getAudience().sendMessage(Espial.prefix.append(
-                        Component.text("No data was found.")
-                                .color(NamedTextColor.RED)));
-                return;
+                query.getAudience().sendMessage(Format.error("No data was " +
+                        "found."));
             }
 
-            PaginationList.builder().title(Espial.prefix.append(
-                            Component.text("Lookup results")
-                                    .color(NamedTextColor.WHITE)))
+            PaginationList.builder().title(Format.text("Lookup results"))
                     .contents(contents)
                     .sendTo(query.getAudience());
         } else {
             // Some other query type that we don't currently support
-            query.getAudience().sendMessage(Espial.prefix.append(Component.text(
-                            "This query type is not currently supported.")
-                    .color(NamedTextColor.RED)));
+            query.getAudience().sendMessage(Format.error("This query type is " +
+                    "not supported."));
         }
     }
 }

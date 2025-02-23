@@ -11,6 +11,7 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.BasicEspialTransaction;
 import net.slimediamond.espial.util.ArgumentUtil;
+import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import net.slimediamond.espial.util.RayTraceUtil;
 import net.slimediamond.espial.util.WorldEditSelectionUtil;
@@ -65,22 +66,18 @@ public class TransactionCommands {
                 if (selectionOptional.isPresent()) {
                     Pair<ServerLocation, ServerLocation> selection =
                             selectionOptional.get();
-                    context.sendMessage(Component.text().append(Espial.prefix)
-                            .append(Component.text(
-                                            "Using your WorldEdit selection for this query.")
-                                    .color(NamedTextColor.WHITE)).build());
+                    context.sendMessage(Format.text("Using your WorldEdit " +
+                            "selection for this query."));
                     builder.min(selection.getLeft());
                     builder.max(selection.getRight());
                 } else {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "You do not have a WorldEdit selection active!")
-                            .color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("You do not have a " +
+                            "WorldEdit selection active."));
                     return CommandResult.success();
                 }
             } catch (NoClassDefFoundError e) {
-                context.sendMessage(Component.text(
-                                "It doesn't look like WorldEdit is installed on this server!")
-                        .color(NamedTextColor.RED));
+                context.sendMessage(Format.error("WorldEdit is not installed " +
+                        "on this server."));
                 return CommandResult.success();
             }
 
@@ -105,9 +102,7 @@ public class TransactionCommands {
 
                 builder.min(block.serverLocation());
             } else {
-                context.sendMessage(Espial.prefix.append(Component.text(
-                                "Could not detect a block. Move closer, perhaps?")
-                        .color(NamedTextColor.RED)));
+                context.sendMessage(Format.noBlockFound());
                 return CommandResult.success();
             }
         }
@@ -128,9 +123,13 @@ public class TransactionCommands {
             try {
                 int actions = Espial.getInstance().getTransactionManager()
                         .undo(context.cause().root());
-                context.sendMessage(Espial.prefix.append(
-                        Component.text(actions + " action(s) have been undone.")
-                                .color(NamedTextColor.WHITE)));
+                if (actions == 0) {
+                    context.sendMessage(Format.text("Nothing was undone."));
+                } else {
+                    context.sendMessage(
+                            Format.text(actions + " action(s) have " +
+                                    "been undone."));
+                }
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -147,9 +146,13 @@ public class TransactionCommands {
             try {
                 int actions = Espial.getInstance().getTransactionManager()
                         .redo(context.cause().root());
-                context.sendMessage(Espial.prefix.append(
-                        Component.text(actions + " action(s) have been redone")
-                                .color(NamedTextColor.WHITE)));
+                if (actions == 0) {
+                    context.sendMessage(Format.text("Nothing was redone."));
+                } else {
+                    context.sendMessage(
+                            Format.text(actions + " action(s) have " +
+                                    "been redone."));
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -173,9 +176,8 @@ public class TransactionCommands {
                 TransactionStatus status = record.rollback();
 
                 if (status == TransactionStatus.SUCCESS) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    ids.size() + " action(s) have been rolled back.")
-                            .color(NamedTextColor.WHITE)));
+                    context.sendMessage(Format.text(ids.size() + " action(s) " +
+                            "have been rolled back."));
 
                     Espial.getInstance().getTransactionManager()
                             .add(context.cause().root(),
@@ -184,13 +186,11 @@ public class TransactionCommands {
                                             context.cause().root(),
                                             context.cause().audience(), ids));
                 } else if (status == TransactionStatus.ALREADY_DONE) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "That action has already been rolled back!").
-                            color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("That action has " +
+                            "already been rolled back."));
                 } else if (status == TransactionStatus.UNSUPPORTED) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "Rolling back this kind of action is not currently supported.")
-                            .color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("Rolling back this " +
+                            "action is not supported."));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -215,9 +215,8 @@ public class TransactionCommands {
                 TransactionStatus status = record.restore();
 
                 if (status == TransactionStatus.SUCCESS) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    ids.size() + " action(s) have been restored.")
-                            .color(NamedTextColor.WHITE)));
+                    context.sendMessage(Format.text(ids.size() + " action(s) " +
+                            "have been restored."));
 
                     Espial.getInstance().getTransactionManager()
                             .add(context.cause().root(),
@@ -226,13 +225,11 @@ public class TransactionCommands {
                                             context.cause().root(),
                                             context.cause().audience(), ids));
                 } else if (status == TransactionStatus.ALREADY_DONE) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "That action has already been restored!")
-                            .color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("That action has " +
+                            "already been restored."));
                 } else if (status == TransactionStatus.UNSUPPORTED) {
-                    context.sendMessage(Espial.prefix.append(Component.text(
-                                    "Restoring this kind of action is not currently supported.")
-                            .color(NamedTextColor.RED)));
+                    context.sendMessage(Format.error("Restoring this " +
+                            "action is not supported."));
                 }
 
 

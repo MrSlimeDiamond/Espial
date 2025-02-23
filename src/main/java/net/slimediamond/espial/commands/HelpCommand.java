@@ -1,12 +1,14 @@
 package net.slimediamond.espial.commands;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Commands;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
@@ -34,12 +36,10 @@ public class HelpCommand implements CommandExecutor {
                     .ifPresent(subcommand -> {
                         String name =
                                 subcommand.aliases().stream().findFirst().get();
-                        var builder = Component.text()
-                                .append(Espial.prefix)
-                                .append(Component.text("Help for: "))
-                                .append(Component.text(name)
-                                        .color(NamedTextColor.WHITE)
-                                );
+
+                        TextComponent.Builder builder =
+                                Component.text().append(Format.text("Help " +
+                                        "for: " + name));
 
                         subcommand.command().shortDescription(context.cause())
                                 .ifPresent(desc -> {
@@ -99,8 +99,7 @@ public class HelpCommand implements CommandExecutor {
                     });
         } else {
             // FIXME: Other root commands (like /whoplacedthis)
-            context.sendMessage(Espial.prefix.append(
-                    Component.text("Help").color(NamedTextColor.WHITE)));
+            context.sendMessage(Format.text("Help"));
             Command.Parameterized command = Commands.commands.get(0);
             List<Parameter.Subcommand> sortedSubcommands =
                     command.subcommands().stream()

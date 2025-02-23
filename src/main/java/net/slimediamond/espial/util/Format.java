@@ -29,7 +29,41 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class MessageUtil {
+public class Format {
+    /* No initialization */
+    private Format() {}
+
+    public static Component prefix =
+            Component.text("Espial › ").color(NamedTextColor.GREEN);
+
+    public static Component component(Component component) {
+        return prefix.append(component);
+    }
+
+    public static Component component(TextComponent.Builder builder) {
+        return component(builder.build());
+    }
+
+    public static Component text(String text) {
+        return prefix.append(Component.text(text).color(NamedTextColor.WHITE));
+    }
+
+    public static Component error(String message) {
+        return component(Component.text(message).color(NamedTextColor.RED));
+    }
+
+    public static Component noBlockFound() {
+        return error("Could not find a block. Maybe move closer?");
+    }
+
+    public static Component playersOnly() {
+        return error("Only players can run this command.");
+    }
+
+    public static Component defaults(String defaults) {
+        return component(Component.text("Defaults used: " + defaults).color(NamedTextColor.GRAY));
+    }
+
     public static Component getDisplayName(Action action) {
         String uuidString = action.getActor().getUUID();
 
@@ -86,36 +120,38 @@ public class MessageUtil {
                         .append(getItemDisplayname(record))
                         .clickEvent(ClickEvent.runCommand(
                                 "/espial inspect " + record.getId()))
-                        .hoverEvent(HoverEvent.showText(Espial.prefix
-                                .append(Component.newline())
-                                .append(Component.text("Click to teleport!")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Internal ID: ")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.text(record.getId())
-                                        .color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text("Item in hand: ")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.text(
-                                                record.getAction().getActor().getItem())
-                                        .color(NamedTextColor.DARK_GRAY))
-                                .append(Component.newline())
-                                .append(Component.text(formattedDate)
-                                        .color(NamedTextColor.DARK_GRAY))
-                        ));
+                        .hoverEvent(HoverEvent.showText(component(
+                                Component.text()
+                                    .append(Component.newline())
+                                    .append(Component.text("Click to teleport!")
+                                            .color(NamedTextColor.GRAY))
+                                    .append(Component.newline())
+                                    .append(Component.text("Internal ID: ")
+                                            .color(NamedTextColor.GRAY))
+                                    .append(Component.text(record.getId())
+                                            .color(NamedTextColor.DARK_GRAY))
+                                    .append(Component.newline())
+                                    .append(Component.text("Item in hand: ")
+                                            .color(NamedTextColor.GRAY))
+                                    .append(Component.text(
+                                                    record.getAction().getActor().getItem())
+                                            .color(NamedTextColor.DARK_GRAY))
+                                    .append(Component.newline())
+                                    .append(Component.text(formattedDate)
+                                            .color(NamedTextColor.DARK_GRAY))
+                                    .build()
+                        )));
 
                 if (record.getAction() instanceof NBTStorable nbt) {
                     nbt.getNBT().flatMap(NBTDataParser::parseNBT)
                             .ifPresent(component -> {
                                 msg.append(Component.text(" (...)")
-                                        .color(NamedTextColor.GRAY)
-                                        .hoverEvent(HoverEvent.showText(
-                                                Espial.prefix.append(
-                                                        Component.text()
-                                                                .color(NamedTextColor.WHITE)
-                                                                .append(component)))));
+                                    .color(NamedTextColor.GRAY)
+                                    .hoverEvent(HoverEvent.showText(
+                                            component(
+                                                Component.text()
+                                                        .color(NamedTextColor.WHITE)
+                                                        .append(component)))));
                             });
                 }
 
@@ -173,26 +209,26 @@ public class MessageUtil {
         String text = useVerb ? eventType.getVerb() : eventType.getName();
         return Component.text(text).hoverEvent(
                 HoverEvent.showText(
-                        Espial.prefix
-                                .append(Component.text("Event")
-                                        .color(NamedTextColor.YELLOW))
-                                .append(Component.newline())
-                                .append(Component.text("ID: ")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.text(eventType.getId())
-                                        .color(NamedTextColor.WHITE))
-                                .append(Component.newline())
-                                .append(Component.text("Name: ")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.text(eventType.getName())
-                                        .color(NamedTextColor.WHITE))
-                                .append(Component.newline())
-                                .append(Component.text("Description: ")
-                                        .color(NamedTextColor.GRAY))
-                                .append(Component.text(
-                                                eventType.getDescription())
-                                        .color(NamedTextColor.WHITE))
-                ));
+                        component(Component.text()
+                            .append(Component.text("Event")
+                                    .color(NamedTextColor.YELLOW))
+                            .append(Component.newline())
+                            .append(Component.text("ID: ")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.text(eventType.getId())
+                                    .color(NamedTextColor.WHITE))
+                            .append(Component.newline())
+                            .append(Component.text("Name: ")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.text(eventType.getName())
+                                    .color(NamedTextColor.WHITE))
+                            .append(Component.newline())
+                            .append(Component.text("Description: ")
+                                    .color(NamedTextColor.GRAY))
+                            .append(Component.text(
+                                            eventType.getDescription())
+                                    .color(NamedTextColor.WHITE))
+                )));
     }
 
     public static Component getItemDisplayname(EspialRecord record) {
