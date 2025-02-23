@@ -85,7 +85,7 @@ public class Espial {
 
     @Listener
     public void onServerStarting(final StartingEngineEvent<Server> event) {
-        Sponge.eventManager().registerListeners(container, new ChangeBlockListener());
+        Sponge.eventManager().registerListeners(container, new BlockListeners());
         Sponge.eventManager().registerListeners(container, new InteractListener());
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());

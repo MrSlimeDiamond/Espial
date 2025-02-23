@@ -33,8 +33,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChangeBlockListener {
-
+public class BlockListeners {
     @Listener(order = Order.EARLY)
     public void preBlockAction(ChangeBlockEvent.Pre event) throws Exception {
         if (event.cause().root() instanceof Player player) {
