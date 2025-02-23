@@ -10,16 +10,18 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.world.server.ServerLocation;
 
 
-public interface ItemFrameRemoveAction extends EntityAction, Submittable<EntityRecord> {
-    /**
-     * Get item type
-     * @return Item type
-     */
-    ItemType getItemType();
-
+public interface ItemFrameRemoveAction
+        extends EntityAction, Submittable<EntityRecord> {
     static Builder builder() {
         return new Builder();
     }
+
+    /**
+     * Get item type
+     *
+     * @return Item type
+     */
+    ItemType getItemType();
 
     class Builder {
         private ItemType itemType;
@@ -109,8 +111,10 @@ public interface ItemFrameRemoveAction extends EntityAction, Submittable<EntityR
                 }
 
                 @Override
-                public SubmittableResult<EntityRecord> submit() throws Exception {
-                    return (SubmittableResult<EntityRecord>) Espial.getInstance().getEspialService().submitAction(this);
+                public SubmittableResult<EntityRecord> submit()
+                        throws Exception {
+                    return (SubmittableResult<EntityRecord>) Espial.getInstance()
+                            .getEspialService().submitAction(this);
                 }
             };
         }

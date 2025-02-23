@@ -6,7 +6,7 @@ package net.slimediamond.espial.api.submittable;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public final class SubmittableResult<T> {
-    private T value;
+    private final T value;
 
     public SubmittableResult(T value) {
         this.value = value;

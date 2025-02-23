@@ -9,8 +9,8 @@ import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.math.vector.Vector3d;
 
 public class EspialActorImpl implements EspialActor {
-    private Living living;
-    private String uuid;
+    private final Living living;
+    private final String uuid;
 
     public EspialActorImpl(Living living) {
         this.living = living;
@@ -18,9 +18,11 @@ public class EspialActorImpl implements EspialActor {
         if (living instanceof Player player) {
             this.uuid = player.profile().uuid().toString();
         } else {
-            this.uuid = PlainTextComponentSerializer.plainText().serialize(living.displayName().get());
+            this.uuid = PlainTextComponentSerializer.plainText()
+                    .serialize(living.displayName().get());
         }
     }
+
     public String getName() {
         if (living instanceof Player player) {
             return player.name();
@@ -46,6 +48,7 @@ public class EspialActorImpl implements EspialActor {
 
     @Override
     public String getItem() {
-        return living.activeItem().get().type().key(RegistryTypes.ITEM_TYPE).formatted();
+        return living.activeItem().get().type().key(RegistryTypes.ITEM_TYPE)
+                .formatted();
     }
 }

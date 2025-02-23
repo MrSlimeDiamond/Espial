@@ -17,43 +17,53 @@ import org.spongepowered.api.world.server.ServerLocation;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecord> {
+public interface BlockAction
+        extends Action, NBTStorable, Submittable<BlockRecord> {
+    static Builder builder() {
+        return new Builder();
+    }
+
     /**
      * Get the block ID (such as minecraft:string)
+     *
      * @return Block ID
      */
     String getBlockId();
 
     default ServerLocation getServerLocation() {
-        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
+        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0],
+                getWorld().split(":")[1]), getX(), getY(), getZ());
     }
 
     default BlockType getBlockType() {
         return BlockTypes.registry().value(ResourceKey.of(
-                getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+                getBlockId().split(
+                        String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
+                getBlockId().split(
+                        String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
     }
 
     default BlockState getState() {
-        AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
+        AtomicReference<BlockState> blockState =
+                new AtomicReference<>(getBlockType().defaultState());
         try {
             this.getNBT().ifPresent(nbtData -> {
                 if (nbtData.getDirection() != null) {
-                    blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+                    blockState.set(blockState.get()
+                            .with(Keys.DIRECTION, nbtData.getDirection())
+                            .get());
                 }
 
                 if (nbtData.getAxis() != null) {
-                    blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+                    blockState.set(
+                            blockState.get().with(Keys.AXIS, nbtData.getAxis())
+                                    .get());
                 }
             });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return blockState.get();
-    }
-
-    static Builder builder() {
-        return new Builder();
     }
 
     class Builder {
@@ -115,8 +125,10 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
         public BlockAction build() {
             return new BlockAction() {
                 @Override
-                public SubmittableResult<BlockRecord> submit() throws Exception {
-                    return (SubmittableResult<BlockRecord>) Espial.getInstance().getEspialService().submitAction(this);
+                public SubmittableResult<BlockRecord> submit()
+                        throws Exception {
+                    return (SubmittableResult<BlockRecord>) Espial.getInstance()
+                            .getEspialService().submitAction(this);
                 }
 
                 @Override
@@ -155,13 +167,13 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
                 }
 
                 @Override
-                public void setNBT(NBTData data) {
-                    nbtData = data;
+                public Optional<NBTData> getNBT() {
+                    return Optional.ofNullable(nbtData);
                 }
 
                 @Override
-                public Optional<NBTData> getNBT() {
-                    return Optional.ofNullable(nbtData);
+                public void setNBT(NBTData data) {
+                    nbtData = data;
                 }
             };
         }

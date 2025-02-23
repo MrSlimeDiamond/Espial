@@ -3,7 +3,6 @@ package net.slimediamond.espial.listeners;
 import net.slimediamond.espial.api.action.HangingDeathAction;
 import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
 import net.slimediamond.espial.api.action.event.EventTypes;
-import net.slimediamond.espial.api.nbt.NBTApplier;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
@@ -25,12 +24,15 @@ public class EntityListeners {
             // Hanging entity death (like an item frame)
             if (event.entity() instanceof Hanging hanging) {
                 try {
-                    NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
+                    NBTData nbtData =
+                            new JsonNBTData(hanging.hangingDirection().get(),
+                                    null, null, false);
 
                     HangingDeathAction.builder()
                             .actor(new EspialActorImpl(player))
                             .entity(hanging.type())
-                            .world(event.entity().serverLocation().worldKey().formatted())
+                            .world(event.entity().serverLocation().worldKey()
+                                    .formatted())
                             .location(event.entity().serverLocation())
                             .event(EventTypes.HANGING_DEATH)
                             .withNBTData(nbtData)
@@ -48,13 +50,16 @@ public class EntityListeners {
         if (event.entity() instanceof ItemFrame itemFrame) {
             if (event.cause().root() instanceof DamageSource damageSource) {
                 if (damageSource.indirectSource().isPresent()) {
-                    if (damageSource.indirectSource().get() instanceof Player player) {
-                        if (!itemFrame.item().get().type().equals(ItemTypes.AIR.get())) {
+                    if (damageSource.indirectSource()
+                            .get() instanceof Player player) {
+                        if (!itemFrame.item().get().type()
+                                .equals(ItemTypes.AIR.get())) {
                             ItemFrameRemoveAction.builder()
                                     .itemType(itemFrame.item().get().type())
                                     .actor(new EspialActorImpl(player))
                                     .location(itemFrame.serverLocation())
-                                    .world(event.entity().serverLocation().worldKey().formatted())
+                                    .world(event.entity().serverLocation()
+                                            .worldKey().formatted())
                                     .event(EventTypes.ITEM_FRAME_REMOVE)
                                     .build().submit();
                         }

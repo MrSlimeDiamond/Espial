@@ -1,23 +1,24 @@
 package net.slimediamond.espial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.slimediamond.espial.api.action.*;
+import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.ActionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.HangingDeathAction;
+import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
+import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
-import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.NBTData;
+import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.api.user.EspialActor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.User;
@@ -26,9 +27,21 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.math.vector.Vector3d;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Database {
@@ -45,7 +58,8 @@ public class Database {
     private PreparedStatement getNBTdata;
 
     public Database() {
-        this.logPlayerPosition = Espial.getInstance().getConfig().get().logPlayerPosition();
+        this.logPlayerPosition =
+                Espial.getInstance().getConfig().get().logPlayerPosition();
     }
 
     public void open(String connectionString) throws SQLException {
@@ -55,30 +69,32 @@ public class Database {
 
         // Databases need to be made differently on different databases.
         if (connectionString.contains("sqlite")) {
-            sql = "CREATE TABLE IF NOT EXISTS blocklog (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+            sql =
+                    "CREATE TABLE IF NOT EXISTS blocklog (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
         } else {
             // Probably MySQL/MariaDB or whatever. use a different statement
-            sql = "CREATE TABLE IF NOT EXISTS blocklog (id INT AUTO_INCREMENT PRIMARY KEY, ";
+            sql =
+                    "CREATE TABLE IF NOT EXISTS blocklog (id INT AUTO_INCREMENT PRIMARY KEY, ";
         }
 
         conn.prepareStatement(sql +
-            "type TINYINT, " +
-            "time TIMESTAMP, " +
-            "player_uuid MEDIUMTEXT, " +
-            "block_id TINYTEXT, " +
-            "world TINYTEXT, " +
-            "x INT, " +
-            "y INT, " +
-            "z INT, " +
-            "player_x DOUBLE, " +
-            "player_y DOUBLE, " +
-            "player_z DOUBLE, " +
-            "player_pitch DOUBLE, " +
-            "player_yaw DOUBLE, " +
-            "player_roll DOUBLE, " +
-            "player_tool TINYTEXT, " +
-            "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
-            ")"
+                "type TINYINT, " +
+                "time TIMESTAMP, " +
+                "player_uuid MEDIUMTEXT, " +
+                "block_id TINYTEXT, " +
+                "world TINYTEXT, " +
+                "x INT, " +
+                "y INT, " +
+                "z INT, " +
+                "player_x DOUBLE, " +
+                "player_y DOUBLE, " +
+                "player_z DOUBLE, " +
+                "player_pitch DOUBLE, " +
+                "player_yaw DOUBLE, " +
+                "player_roll DOUBLE, " +
+                "player_tool TINYTEXT, " +
+                "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
+                ")"
         ).execute();
 
         // Create the nbt table
@@ -100,50 +116,62 @@ public class Database {
         //conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN DEFAULT FALSE").execute();
 
         insertAction = conn.prepareStatement("INSERT INTO blocklog " +
-                "(type, " +
-                "time, " +
-                "player_uuid, " +
-                "block_id, " +
-                "world, " +
-                "x, y, z, " +
-                "player_x, " +
-                "player_y, " +
-                "player_z, " +
-                "player_pitch, " +
-                "player_yaw, " +
-                "player_roll, " +
-                "player_tool, " +
-                "rolled_back" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)", Statement.RETURN_GENERATED_KEYS);
+                        "(type, " +
+                        "time, " +
+                        "player_uuid, " +
+                        "block_id, " +
+                        "world, " +
+                        "x, y, z, " +
+                        "player_x, " +
+                        "player_y, " +
+                        "player_z, " +
+                        "player_pitch, " +
+                        "player_yaw, " +
+                        "player_roll, " +
+                        "player_tool, " +
+                        "rolled_back" +
+                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
+                Statement.RETURN_GENERATED_KEYS);
 
-        queryCoords = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        queryCoords = conn.prepareStatement(
+                "SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
         queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-        queryRange = conn.prepareStatement("SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
-        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
-        setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
-        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
+        queryRange = conn.prepareStatement(
+                "SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+        getBlockOwner = conn.prepareStatement(
+                "SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+        setRolledBack = conn.prepareStatement(
+                "UPDATE blocklog SET rolled_back = ? WHERE id = ?");
+        insertNBTdata = conn.prepareStatement(
+                "INSERT INTO nbt (id, data) VALUES (?, ?)");
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
     }
 
     /**
      * Submit a {@link Action} to be inserted into the database.
+     *
      * @param action The action to submit
      * @return The record created
-     * @throws SQLException If the database errors.
+     * @throws SQLException            If the database errors.
      * @throws JsonProcessingException If JSON errors.
      */
     public Optional<EspialRecord> submit(Action action) throws Exception {
         insertAction.setInt(1, action.getEventType().getId()); // Type
-        insertAction.setTimestamp(2, Timestamp.from(Instant.now())); // Timestamp
+        insertAction.setTimestamp(2,
+                Timestamp.from(Instant.now())); // Timestamp
         insertAction.setString(3, action.getActor().getUUID()); // Actor UUID
 
         // Block ID
         if (action instanceof BlockAction block) {
             insertAction.setString(4, block.getBlockId());
         } else if (action instanceof HangingDeathAction) {
-            insertAction.setString(4, ((HangingDeathAction) action).getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
+            insertAction.setString(4,
+                    ((HangingDeathAction) action).getEntityType()
+                            .key(RegistryTypes.ENTITY_TYPE).formatted());
         } else if (action instanceof ItemFrameRemoveAction) {
-            insertAction.setString(4, ((ItemFrameRemoveAction) action).getItemType().key(RegistryTypes.ITEM_TYPE).formatted());
+            insertAction.setString(4,
+                    ((ItemFrameRemoveAction) action).getItemType()
+                            .key(RegistryTypes.ITEM_TYPE).formatted());
         } else {
             insertAction.setString(4, ""); // apparently this can't be null?
         }
@@ -156,7 +184,7 @@ public class Database {
         EspialActor actor = action.getActor();
 
         if (logPlayerPosition) {
-            insertAction.setDouble(9,  actor.getPosition().x());
+            insertAction.setDouble(9, actor.getPosition().x());
             insertAction.setDouble(10, actor.getPosition().y());
             insertAction.setDouble(11, actor.getPosition().z());
 
@@ -183,7 +211,8 @@ public class Database {
             rs = insertAction.getGeneratedKeys();
         } catch (SQLFeatureNotSupportedException e) {
             // Try to use another approach (this should work for sqlite)
-            rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
+            rs = conn.prepareStatement("SELECT last_insert_rowid()")
+                    .executeQuery();
         }
 
         if (rs.next()) {
@@ -191,7 +220,8 @@ public class Database {
 
             if (action instanceof NBTStorable nbtStorable) {
                 if (nbtStorable.getNBT().isPresent()) {
-                    this.setNBTdata(id, JsonNBTData.serialize(nbtStorable.getNBT().get()));
+                    this.setNBTdata(id,
+                            JsonNBTData.serialize(nbtStorable.getNBT().get()));
                 }
             }
 
@@ -202,8 +232,10 @@ public class Database {
     }
 
     public List<EspialRecord> query(Query query) throws Exception {
-        Timestamp timestamp = query.getTimestamp() == null ? Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
-        String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
+        Timestamp timestamp = query.getTimestamp() == null ?
+                Timestamp.from(Instant.ofEpochMilli(0)) : query.getTimestamp();
+        String uuid = query.getPlayerUUID() == null ? null :
+                query.getPlayerUUID().toString();
 
         List<EspialRecord> actions = new ArrayList<>();
         ResultSet rs;
@@ -268,7 +300,8 @@ public class Database {
         return null;
     }
 
-    public Optional<User> getBlockOwner(int x, int y, int z) throws SQLException, ExecutionException, InterruptedException {
+    public Optional<User> getBlockOwner(int x, int y, int z)
+            throws SQLException, ExecutionException, InterruptedException {
         getBlockOwner.setInt(1, x);
         getBlockOwner.setInt(2, y);
         getBlockOwner.setInt(3, z);
@@ -341,7 +374,8 @@ public class Database {
             @Override
             public @Nullable Vector3d getPosition() {
                 if (logPlayerPosition) {
-                    return new Vector3d(finalPlayerX, finalPlayerY, finalPlayerZ);
+                    return new Vector3d(finalPlayerX, finalPlayerY,
+                            finalPlayerZ);
                 } else {
                     return null;
                 }
@@ -350,7 +384,8 @@ public class Database {
             @Override
             public @Nullable Vector3d getRotation() {
                 if (logPlayerPosition) {
-                    return new Vector3d(finalPlayerPitch, finalPlayerYaw, finalPlayerRoll);
+                    return new Vector3d(finalPlayerPitch, finalPlayerYaw,
+                            finalPlayerRoll);
                 } else {
                     return null;
                 }
@@ -381,10 +416,14 @@ public class Database {
 
                 // Make a new BlockRecord
                 return new BlockRecord(uid, timestamp, rolledBack, action);
-            } if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
-                EntityType<?> entityType = EntityTypes.registry().value(ResourceKey.of(
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+            }
+            if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
+                EntityType<?> entityType =
+                        EntityTypes.registry().value(ResourceKey.of(
+                                blockId.split(String.valueOf(
+                                        ResourceKey.DEFAULT_SEPARATOR))[0],
+                                blockId.split(String.valueOf(
+                                        ResourceKey.DEFAULT_SEPARATOR))[1]));
 
                 action = HangingDeathAction.builder()
                         .actor(actor)
@@ -398,10 +437,13 @@ public class Database {
                         .build();
 
                 return new EntityRecord(uid, timestamp, rolledBack, action);
-            } else if (eventType.getActionType().equals(ActionType.ITEM_FRAME_REMOVE)) {
+            } else if (eventType.getActionType()
+                    .equals(ActionType.ITEM_FRAME_REMOVE)) {
                 ItemType itemType = ItemTypes.registry().value(ResourceKey.of(
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+                        blockId.split(String.valueOf(
+                                ResourceKey.DEFAULT_SEPARATOR))[0],
+                        blockId.split(String.valueOf(
+                                ResourceKey.DEFAULT_SEPARATOR))[1]));
 
                 action = ItemFrameRemoveAction.builder()
                         .itemType(itemType)
@@ -434,7 +476,8 @@ public class Database {
         insertNBTdata.execute();
     }
 
-    public Optional<NBTData> getNBTdata(int id) throws SQLException, JsonProcessingException {
+    public Optional<NBTData> getNBTdata(int id)
+            throws SQLException, JsonProcessingException {
         getNBTdata.setInt(1, id);
         ResultSet rs = getNBTdata.executeQuery();
 

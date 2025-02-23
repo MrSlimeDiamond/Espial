@@ -37,19 +37,20 @@ public class BlockListeners {
     @Listener(order = Order.EARLY)
     public void preBlockAction(ChangeBlockEvent.Pre event) throws Exception {
         if (event.cause().root() instanceof Player player) {
-            if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
+            if (Espial.getInstance().getInspectingPlayers()
+                    .contains(player.profile().uuid())) {
 
                 event.setCancelled(true);
 
                 for (ServerLocation location : event.locations()) {
                     Query.builder()
-                        .type(QueryType.LOOKUP)
-                        .min(location)
-                        .sort(Sort.REVERSE_CHRONOLOGICAL)
-                        .caller(player)
-                        .audience(player)
-                        .spread(true)
-                        .build().submit();
+                            .type(QueryType.LOOKUP)
+                            .min(location)
+                            .sort(Sort.REVERSE_CHRONOLOGICAL)
+                            .caller(player)
+                            .audience(player)
+                            .spread(true)
+                            .build().submit();
                 }
             }
         }
@@ -62,26 +63,32 @@ public class BlockListeners {
         Object source = event.cause().root();
 
         if (event.cause().root() instanceof InteractBlockEvent.Primary) {
-            source = ((InteractBlockEvent.Primary) event.cause().root()).source();
-        } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
-            source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
+            source = ((InteractBlockEvent.Primary) event.cause()
+                    .root()).source();
+        } else if (event.cause()
+                .root() instanceof InteractBlockEvent.Secondary) {
+            source = ((InteractBlockEvent.Secondary) event.cause()
+                    .root()).source();
         }
 
         if (source instanceof Player player) {
-            if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
+            if (Espial.getInstance().getInspectingPlayers()
+                    .contains(player.profile().uuid())) {
 
                 event.setCancelled(true);
 
-                BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
+                BlockSnapshot block =
+                        event.transactions().stream().findAny().get()
+                                .defaultReplacement();
 
                 Query.builder()
-                    .type(QueryType.LOOKUP)
-                    .min(block.location().get())
-                    .caller(player)
-                    .sort(Sort.REVERSE_CHRONOLOGICAL)
-                    .audience(player)
-                    .spread(true)
-                    .build().submit();
+                        .type(QueryType.LOOKUP)
+                        .min(block.location().get())
+                        .caller(player)
+                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                        .audience(player)
+                        .spread(true)
+                        .build().submit();
                 return;
             }
         }
@@ -89,7 +96,9 @@ public class BlockListeners {
         if (source instanceof Living) {
             living = (Living) source;
         } else {
-            if (!Espial.getInstance().getConfig().get().logServerChanges()) return;
+            if (!Espial.getInstance().getConfig().get().logServerChanges()) {
+                return;
+            }
             living = null; // Server action
         }
 
@@ -97,7 +106,10 @@ public class BlockListeners {
             // These are almost always useless, and just flood the database.
             // It's stuff like "this water spread"
 
-            if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) return;
+            if (transaction.operation().equals(Operations.MODIFY.get()) &&
+                    living == null) {
+                return;
+            }
 
             try {
                 EventType type = EventTypes.fromSponge(transaction.operation());
@@ -117,30 +129,39 @@ public class BlockListeners {
                         List<Component> backComponents = null;
 
                         if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
-                            frontComponents = blockEntity.get(Keys.SIGN_FRONT_TEXT)
-                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                    .orElseGet(ArrayList::new);
+                            frontComponents =
+                                    blockEntity.get(Keys.SIGN_FRONT_TEXT)
+                                            .map(text -> new ArrayList<>(
+                                                    text.lines().get()))
+                                            .orElseGet(ArrayList::new);
                         }
 
                         if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
-                            backComponents = blockEntity.get(Keys.SIGN_BACK_TEXT)
-                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                    .orElseGet(ArrayList::new);
+                            backComponents =
+                                    blockEntity.get(Keys.SIGN_BACK_TEXT)
+                                            .map(text -> new ArrayList<>(
+                                                    text.lines().get()))
+                                            .orElseGet(ArrayList::new);
                         }
 
                         List<String> frontText = null;
                         List<String> backText = null;
 
                         if (frontComponents != null) {
-                            frontText = frontComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                            frontText = frontComponents.stream()
+                                    .map(component -> GsonComponentSerializer.gson()
+                                            .serialize(component)).toList();
                         }
 
                         if (backComponents != null) {
-                            backText = backComponents.stream().map(component -> GsonComponentSerializer.gson().serialize(component)).toList();
+                            backText = backComponents.stream()
+                                    .map(component -> GsonComponentSerializer.gson()
+                                            .serialize(component)).toList();
                         }
 
                         if (frontComponents != null && backComponents != null) {
-                            jsonNBTData.setSignData(new JsonSignData(frontText, backText));
+                            jsonNBTData.setSignData(
+                                    new JsonSignData(frontText, backText));
                         }
                     });
                 }
@@ -148,12 +169,14 @@ public class BlockListeners {
                 EspialActor actor = new EspialActorImpl(living);
 
                 BlockAction.Builder builder = BlockAction.builder()
-                        .blockId(snapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted())
+                        .blockId(snapshot.state().type()
+                                .key(RegistryTypes.BLOCK_TYPE).formatted())
                         .event(type)
                         .actor(actor)
                         .event(EventTypes.fromSponge(transaction.operation()))
                         .location(snapshot.location().get())
-                        .world(snapshot.location().get().worldKey().formatted());
+                        .world(snapshot.location().get().worldKey()
+                                .formatted());
 
                 if (NBTApplier.update(jsonNBTData, snapshot.state())) {
                     builder.withNBTData(jsonNBTData);

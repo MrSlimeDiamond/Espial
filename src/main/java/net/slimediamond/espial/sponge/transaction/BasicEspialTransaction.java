@@ -7,13 +7,14 @@ import net.slimediamond.espial.api.transaction.EspialTransaction;
 import java.util.List;
 
 public class BasicEspialTransaction implements EspialTransaction {
-    private QueryType type;
-    private Object user;
-    private Audience audience;
-    private List<Integer> ids;
+    private final QueryType type;
+    private final Object user;
+    private final Audience audience;
+    private final List<Integer> ids;
     private boolean undone;
 
-    public BasicEspialTransaction(QueryType type, Object user, Audience audience, List<Integer> ids) {
+    public BasicEspialTransaction(QueryType type, Object user,
+                                  Audience audience, List<Integer> ids) {
         this.type = type;
         this.user = user;
         this.audience = audience;

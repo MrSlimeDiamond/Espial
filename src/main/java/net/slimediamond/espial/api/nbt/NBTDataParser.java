@@ -19,16 +19,22 @@ public class NBTDataParser {
 
             List<String> frontLines = data.getSignData().getFrontText();
             List<String> backLines = data.getSignData().getBackText();
-            List<Component> frontComponents = frontLines.stream().map(line -> GsonComponentSerializer.gson().deserialize(line)).toList();
+            List<Component> frontComponents = frontLines.stream()
+                    .map(line -> GsonComponentSerializer.gson()
+                            .deserialize(line)).toList();
 
             builder.append(Component.newline());
-            builder.append(Component.text("Front:").color(NamedTextColor.DARK_AQUA));
+            builder.append(
+                    Component.text("Front:").color(NamedTextColor.DARK_AQUA));
             builder.append(signLines(frontComponents));
 
-            List<Component> backComponents = backLines.stream().map(line -> GsonComponentSerializer.gson().deserialize(line)).toList();
+            List<Component> backComponents = backLines.stream()
+                    .map(line -> GsonComponentSerializer.gson()
+                            .deserialize(line)).toList();
 
             builder.append(Component.newline());
-            builder.append(Component.text("Back:").color(NamedTextColor.DARK_AQUA));
+            builder.append(
+                    Component.text("Back:").color(NamedTextColor.DARK_AQUA));
             builder.append(signLines(backComponents));
 
             shouldReturn = true;
@@ -36,24 +42,30 @@ public class NBTDataParser {
 
         if (data.getDirection() != null) {
             builder.append(Component.newline());
-            builder.append(Component.text("Direction: ").color(NamedTextColor.DARK_AQUA));
-            builder.append(Component.text(data.getDirection().toString()).color(NamedTextColor.WHITE));
+            builder.append(Component.text("Direction: ")
+                    .color(NamedTextColor.DARK_AQUA));
+            builder.append(Component.text(data.getDirection().toString())
+                    .color(NamedTextColor.WHITE));
 
             shouldReturn = true;
         }
 
         if (data.getAxis() != null) {
             builder.append(Component.newline());
-            builder.append(Component.text("Axis: ").color(NamedTextColor.DARK_AQUA));
-            builder.append(Component.text(data.getAxis().toString()).color(NamedTextColor.WHITE));
+            builder.append(
+                    Component.text("Axis: ").color(NamedTextColor.DARK_AQUA));
+            builder.append(Component.text(data.getAxis().toString())
+                    .color(NamedTextColor.WHITE));
 
             shouldReturn = true;
         }
 
         if (data.isWaterlogged()) {
             builder.append(Component.newline());
-            builder.append(Component.text("Waterlogged: ").color(NamedTextColor.DARK_AQUA));
-            builder.append(Component.text(data.isWaterlogged()).color(NamedTextColor.WHITE));
+            builder.append(Component.text("Waterlogged: ")
+                    .color(NamedTextColor.DARK_AQUA));
+            builder.append(Component.text(data.isWaterlogged())
+                    .color(NamedTextColor.WHITE));
 
             shouldReturn = true;
         }

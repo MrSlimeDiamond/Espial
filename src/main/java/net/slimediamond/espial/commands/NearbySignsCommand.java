@@ -26,7 +26,8 @@ import java.util.List;
 
 public class NearbySignsCommand implements CommandExecutor {
     @Override
-    public CommandResult execute(CommandContext context) throws CommandException {
+    public CommandResult execute(CommandContext context)
+            throws CommandException {
         // FIXME: Query only for signs in the database
         if (context.cause().root() instanceof Player player) {
             int range;
@@ -34,13 +35,20 @@ public class NearbySignsCommand implements CommandExecutor {
                 range = context.requireOne(CommandParameters.LOOKUP_RANGE);
             } else {
                 // Default to 5 blocks
-                context.sendMessage(Espial.prefix.append(Component.text("Defaults used: -r 5").color(NamedTextColor.GRAY)));
+                context.sendMessage(Espial.prefix.append(
+                        Component.text("Defaults used: -r 5")
+                                .color(NamedTextColor.GRAY)));
                 range = 5;
             }
 
-            context.sendMessage(Component.text().append(Espial.prefix).append(Component.text("Using a cuboid with a range of " + range + " blocks for this query.").color(NamedTextColor.WHITE)).build());
+            context.sendMessage(Component.text().append(Espial.prefix)
+                    .append(Component.text(
+                                    "Using a cuboid with a range of " + range +
+                                            " blocks for this query.")
+                            .color(NamedTextColor.WHITE)).build());
 
-            Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+            Pair<ServerLocation, ServerLocation> locations =
+                    PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
             try {
                 Query query = Query.builder()
                         .type(QueryType.LOOKUP)
@@ -51,28 +59,36 @@ public class NearbySignsCommand implements CommandExecutor {
                         .audience(player)
                         .build();
 
-                List<EspialRecord> signs = Espial.getInstance().getEspialService().query(query)
-                        .stream()
-                        .filter(record -> record instanceof BlockRecord)
-                        .filter(record -> BlockUtil.SIGNS.contains(((BlockAction)record.getAction()).getBlockType()))
-                        .toList();
+                List<EspialRecord> signs =
+                        Espial.getInstance().getEspialService().query(query)
+                                .stream()
+                                .filter(record -> record instanceof BlockRecord)
+                                .filter(record -> BlockUtil.SIGNS.contains(
+                                        ((BlockAction) record.getAction()).getBlockType()))
+                                .toList();
 
-                List<Component> contents = MessageUtil.generateLookupContents(signs, true);
+                List<Component> contents =
+                        MessageUtil.generateLookupContents(signs, true);
 
                 if (contents.isEmpty()) {
-                    context.sendMessage(Espial.prefix.append(Component.text("Could not find any sign data nearby.").color(NamedTextColor.RED)));
+                    context.sendMessage(Espial.prefix.append(Component.text(
+                                    "Could not find any sign data nearby.")
+                            .color(NamedTextColor.RED)));
                     return CommandResult.success();
                 }
 
                 PaginationList.builder()
-                        .title(Espial.prefix.append(Component.text("Nearby signs").color(NamedTextColor.WHITE)))
+                        .title(Espial.prefix.append(
+                                Component.text("Nearby signs")
+                                        .color(NamedTextColor.WHITE)))
                         .contents(contents)
                         .sendTo(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            context.sendMessage(Component.text("You must be a player to use this."));
+            context.sendMessage(
+                    Component.text("You must be a player to use this."));
         }
 
         return CommandResult.success();

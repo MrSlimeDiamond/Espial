@@ -6,10 +6,10 @@ import net.slimediamond.espial.api.transaction.TransactionStatus;
 import java.sql.Timestamp;
 
 public abstract class AbstractRecord implements EspialRecord {
-    private int id;
-    private Timestamp timestamp;
-    private boolean rolledBack;
-    private Action action;
+    private final int id;
+    private final Timestamp timestamp;
+    private final boolean rolledBack;
+    private final Action action;
 
     public AbstractRecord(
             int id,

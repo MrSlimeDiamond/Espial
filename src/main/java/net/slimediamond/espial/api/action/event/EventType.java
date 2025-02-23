@@ -4,39 +4,44 @@ import net.slimediamond.espial.api.action.ActionType;
 
 public interface EventType {
 
+    static Builder builder() {
+        return new Builder();
+    }
+
     /**
      * The name of the event
+     *
      * @return Event type name
      */
     String getName();
 
     /**
      * The verb for the event
+     *
      * @return Event type verb
      */
     String getVerb();
 
     /**
      * Get the description of this event type
+     *
      * @return Event type description
      */
     String getDescription();
 
     /**
      * Get event ID
+     *
      * @return Event ID
      */
     int getId();
 
     /**
      * Get the event's action type
+     *
      * @return Action type
      */
     ActionType getActionType();
-
-    static Builder builder() {
-        return new Builder();
-    }
 
     class Builder {
         private String name;

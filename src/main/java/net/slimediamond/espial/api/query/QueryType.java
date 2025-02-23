@@ -5,7 +5,7 @@ public enum QueryType {
     ROLLBACK(true),
     RESTORE(true);
 
-    private boolean reversible;
+    private final boolean reversible;
 
     QueryType(boolean reversible) {
         this.reversible = reversible;

@@ -14,25 +14,34 @@ import java.util.List;
 import java.util.UUID;
 
 public interface Query extends Submittable<List<EspialRecord>> {
+    static Builder builder() {
+        return new Builder();
+    }
+
     /**
      * Get query type
+     *
      * @return Query type
      */
     QueryType getType();
+
     /**
      * The minimum location of the query
+     *
      * @return Query minimum location
      */
     ServerLocation getMin();
 
     /**
      * The maximum location of the query
+     *
      * @return Query maximum location
      */
     ServerLocation getMax();
 
     /**
      * The earliest date to lookup
+     *
      * @return Query minimum timestamp
      */
     @Nullable
@@ -40,6 +49,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
 
     /**
      * The player UUID to target
+     *
      * @return Target player UUID
      */
     @Nullable
@@ -47,6 +57,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
 
     /**
      * The block type we are targeting
+     *
      * @return Block type
      */
     @Nullable
@@ -54,34 +65,35 @@ public interface Query extends Submittable<List<EspialRecord>> {
 
     /**
      * Get sorting order of this query
+     *
      * @return Sort order
      */
     Sort getSort();
 
     /**
      * The user which called this
-     * Identified for 
+     * Identified for
+     *
      * @return
      */
     Object getUser();
 
     /**
      * An audience to call back to
+     *
      * @return Audience
      */
     Audience getAudience();
 
     /**
      * Whether to spread the results. Only looks on {@link QueryType} LOOKUP
+     *
      * @return Spread
      */
     boolean isSpread();
 
-    static Builder builder() {
-        return new Builder();
-    }
-
     class Builder {
+        boolean spread;
         private QueryType type;
         private ServerLocation min;
         private ServerLocation max;
@@ -91,7 +103,6 @@ public interface Query extends Submittable<List<EspialRecord>> {
         private Sort sort;
         private Object user;
         private Audience audience;
-        boolean spread;
 
         public Builder type(QueryType type) {
             this.type = type;
@@ -146,8 +157,10 @@ public interface Query extends Submittable<List<EspialRecord>> {
         public Query build() {
             return new Query() {
                 @Override
-                public SubmittableResult<List<EspialRecord>> submit() throws Exception {
-                    return Espial.getInstance().getEspialService().submitQuery(this);
+                public SubmittableResult<List<EspialRecord>> submit()
+                        throws Exception {
+                    return Espial.getInstance().getEspialService()
+                            .submitQuery(this);
                 }
 
                 @Override

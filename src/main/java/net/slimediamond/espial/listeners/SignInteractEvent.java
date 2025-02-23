@@ -22,7 +22,8 @@ public class SignInteractEvent {
         if (event.cause().root() instanceof Living source) {
 
             List<Component> newText = event.text().get();
-            List<Component> currentFront = event.sign().frontText().lines().get();
+            List<Component> currentFront =
+                    event.sign().frontText().lines().get();
             List<Component> currentBack = event.sign().backText().lines().get();
 
             List<String> frontSerialized;
@@ -30,29 +31,35 @@ public class SignInteractEvent {
 
             if (event.isFrontSide()) {
                 frontSerialized = newText.stream()
-                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .map(component -> GsonComponentSerializer.gson()
+                                .serialize(component))
                         .toList();
                 backSerialized = currentBack.stream()
-                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .map(component -> GsonComponentSerializer.gson()
+                                .serialize(component))
                         .toList();
             } else {
                 frontSerialized = currentFront.stream()
-                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .map(component -> GsonComponentSerializer.gson()
+                                .serialize(component))
                         .toList();
                 backSerialized = newText.stream()
-                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .map(component -> GsonComponentSerializer.gson()
+                                .serialize(component))
                         .toList();
             }
 
             JsonNBTData nbtData = new JsonNBTData();
-            nbtData.setSignData(new JsonSignData(frontSerialized, backSerialized));
+            nbtData.setSignData(
+                    new JsonSignData(frontSerialized, backSerialized));
 
             EspialActor actor = new EspialActorImpl(source);
 
             BlockAction.builder()
                     .event(EventTypes.MODIFY)
                     .world(event.sign().serverLocation().worldKey().formatted())
-                    .blockId(BlockTypes.registry().valueKey(event.sign().block().type()).formatted())
+                    .blockId(BlockTypes.registry()
+                            .valueKey(event.sign().block().type()).formatted())
                     .actor(actor)
                     .location(event.sign().serverLocation())
                     .withNBTData(nbtData)

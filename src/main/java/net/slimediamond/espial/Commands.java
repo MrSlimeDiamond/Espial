@@ -4,7 +4,15 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.commands.*;
+import net.slimediamond.espial.commands.BaseCommand;
+import net.slimediamond.espial.commands.HelpCommand;
+import net.slimediamond.espial.commands.InspectCommand;
+import net.slimediamond.espial.commands.InteractiveToggleCommand;
+import net.slimediamond.espial.commands.IsThisBlockMineCommand;
+import net.slimediamond.espial.commands.NearbySignsCommand;
+import net.slimediamond.espial.commands.SignInfoCommand;
+import net.slimediamond.espial.commands.TransactionCommands;
+import net.slimediamond.espial.commands.WhoPlacedThisCommand;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.Command;
@@ -20,16 +28,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Commands {
-    public static final List<Command.Parameterized> commands = new ArrayList<>();
-    private static Command.Parameterized nearbysigns = Command.builder()
+    public static final List<Command.Parameterized> commands =
+            new ArrayList<>();
+    private static final Command.Parameterized nearbysigns = Command.builder()
             .permission("espial.command.signs")
             .shortDescription(Component.text("Lookup signs nearby"))
             .executor(new NearbySignsCommand())
-            .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
+            .addFlag(Flag.builder().aliases("range", "r")
+                    .setParameter(CommandParameters.LOOKUP_RANGE).build())
             .build();
-    private static Command.Parameterized isthisblockmine = Command.builder()
+    private static final Command.Parameterized isthisblockmine = Command.builder()
             .permission("espial.command.myblock")
-            .shortDescription(Component.text("Check if a block was placed by you"))
+            .shortDescription(
+                    Component.text("Check if a block was placed by you"))
             .executor(new IsThisBlockMineCommand())
             .build();
 
@@ -39,85 +50,131 @@ public class Commands {
                 .executor(new BaseCommand())
                 .shortDescription(Component.text("Base command for Espial"))
                 .addChild(nearbysigns, "nearbysigns", "signs", "signsnear")
-                .addChild(isthisblockmine, "isthisblockmine", "isthismyblock", "myblock")
+                .addChild(isthisblockmine, "isthisblockmine", "isthismyblock",
+                        "myblock")
                 .addChild(Command.builder()
                         .executor(new BaseCommand())
-                        .shortDescription(Component.text("Show information about the plugin"))
+                        .shortDescription(Component.text(
+                                "Show information about the plugin"))
                         .build(), "info"
                 )
                 .addChild(Command.builder()
                         .executor(new HelpCommand())
                         .addParameter(CommandParameters.HELP_COMMAND)
-                        .shortDescription(Component.text("Display a help screen"))
+                        .shortDescription(
+                                Component.text("Display a help screen"))
                         .build(), "help", "?"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.lookup")
-                        .shortDescription(Component.text("Lookup a block or region"))
-                        .addFlag(Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("single").optional().build()).build())
-                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
-                        .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
-                        .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
-                        .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
-                        .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
+                        .shortDescription(
+                                Component.text("Lookup a block or region"))
+                        .addFlag(Flag.builder().aliases("spread", "single", "s")
+                                .setParameter(Parameter.bool().key("single")
+                                        .optional().build()).build())
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w")
+                                .setParameter(
+                                        Parameter.bool().key("use worldedit")
+                                                .optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r")
+                                .setParameter(CommandParameters.LOOKUP_RANGE)
+                                .build())
+                        .addFlag(Flag.builder().aliases("player", "p")
+                                .setParameter(CommandParameters.LOOKUP_PLAYER)
+                                .build())
+                        .addFlag(Flag.builder().aliases("block", "b")
+                                .setParameter(CommandParameters.LOOKUP_BLOCK)
+                                .build())
+                        .addFlag(Flag.builder().aliases("time", "t")
+                                .setParameter(CommandParameters.TIME).build())
                         .executor(new TransactionCommands.Lookup())
                         .build(), "lookup", "l"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.lookup")
-                        .shortDescription(Component.text("Look up blocks in a range of 5 blocks"))
+                        .shortDescription(Component.text(
+                                "Look up blocks in a range of 5 blocks"))
                         .executor(context -> {
-                            if (context.cause().root() instanceof Player player) {
-                                Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, 5);
+                            if (context.cause()
+                                    .root() instanceof Player player) {
+                                Pair<ServerLocation, ServerLocation> locations =
+                                        PlayerSelectionUtil.getCuboidAroundPlayer(
+                                                player, 5);
                                 Query query = Query.builder()
-                                                .type(QueryType.LOOKUP)
-                                                .min(locations.getLeft())
-                                                .max(locations.getRight())
-                                                .caller(player)
-                                                .audience(player)
-                                                .build();
+                                        .type(QueryType.LOOKUP)
+                                        .min(locations.getLeft())
+                                        .max(locations.getRight())
+                                        .caller(player)
+                                        .audience(player)
+                                        .build();
                                 try {
                                     query.submit();
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                context.sendMessage(Component.text("You must be a player to use this.").color(NamedTextColor.RED));
+                                context.sendMessage(Component.text(
+                                                "You must be a player to use this.")
+                                        .color(NamedTextColor.RED));
                             }
                             return CommandResult.success();
                         }).build(), "near"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.rollback")
-                        .shortDescription(Component.text("Roll back changes made by players"))
-                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
-                        .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
-                        .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
-                        .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
-                        .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
+                        .shortDescription(Component.text(
+                                "Roll back changes made by players"))
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w")
+                                .setParameter(
+                                        Parameter.bool().key("use worldedit")
+                                                .optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r")
+                                .setParameter(CommandParameters.LOOKUP_RANGE)
+                                .build())
+                        .addFlag(Flag.builder().aliases("player", "p")
+                                .setParameter(CommandParameters.LOOKUP_PLAYER)
+                                .build())
+                        .addFlag(Flag.builder().aliases("block", "b")
+                                .setParameter(CommandParameters.LOOKUP_BLOCK)
+                                .build())
+                        .addFlag(Flag.builder().aliases("time", "t")
+                                .setParameter(CommandParameters.TIME).build())
                         .executor(new TransactionCommands.Rollback())
                         .build(), "rollback", "rb"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.restore")
-                        .shortDescription(Component.text("Restore changes which were rolled back"))
-                        .addFlag(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build())
-                        .addFlag(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build())
-                        .addFlag(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build())
-                        .addFlag(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build())
-                        .addFlag(Flag.builder().aliases("time", "t").setParameter(CommandParameters.TIME).build())
+                        .shortDescription(Component.text(
+                                "Restore changes which were rolled back"))
+                        .addFlag(Flag.builder().aliases("worldedit", "we", "w")
+                                .setParameter(
+                                        Parameter.bool().key("use worldedit")
+                                                .optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r")
+                                .setParameter(CommandParameters.LOOKUP_RANGE)
+                                .build())
+                        .addFlag(Flag.builder().aliases("player", "p")
+                                .setParameter(CommandParameters.LOOKUP_PLAYER)
+                                .build())
+                        .addFlag(Flag.builder().aliases("block", "b")
+                                .setParameter(CommandParameters.LOOKUP_BLOCK)
+                                .build())
+                        .addFlag(Flag.builder().aliases("time", "t")
+                                .setParameter(CommandParameters.TIME).build())
                         .executor(new TransactionCommands.Restore())
                         .build(), "restore", "rs"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.undo")
-                        .shortDescription(Component.text("Undo what you just did"))
+                        .shortDescription(
+                                Component.text("Undo what you just did"))
                         .executor(new TransactionCommands.Undo())
                         .build(), "undo"
                 )
                 .addChild(Command.builder()
                         .permission("espial.command.redo")
-                        .shortDescription(Component.text("Redo what you just undid"))
+                        .shortDescription(
+                                Component.text("Redo what you just undid"))
                         .executor(new TransactionCommands.Redo())
                         .build(), "redo"
                 )
@@ -134,7 +191,8 @@ public class Commands {
                 .addChild(Command.builder()
                         .permission("espial.command.interactive")
                         .executor(new InteractiveToggleCommand())
-                        .shortDescription(Component.text("Enable interactive inspector mode"))
+                        .shortDescription(Component.text(
+                                "Enable interactive inspector mode"))
                         .build(), "interactive", "i"
                 )
                 .addChild(Command.builder()
@@ -163,11 +221,14 @@ public class Commands {
                 .build());
     }
 
-    public static void register(PluginContainer container, RegisterCommandEvent<Command.Parameterized> event) {
+    public static void register(PluginContainer container,
+                                RegisterCommandEvent<Command.Parameterized> event) {
         event.register(container, commands.get(0), "espial", "es");
         event.register(container, commands.get(1), "whoplacedthis");
         event.register(container, commands.get(2), "signinfo");
-        event.register(container, nearbysigns, "nearbysigns", "signs", "signsnear", "signsnearby");
-        event.register(container, isthisblockmine, "isthisblockmine", "isthismyblock", "myblock");
+        event.register(container, nearbysigns, "nearbysigns", "signs",
+                "signsnear", "signsnearby");
+        event.register(container, isthisblockmine, "isthisblockmine",
+                "isthismyblock", "myblock");
     }
 }

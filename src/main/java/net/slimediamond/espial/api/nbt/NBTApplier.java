@@ -41,18 +41,22 @@ public class NBTApplier {
         return modified.get();
     }
 
-    public static NBTData createNBTData(JsonNBTData nbtData, BlockState blockState) {
+    public static NBTData createNBTData(JsonNBTData nbtData,
+                                        BlockState blockState) {
         update(nbtData, blockState);
         return nbtData;
     }
 
     @Deprecated
-    public static void applyData(BlockState blockState, BlockAction blockAction) throws SQLException, JsonProcessingException {
+    public static void applyData(BlockState blockState, BlockAction blockAction)
+            throws SQLException, JsonProcessingException {
         applyData(new JsonNBTData(), blockState, blockAction);
     }
 
     @Deprecated
-    public static void applyData(JsonNBTData nbtData, BlockState blockState, BlockAction blockAction) throws SQLException, JsonProcessingException {
+    public static void applyData(JsonNBTData nbtData, BlockState blockState,
+                                 BlockAction blockAction)
+            throws SQLException, JsonProcessingException {
         AtomicBoolean applyData = new AtomicBoolean(false);
 
         if (blockState.supports(Keys.DIRECTION)) {

@@ -14,19 +14,27 @@ import java.util.UUID;
 
 public class InteractiveToggleCommand implements CommandExecutor {
     @Override
-    public CommandResult execute(CommandContext context) throws CommandException {
+    public CommandResult execute(CommandContext context)
+            throws CommandException {
         if (context.cause().root() instanceof Player player) {
-            List<UUID> inspectingPlayers = Espial.getInstance().getInspectingPlayers();
+            List<UUID> inspectingPlayers =
+                    Espial.getInstance().getInspectingPlayers();
             if (inspectingPlayers.contains(player.profile().uuid())) {
                 // turn it off
                 inspectingPlayers.remove(player.profile().uuid());
-                context.sendMessage(Espial.prefix.append(Component.text("Interactive mode disabled.").color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(
+                        Component.text("Interactive mode disabled.")
+                                .color(NamedTextColor.WHITE)));
             } else {
                 inspectingPlayers.add(player.profile().uuid());
-                context.sendMessage(Espial.prefix.append(Component.text("Interactive mode enabled.").color(NamedTextColor.WHITE)));
+                context.sendMessage(Espial.prefix.append(
+                        Component.text("Interactive mode enabled.")
+                                .color(NamedTextColor.WHITE)));
             }
         } else {
-            context.sendMessage(Component.text("You must be a player to run this!").color(NamedTextColor.RED));
+            context.sendMessage(
+                    Component.text("You must be a player to run this!")
+                            .color(NamedTextColor.RED));
         }
 
         return CommandResult.success();

@@ -6,7 +6,8 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 public class PlayerSelectionUtil {
-    public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(Player player, int range) {
+    public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(
+            Player player, int range) {
         Vector3d pos = player.position();
 
         double minX = pos.x() - range;
@@ -18,8 +19,10 @@ public class PlayerSelectionUtil {
         double maxZ = pos.z() + range;
 
         return Pair.of(
-                ServerLocation.of(player.serverLocation().world(), new Vector3d(minX, minY, minZ)),
-                ServerLocation.of(player.serverLocation().world(), new Vector3d(maxX, maxY, maxZ))
+                ServerLocation.of(player.serverLocation().world(),
+                        new Vector3d(minX, minY, minZ)),
+                ServerLocation.of(player.serverLocation().world(),
+                        new Vector3d(maxX, maxY, maxZ))
         );
     }
 }

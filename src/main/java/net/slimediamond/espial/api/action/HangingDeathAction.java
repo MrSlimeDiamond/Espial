@@ -13,16 +13,18 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Optional;
 
-public interface HangingDeathAction extends EntityAction, NBTStorable, Submittable<EntityRecord> {
+public interface HangingDeathAction
+        extends EntityAction, NBTStorable, Submittable<EntityRecord> {
+
+    static Builder builder() {
+        return new Builder();
+    }
 
     EntityType<?> getEntityType();
 
     default ServerLocation getServerLocation() {
-        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
-    }
-
-    static Builder builder() {
-        return new Builder();
+        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0],
+                getWorld().split(":")[1]), getX(), getY(), getZ());
     }
 
     class Builder {
@@ -119,18 +121,21 @@ public interface HangingDeathAction extends EntityAction, NBTStorable, Submittab
                 }
 
                 @Override
-                public void setNBT(NBTData data) {
-                    nbtData = data;
-                }
-
-                @Override
                 public Optional<NBTData> getNBT() {
                     return Optional.ofNullable(nbtData);
                 }
 
                 @Override
-                public SubmittableResult<EntityRecord> submit() throws Exception {
-                    return SubmittableResult.of((EntityRecord) Espial.getInstance().getDatabase().submit(this).orElse(null));
+                public void setNBT(NBTData data) {
+                    nbtData = data;
+                }
+
+                @Override
+                public SubmittableResult<EntityRecord> submit()
+                        throws Exception {
+                    return SubmittableResult.of(
+                            (EntityRecord) Espial.getInstance().getDatabase()
+                                    .submit(this).orElse(null));
                 }
             };
         }

@@ -11,11 +11,11 @@ import net.slimediamond.espial.api.transaction.EspialTransaction;
 import java.util.List;
 
 public class EspialTransactionImpl implements EspialTransaction {
-    private List<Integer> ids;
-    private QueryType type;
-    private Query query;
-    private Object user;
-    private Audience audience;
+    private final List<Integer> ids;
+    private final QueryType type;
+    private final Query query;
+    private final Object user;
+    private final Audience audience;
     private boolean undone;
 
     public EspialTransactionImpl(List<Integer> ids, Query query) {
@@ -25,6 +25,52 @@ public class EspialTransactionImpl implements EspialTransaction {
         this.user = query.getUser();
         this.audience = query.getAudience();
         this.undone = false;
+    }
+
+    public static int undo(List<Integer> ids, QueryType type) throws Exception {
+        if (type == QueryType.ROLLBACK) {
+            // Restore all IDs
+            for (int id : ids) {
+                EspialRecord record =
+                        Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    record.restore();
+                }
+            }
+        } else if (type == QueryType.RESTORE) {
+            for (int id : ids) {
+                EspialRecord record =
+                        Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    record.rollback();
+                }
+            }
+        }
+
+        return ids.size();
+    }
+
+    public static int redo(List<Integer> ids, QueryType type) throws Exception {
+        if (type == QueryType.ROLLBACK) {
+            // Restore all IDs
+            for (int id : ids) {
+                EspialRecord record =
+                        Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    record.rollback();
+                }
+            }
+        } else if (type == QueryType.RESTORE) {
+            for (int id : ids) {
+                EspialRecord record =
+                        Espial.getInstance().getDatabase().queryId(id);
+                if (record instanceof BlockRecord) {
+                    record.restore();
+                }
+            }
+        }
+
+        return ids.size();
     }
 
     @Override
@@ -64,47 +110,5 @@ public class EspialTransactionImpl implements EspialTransaction {
         this.undone = false;
 
         return redo(ids, type);
-    }
-
-    public static int undo(List<Integer> ids, QueryType type) throws Exception {
-        if (type == QueryType.ROLLBACK) {
-            // Restore all IDs
-            for (int id : ids) {
-                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-                if (record instanceof BlockRecord) {
-                    record.restore();
-                }
-            }
-        } else if (type == QueryType.RESTORE) {
-            for (int id : ids) {
-                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-                if (record instanceof BlockRecord) {
-                    record.rollback();
-                }
-            }
-        }
-
-        return ids.size();
-    }
-
-    public static int redo(List<Integer> ids, QueryType type) throws Exception {
-        if (type == QueryType.ROLLBACK) {
-            // Restore all IDs
-            for (int id : ids) {
-                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-                if (record instanceof BlockRecord) {
-                    record.rollback();
-                }
-            }
-        } else if (type == QueryType.RESTORE) {
-            for (int id : ids) {
-                EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-                if (record instanceof BlockRecord) {
-                    record.restore();
-                }
-            }
-        }
-
-        return ids.size();
     }
 }

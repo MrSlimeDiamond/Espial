@@ -14,6 +14,7 @@ public interface NBTData {
 
     /**
      * Get sign data for this record
+     *
      * @return Sign data
      */
     @Nullable
@@ -21,18 +22,21 @@ public interface NBTData {
 
     /**
      * Get a block's direction
+     *
      * @return Block direction
      */
     Direction getDirection();
 
     /**
      * Get a block's axis (x, y, or z)
+     *
      * @return Block axis
      */
     Axis getAxis();
 
     /**
      * Whether the block is waterlogged
+     *
      * @return Whether the block is waterlogged
      */
     boolean isWaterlogged();

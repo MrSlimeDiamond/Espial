@@ -27,7 +27,8 @@ public class JsonNBTData implements NBTData {
     @JsonProperty("waterlogged")
     private boolean waterlogged;
 
-    public JsonNBTData() {}
+    public JsonNBTData() {
+    }
 
     @JsonCreator
     public JsonNBTData(
@@ -42,10 +43,30 @@ public class JsonNBTData implements NBTData {
         this.waterlogged = waterlogged;
     }
 
+    // Serialization utility
+    public static String serialize(NBTData data)
+            throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(data);
+    }
+
+    // Deserialization utility
+    public static JsonNBTData deserialize(String json)
+            throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                false);
+        return mapper.readValue(json, JsonNBTData.class);
+    }
+
     @Override
     @Nullable
     public SignData getSignData() {
         return this.signData;
+    }
+
+    public void setSignData(JsonSignData sign) {
+        this.signData = sign;
     }
 
     @Override
@@ -53,9 +74,17 @@ public class JsonNBTData implements NBTData {
         return this.direction;
     }
 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
     @Override
     public Axis getAxis() {
         return this.axis;
+    }
+
+    public void setAxis(Axis axis) {
+        this.axis = axis;
     }
 
     @Override
@@ -63,32 +92,7 @@ public class JsonNBTData implements NBTData {
         return this.waterlogged;
     }
 
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    public void setAxis(Axis axis) {
-        this.axis = axis;
-    }
-
-    public void setSignData(JsonSignData sign) {
-        this.signData = sign;
-    }
-
     public void setWaterlogged(boolean waterlogged) {
         this.waterlogged = waterlogged;
-    }
-
-    // Serialization utility
-    public static String serialize(NBTData data) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(data);
-    }
-
-    // Deserialization utility
-    public static JsonNBTData deserialize(String json) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return mapper.readValue(json, JsonNBTData.class);
     }
 }
