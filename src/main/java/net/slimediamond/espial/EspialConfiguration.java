@@ -6,13 +6,13 @@ import org.spongepowered.configurate.objectmapping.meta.Setting;
 @ConfigSerializable
 public class EspialConfiguration {
     @Setting
-    private final String jdbc = "jdbc:sqlite:espial.db";
+    private String jdbc = "jdbc:sqlite:espial.db";
     @Setting
-    private final boolean logPlayerPosition = true;
+    private boolean logPlayerPosition = true;
     @Setting
-    private final boolean logServerChanges = false;
+    private boolean logServerChanges = false;
     @Setting
-    private final boolean logInteractions = true;
+    private boolean logInteractions = true;
 
     public String jdbc() {
         return this.jdbc;
