@@ -88,6 +88,14 @@ public class EventTypes {
             .id(9)
             .build();
 
+    public static final EventType ITEM_FRAME_REMOVE = EventType.builder()
+            .name("Item Frame Item Remove")
+            .verb("removed from item frame")
+            .description("A player has removed an item from an item frame by attacking it")
+            .action(ActionType.ITEM_FRAME_REMOVE)
+            .id(10)
+            .build();
+
     static {
         types.add(BREAK);
         types.add(PLACE);
@@ -98,6 +106,7 @@ public class EventTypes {
         types.add(MODIFY);
         types.add(INTERACT);
         types.add(HANGING_DEATH);
+        types.add(ITEM_FRAME_REMOVE);
 
         for (EventType type : types) {
             ids.put(type.getId(), type);

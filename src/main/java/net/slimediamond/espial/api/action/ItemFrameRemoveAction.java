@@ -2,39 +2,39 @@ package net.slimediamond.espial.api.action;
 
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.event.EventType;
-import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.submittable.Submittable;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.user.EspialActor;
-import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.util.Optional;
 
-public interface HangingDeathAction extends EntityAction, NBTStorable, Submittable<EntityRecord> {
-
-    EntityType<?> getEntityType();
+public interface ItemFrameRemoveAction extends EntityAction, Submittable<EntityRecord> {
+    /**
+     * Get item type
+     * @return Item type
+     */
+    ItemType getItemType();
 
     static Builder builder() {
         return new Builder();
     }
 
     class Builder {
+        private ItemType itemType;
         private EspialActor actor;
-        private EntityType<?> entityType;
         private int x, y, z;
         private String world;
         private EventType eventType;
-        private NBTData nbtData;
 
-        public Builder actor(EspialActor actor) {
-            this.actor = actor;
+        public Builder itemType(ItemType itemType) {
+            this.itemType = itemType;
             return this;
         }
 
-        public Builder entity(EntityType<?> entityType) {
-            this.entityType = entityType;
+        public Builder actor(EspialActor actor) {
+            this.actor = actor;
             return this;
         }
 
@@ -60,11 +60,6 @@ public interface HangingDeathAction extends EntityAction, NBTStorable, Submittab
             return this;
         }
 
-        public Builder withNBTData(NBTData nbtData) {
-            this.nbtData = nbtData;
-            return this;
-        }
-
         public Builder world(String world) {
             this.world = world;
             return this;
@@ -75,12 +70,12 @@ public interface HangingDeathAction extends EntityAction, NBTStorable, Submittab
             return this;
         }
 
-        public HangingDeathAction build() {
-            return new HangingDeathAction() {
+        public ItemFrameRemoveAction build() {
+            return new ItemFrameRemoveAction() {
 
                 @Override
-                public EntityType<?> getEntityType() {
-                    return entityType;
+                public ItemType getItemType() {
+                    return itemType;
                 }
 
                 @Override
@@ -114,18 +109,8 @@ public interface HangingDeathAction extends EntityAction, NBTStorable, Submittab
                 }
 
                 @Override
-                public void setNBT(NBTData data) {
-                    nbtData = data;
-                }
-
-                @Override
-                public Optional<NBTData> getNBT() {
-                    return Optional.ofNullable(nbtData);
-                }
-
-                @Override
                 public SubmittableResult<EntityRecord> submit() throws Exception {
-                    return SubmittableResult.of((EntityRecord) Espial.getInstance().getDatabase().submit(this).orElse(null));
+                    return (SubmittableResult<EntityRecord>) Espial.getInstance().getEspialService().submitAction(this);
                 }
             };
         }

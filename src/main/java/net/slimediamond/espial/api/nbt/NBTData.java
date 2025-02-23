@@ -6,13 +6,15 @@ import org.spongepowered.api.util.Direction;
 import javax.annotation.Nullable;
 
 /**
- * Stored NBT data on a block.
+ * Stored NBT data on a record.
+ *
+ * @author Findlay Richardson (SlimeDiamond)
  */
 public interface NBTData {
 
     /**
-     * Get sign data for this block
-     * @return If available, return sign data
+     * Get sign data for this record
+     * @return Sign data
      */
     @Nullable
     SignData getSignData();

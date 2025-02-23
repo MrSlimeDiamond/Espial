@@ -11,5 +11,9 @@ public enum ActionType {
     /**
      * A hanging entity (like an item frame) was killed
      */
-    HANGING_DEATH
+    HANGING_DEATH,
+    /**
+     * Item frame item removal
+     */
+    ITEM_FRAME_REMOVE
 }

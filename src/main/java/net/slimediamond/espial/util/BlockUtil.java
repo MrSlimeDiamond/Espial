@@ -137,7 +137,7 @@ public class BlockUtil {
             .add(BlockTypes.WATER, BlockTypes.LAVA)
             .build();
 
-    private static final HashSet<BlockType> AIR = builder()
+    public static final HashSet<BlockType> AIR = builder()
             .add(BlockTypes.AIR, BlockTypes.VOID_AIR, BlockTypes.CAVE_AIR)
             .build();
 

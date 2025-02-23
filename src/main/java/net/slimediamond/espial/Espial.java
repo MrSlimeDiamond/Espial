@@ -89,7 +89,7 @@ public class Espial {
         Sponge.eventManager().registerListeners(container, new InteractListener());
         Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());
-        Sponge.eventManager().registerListeners(container, new AttackEntityListener());
+        Sponge.eventManager().registerListeners(container, new EntityListeners());
     }
 
     @Listener

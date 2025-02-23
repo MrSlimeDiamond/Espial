@@ -7,10 +7,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.HangingDeathAction;
-import net.slimediamond.espial.api.action.NBTStorable;
+import net.slimediamond.espial.api.action.*;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTDataParser;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -159,6 +156,8 @@ public class MessageUtil {
             displayName = blockAction.getBlockType().asComponent();
         } else if (record.getAction() instanceof HangingDeathAction hangingDeathAction) {
             displayName = hangingDeathAction.getEntityType().asComponent();
+        } else if (record.getAction() instanceof ItemFrameRemoveAction itemFrameRemoveAction) {
+            displayName = itemFrameRemoveAction.getItemType().asComponent();
         }
 
         return displayName;

@@ -21,6 +21,8 @@ import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.math.vector.Vector3d;
 
@@ -140,6 +142,8 @@ public class Database {
             insertAction.setString(4, block.getBlockId());
         } else if (action instanceof HangingDeathAction) {
             insertAction.setString(4, ((HangingDeathAction) action).getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
+        } else if (action instanceof ItemFrameRemoveAction) {
+            insertAction.setString(4, ((ItemFrameRemoveAction) action).getItemType().key(RegistryTypes.ITEM_TYPE).formatted());
         } else {
             insertAction.setString(4, ""); // apparently this can't be null?
         }
@@ -379,8 +383,8 @@ public class Database {
                 return new BlockRecord(uid, timestamp, rolledBack, action);
             } if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
                 EntityType<?> entityType = EntityTypes.registry().value(ResourceKey.of(
-                            blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                            blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
+                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
 
                 action = HangingDeathAction.builder()
                         .actor(actor)
@@ -391,6 +395,22 @@ public class Database {
                         .y(y)
                         .z(z)
                         .withNBTData(getNBTdata(uid).orElse(null))
+                        .build();
+
+                return new EntityRecord(uid, timestamp, rolledBack, action);
+            } else if (eventType.getActionType().equals(ActionType.ITEM_FRAME_REMOVE)) {
+                ItemType itemType = ItemTypes.registry().value(ResourceKey.of(
+                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
+                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+
+                action = ItemFrameRemoveAction.builder()
+                        .itemType(itemType)
+                        .actor(actor)
+                        .event(eventType)
+                        .world(world)
+                        .x(x)
+                        .y(y)
+                        .z(z)
                         .build();
 
                 return new EntityRecord(uid, timestamp, rolledBack, action);
