@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.commands.BaseCommand;
 import net.slimediamond.espial.commands.HelpCommand;
 import net.slimediamond.espial.commands.InspectCommand;
@@ -13,6 +14,7 @@ import net.slimediamond.espial.commands.NearbySignsCommand;
 import net.slimediamond.espial.commands.SignInfoCommand;
 import net.slimediamond.espial.commands.TransactionCommands;
 import net.slimediamond.espial.commands.WhoPlacedThisCommand;
+import net.slimediamond.espial.util.ArgumentUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.Command;
@@ -94,28 +96,58 @@ public class Commands {
                         .permission("espial.command.lookup")
                         .shortDescription(Component.text(
                                 "Look up blocks in a range of 5 blocks"))
+                        .addFlag(Flag.builder().aliases("spread", "single", "s")
+                                .setParameter(Parameter.bool().key("single")
+                                        .optional().build()).build())
+                        .addFlag(Flag.builder().aliases("range", "r")
+                                .setParameter(CommandParameters.LOOKUP_RANGE)
+                                .build())
+                        .addFlag(Flag.builder().aliases("player", "p")
+                                .setParameter(CommandParameters.LOOKUP_PLAYER)
+                                .build())
+                        .addFlag(Flag.builder().aliases("block", "b")
+                                .setParameter(CommandParameters.LOOKUP_BLOCK)
+                                .build())
+                        .addFlag(Flag.builder().aliases("time", "t")
+                                .setParameter(CommandParameters.TIME).build())
                         .executor(context -> {
-                            if (context.cause()
-                                    .root() instanceof Player player) {
-                                Pair<ServerLocation, ServerLocation> locations =
+                            if (context.cause().root() instanceof Player player) {
+                                int range = 5; // TODO: Default value
+                                if (context.hasFlag("r")) {
+                                    range =
+                                            context.requireOne(
+                                                    CommandParameters.LOOKUP_RANGE);
+                                }
+
+                                Pair<ServerLocation, ServerLocation> selection =
                                         PlayerSelectionUtil.getCuboidAroundPlayer(
-                                                player, 5);
-                                Query query = Query.builder()
-                                        .type(QueryType.LOOKUP)
-                                        .min(locations.getLeft())
-                                        .max(locations.getRight())
+                                        player, range);
+
+                                ArgumentUtil.Result requirements =
+                                        ArgumentUtil.parse(context, QueryType.LOOKUP);
+
+                                if (!requirements.shouldContinue()) return CommandResult.success();
+
+                                Query.Builder builder = Query.builder()
+                                        .min(selection.getLeft())
+                                        .max(selection.getRight())
+                                        .player(requirements.getUUID())
+                                        .spread(context.hasFlag("s"))
+                                        .after(requirements.getTimestamp())
+                                        .audience(context.cause().audience())
                                         .caller(player)
-                                        .audience(player)
-                                        .build();
+                                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                                        .type(QueryType.LOOKUP);
+
+                                if (requirements.getBlockId() != null) {
+                                    builder.block(requirements.getBlockId());
+                                }
+
                                 try {
-                                    query.submit();
+                                    builder.build().submit();
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
-                            } else {
-                                context.sendMessage(Component.text(
-                                                "You must be a player to use this.")
-                                        .color(NamedTextColor.RED));
                             }
                             return CommandResult.success();
                         }).build(), "near"

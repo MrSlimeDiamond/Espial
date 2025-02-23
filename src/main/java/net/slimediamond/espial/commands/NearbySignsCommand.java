@@ -41,12 +41,6 @@ public class NearbySignsCommand implements CommandExecutor {
                 range = 5;
             }
 
-            context.sendMessage(Component.text().append(Espial.prefix)
-                    .append(Component.text(
-                                    "Using a cuboid with a range of " + range +
-                                            " blocks for this query.")
-                            .color(NamedTextColor.WHITE)).build());
-
             Pair<ServerLocation, ServerLocation> locations =
                     PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
             try {

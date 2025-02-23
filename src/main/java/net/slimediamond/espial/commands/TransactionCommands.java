@@ -10,29 +10,22 @@ import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.BasicEspialTransaction;
-import net.slimediamond.espial.util.DurationParser;
+import net.slimediamond.espial.util.ArgumentUtil;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import net.slimediamond.espial.util.RayTraceUtil;
 import net.slimediamond.espial.util.WorldEditSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class TransactionCommands {
 
@@ -47,37 +40,20 @@ public class TransactionCommands {
                             .color(NamedTextColor.RED));
         }
 
-        Timestamp timestamp;
-        try {
-            timestamp = parseTimestamp(context, type);
-        } catch (IllegalArgumentException e) {
-            context.sendMessage(Espial.prefix.append(Component.text()
-                    .append(Component.text("Could not parse time argument '")
-                            .append(Component.text(
-                                            context.requireOne(CommandParameters.TIME))
-                                    .append(Component.text("'."))))
-                    .color(NamedTextColor.RED)));
-            return CommandResult.success();
-        }
-        UUID uuid =
-                parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
+        ArgumentUtil.Result result = ArgumentUtil.parse(context, type);
+        if (!result.shouldContinue()) return CommandResult.success();
 
         Query.Builder builder = Query.builder()
                 .type(type)
-                .player(uuid)
+                .player(result.getUUID())
                 .sort(sort)
                 .caller(player)
                 .spread(context.hasFlag("s"))
                 .audience(player)
-                .after(timestamp);
+                .after(result.getTimestamp());
 
-        BlockState blockState =
-                parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
-        if (blockState != null) {
-            String blockId =
-                    RegistryTypes.BLOCK_TYPE.get().valueKey(blockState.type())
-                            .formatted();
-            builder.block(blockId);
+        if (result.getBlockId() != null) {
+            builder.block(result.getBlockId());
         }
 
         if (context.hasFlag("worldedit")) { // Range lookup
@@ -115,23 +91,17 @@ public class TransactionCommands {
             Pair<ServerLocation, ServerLocation> selection =
                     PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
 
-            context.sendMessage(Component.text().append(Espial.prefix)
-                    .append(Component.text(
-                                    "Using a cuboid with a range of " + range +
-                                            " blocks for this query.")
-                            .color(NamedTextColor.WHITE)).build());
-
             builder.min(selection.getLeft());
             builder.max(selection.getRight());
         } else {
             // Ray trace block (playing is looking at target)
             // get the block the player is targeting
 
-            Optional<LocatableBlock> result =
+            Optional<LocatableBlock> locatableBlock =
                     RayTraceUtil.getBlockFacingPlayer(player);
 
-            if (result.isPresent()) {
-                LocatableBlock block = result.get();
+            if (locatableBlock.isPresent()) {
+                LocatableBlock block = locatableBlock.get();
 
                 builder.min(block.serverLocation());
             } else {
@@ -149,28 +119,6 @@ public class TransactionCommands {
         }
 
         return CommandResult.success();
-    }
-
-    private static <T> T parseFilter(CommandContext context, String flag,
-                                     Parameter.Value<T> parameter) {
-        return context.hasFlag(flag) ? context.requireOne(parameter) : null;
-    }
-
-    private static Timestamp parseTimestamp(CommandContext context,
-                                            QueryType type) {
-        if (context.hasFlag("time")) {
-            String time = context.requireOne(CommandParameters.TIME);
-            return new Timestamp(DurationParser.parseDurationAndSubtract(time));
-        }
-        if (type != QueryType.LOOKUP) {
-            context.sendMessage(Espial.prefix.append(
-                    Component.text("Defaults used: -t 3d")
-                            .color(NamedTextColor.GRAY)));
-            return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
-        } else {
-            return Timestamp.from(
-                    Instant.ofEpochMilli(0)); // gotta catch 'em all!
-        }
     }
 
     public static class Undo implements CommandExecutor {
