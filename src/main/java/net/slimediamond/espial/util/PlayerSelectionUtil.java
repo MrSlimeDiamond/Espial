@@ -10,7 +10,7 @@ public class PlayerSelectionUtil {
             Player player, int range) {
 
         player.sendMessage(Format.text("Using a cuboid with a range of " +
-                range + "blocks for this query."));
+                range + " blocks for this query."));
 
         Vector3d pos = player.position();
 
