@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
+import net.slimediamond.espial.api.EspialServiceProvider;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.listeners.BlockListeners;
 import net.slimediamond.espial.listeners.EntityListeners;
@@ -52,8 +53,6 @@ public class Espial {
     private ValueReference<EspialConfiguration, CommentedConfigurationNode>
             config;
     private Database database;
-    private EspialService espialService;
-    private TransactionManager transactionManager;
 
     @Inject
     Espial(final PluginContainer container, final Logger logger,
@@ -77,8 +76,7 @@ public class Espial {
         this.config = this.reference.referenceTo(EspialConfiguration.class);
         this.reference.save();
 
-        espialService = new EspialServiceImpl();
-        transactionManager = new TransactionManagerImpl();
+        EspialServiceProvider.setEspialService(new EspialServiceImpl());
 
         database = new Database();
         database.open(this.config.get().jdbc());
@@ -146,11 +144,11 @@ public class Espial {
     }
 
     public EspialService getEspialService() {
-        return espialService;
+        return EspialServiceProvider.getEspialService();
     }
 
     public TransactionManager getTransactionManager() {
-        return transactionManager;
+        return getEspialService().getTransactionManager();
     }
 
     public List<UUID> getInspectingPlayers() {

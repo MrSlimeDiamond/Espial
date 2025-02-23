@@ -82,7 +82,6 @@ tasks.register<Jar>("apiJar") {
     archiveClassifier.set("api")
     from(sourceSets.main.get().output)
     include("net/slimediamond/espial/api/**")
-    include("net/slimediamond/espial/Espial.class")
 }
 
 tasks.build {

@@ -12,8 +12,10 @@ import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
+import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
+import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
@@ -26,6 +28,17 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
+    private TransactionManager transactionManager;
+
+    public EspialServiceImpl() {
+        this.transactionManager = new TransactionManagerImpl();
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
     @Override
     public List<EspialRecord> query(Query query) throws Exception {
         return Espial.getInstance().getDatabase().query(query);

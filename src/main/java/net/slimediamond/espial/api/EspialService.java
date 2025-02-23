@@ -4,6 +4,7 @@ import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
+import net.slimediamond.espial.api.transaction.TransactionManager;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.sql.SQLException;
@@ -17,6 +18,12 @@ import java.util.concurrent.ExecutionException;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public interface EspialService {
+    /**
+     * Get the transaction manager
+     * @return Transaction manager
+     */
+    TransactionManager getTransactionManager();
+
     /**
      * Query a block
      *
