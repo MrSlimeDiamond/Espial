@@ -72,14 +72,14 @@ public class EspialTransactionImpl implements EspialTransaction {
             for (int id : ids) {
                 EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
                 if (record instanceof BlockRecord) {
-                    Espial.getInstance().getEspialService().restoreBlock((BlockRecord)record);
+                    record.restore();
                 }
             }
         } else if (type == QueryType.RESTORE) {
             for (int id : ids) {
                 EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
                 if (record instanceof BlockRecord) {
-                    Espial.getInstance().getEspialService().rollbackBlock((BlockRecord)record);
+                    record.rollback();
                 }
             }
         }
@@ -93,14 +93,14 @@ public class EspialTransactionImpl implements EspialTransaction {
             for (int id : ids) {
                 EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
                 if (record instanceof BlockRecord) {
-                    Espial.getInstance().getEspialService().rollbackBlock((BlockRecord)record);
+                    record.rollback();
                 }
             }
         } else if (type == QueryType.RESTORE) {
             for (int id : ids) {
                 EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
                 if (record instanceof BlockRecord) {
-                    Espial.getInstance().getEspialService().restoreBlock((BlockRecord)record);
+                    record.restore();
                 }
             }
         }

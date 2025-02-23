@@ -32,22 +32,6 @@ public interface EspialService {
     SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception;
 
     /**
-     * Roll back a block action
-     * @param record Record to roll back
-     * @return Status of the rollback
-     * @throws Exception If something goes wrong
-     */
-    TransactionStatus rollbackBlock(BlockRecord record) throws Exception;
-
-    /**
-     * Restore a block action which has been rolled back
-     * @param record Record to restore
-     * @return Status of the restore
-     * @throws Exception If something goes wrong
-     */
-    TransactionStatus restoreBlock(BlockRecord record) throws Exception;
-
-    /**
      * Get the player owner of a block
      * @param x X coordinate of the block
      * @param y Y coordinate of the block

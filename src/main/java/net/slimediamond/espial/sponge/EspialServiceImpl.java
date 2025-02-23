@@ -6,20 +6,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
-import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.util.*;
-import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
 
@@ -53,105 +48,6 @@ public class EspialServiceImpl implements EspialService {
     public SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception {
         Optional<EspialRecord> result =  Espial.getInstance().getDatabase().submit(action);
         return result.<SubmittableResult<? extends EspialRecord>>map(SubmittableResult::new).orElse(null);
-    }
-
-    public TransactionStatus rollbackBlock(BlockRecord record) throws Exception {
-        if (record.isRolledBack()) return TransactionStatus.ALREADY_DONE;
-
-        BlockAction action = (BlockAction) record.getAction();
-
-        // roll back this specific ID to another state
-        if (action.getEventType() == EventTypes.BREAK) {
-            // place the block which was broken at that location
-
-            action.getServerLocation().setBlock(action.getState());
-
-            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-                SignUtil.setSignData(action);
-            }
-
-            Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
-
-            return TransactionStatus.SUCCESS;
-        } if (action.getEventType() == EventTypes.PLACE) {
-            // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
-            // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
-            // (it'll be fine, probably)
-
-            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
-            Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
-            return TransactionStatus.SUCCESS;
-        } else if (action.getEventType() == EventTypes.MODIFY) {
-            // Rolling back a modification action will entail going to its previous state of modification
-            // (if it's present), so let's look for that.
-
-            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-
-                BlockState state = action.getState();
-                action.getServerLocation().setBlock(state);
-
-                List<EspialRecord> records = this.query(Query.builder()
-                        .min(action.getServerLocation())
-                        .build()).stream().filter(a -> !a.isRolledBack()).toList();
-                if (records.size() >= 2) {
-                    SignUtil.setSignData((BlockAction)records.get(1).getAction());
-                }
-
-                Espial.getInstance().getDatabase().setRolledBack(record.getId(), true);
-
-                return TransactionStatus.SUCCESS;
-            }
-        }
-        return TransactionStatus.UNSUPPORTED;
-    }
-
-    public TransactionStatus restoreBlock(BlockRecord record) throws Exception {
-        if (!record.isRolledBack()) return TransactionStatus.ALREADY_DONE;
-        BlockAction action = (BlockAction) record.getAction();
-
-        // roll back this specific ID to another state
-        if (action.getEventType() == EventTypes.PLACE) {
-            // place the block which was broken at that location
-
-            action.getServerLocation().setBlock(action.getState());
-
-            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-                SignUtil.setSignData(action);
-            }
-
-            Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
-
-            return TransactionStatus.SUCCESS;
-        } if (action.getEventType() == EventTypes.BREAK) {
-            // EDGE CASE: We're always going to rollback places to air. This probably will cause no harm
-            // since one must remove a block first before placing a block. But this might cause issues somehow, not sure.
-            // (it'll be fine, probably)
-
-            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
-            Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
-            return TransactionStatus.SUCCESS;
-        } else if (action.getEventType() == EventTypes.MODIFY) {
-            // Rolling back a modification action will entail going to its previous state of modification
-            // (if it's present), so let's look for that.
-
-            if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-
-                BlockState state = action.getState();
-                action.getServerLocation().setBlock(state);
-
-                List<EspialRecord> actions = this.query(Query.builder().min(action.getServerLocation()).build()).stream().filter(a -> a.isRolledBack()).toList();
-
-                if (actions.size() >= 2) {
-                    SignUtil.setSignData((BlockAction)actions.get(1).getAction());
-                }
-
-                Espial.getInstance().getDatabase().setRolledBack(record.getId(), false);
-
-                return TransactionStatus.SUCCESS;
-            }
-
-        }
-        return TransactionStatus.UNSUPPORTED;
     }
 
     @Override
