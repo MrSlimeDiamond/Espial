@@ -58,7 +58,7 @@ public class BlockListeners {
 
     @Listener(order = Order.LATE)
     @IsCancelled(Tristate.FALSE)
-    public void onBlockAction(ChangeBlockEvent.All event) throws Exception {
+    public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
         @Nullable Living living;
         Object source = event.cause().root();
 
@@ -119,6 +119,12 @@ public class BlockListeners {
                     snapshot = transaction.finalReplacement();
                 } else {
                     snapshot = transaction.original();
+                }
+
+                // Only log modifications that are actually useful
+                if (transaction.operation().equals(Operations.MODIFY.get()) &&
+                        !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
+                    return;
                 }
 
                 JsonNBTData jsonNBTData = new JsonNBTData();

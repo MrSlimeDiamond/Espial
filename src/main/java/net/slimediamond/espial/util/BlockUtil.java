@@ -271,6 +271,10 @@ public class BlockUtil {
     private static final HashSet<BlockType> LIQUIDS = builder()
             .add(BlockTypes.WATER, BlockTypes.LAVA)
             .build();
+    public static final HashSet<BlockType> MODIFIABLE = builder()
+            .add(SIGNS).add(BlockTypes.END_PORTAL_FRAME).add(BlockTypes.CAKE)
+            .add(BlockTypes.DAYLIGHT_DETECTOR).add(BlockTypes.NOTE_BLOCK)
+            .build();
 
     public static Builder builder() {
         return new Builder();
