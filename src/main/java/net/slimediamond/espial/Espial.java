@@ -122,13 +122,7 @@ public class Espial {
     }
 
     public void showPluginSplash() {
-        logger.info("⠀⠀⡠⣀⣤⡥⢦⣥⣔⡀⠀⠀");
-        logger.info("⠀⣪⣾⣿⢶⡖⣒⢾⣿⡻⣆⠀   Espial - Version " + container.metadata().version().toString());
-        logger.info("⢄⣿⣿⣳⡞⠉⠉⠱⣮⣿⣿⡎   by SlimeDiamond");
-        logger.info("⠎⣿⣿⣽⣇⡀⠀⢤⣿⣿⣿⠇");
-        logger.info("⠐⠹⣿⣿⣯⣍⣀⣽⣿⣿⢟⠂   HELLO DAVE.");
-        logger.info("⠀⠈⠈⠹⡻⠿⠿⠟⠛⠑⠁⠀");
-        logger.info("");
+        logger.info("Espial - Version {}", container.metadata().version().toString());
     }
 
     public PluginContainer getContainer() {
