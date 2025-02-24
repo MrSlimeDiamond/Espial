@@ -37,6 +37,7 @@ public class Format {
     // TODO: Configurable values
     public static final boolean SHOW_DATE_IN_LOOKUP = false;
     public static final NamedTextColor THEME_COLOR = NamedTextColor.GREEN;
+    public static final NamedTextColor TEXT_COLOR = NamedTextColor.WHITE;
     public static final NamedTextColor TITLE_COLOR = NamedTextColor.GOLD;
     public static final NamedTextColor NAME_COLOR = NamedTextColor.WHITE;
     public static final NamedTextColor STACK_COLOR = NamedTextColor.WHITE;
@@ -73,7 +74,7 @@ public class Format {
     }
 
     public static Component text(String text) {
-        return prefix.append(Component.text(text).color(NamedTextColor.WHITE));
+        return prefix.append(Component.text(text).color(TEXT_COLOR));
     }
 
     public static Component error(String text) {
