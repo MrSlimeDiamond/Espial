@@ -43,117 +43,121 @@ import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
 public class Espial {
-    private static Espial instance;
-    private final PluginContainer container;
-    private final Logger logger;
-    private final ConfigurationReference<CommentedConfigurationNode> reference;
-    private final List<UUID> inspectingPlayers = new ArrayList<>();
-    private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
+  private static Espial instance;
+  private final PluginContainer container;
+  private final Logger logger;
+  private final ConfigurationReference<CommentedConfigurationNode> reference;
+  private final List<UUID> inspectingPlayers = new ArrayList<>();
+  private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
 
-    private ValueReference<EspialConfiguration, CommentedConfigurationNode>
-            config;
-    private Database database;
+  private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
+  private Database database;
 
-    @Inject
-    Espial(final PluginContainer container, final Logger logger,
-           final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode> reference) {
-        this.container = container;
-        this.logger = logger;
-        this.reference = reference;
+  @Inject
+  Espial(
+      final PluginContainer container,
+      final Logger logger,
+      final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode>
+              reference) {
+    this.container = container;
+    this.logger = logger;
+    this.reference = reference;
 
-        instance = this;
-    }
+    instance = this;
+  }
 
-    public static Espial getInstance() {
-        return instance;
-    }
+  public static Espial getInstance() {
+    return instance;
+  }
 
-    @Listener
-    public void onConstructPlugin(final ConstructPluginEvent event)
-            throws ConfigurateException, SQLException {
-        showPluginSplash();
+  @Listener
+  public void onConstructPlugin(final ConstructPluginEvent event)
+      throws ConfigurateException, SQLException {
+    showPluginSplash();
 
-        this.config = this.reference.referenceTo(EspialConfiguration.class);
-        this.reference.save();
+    this.config = this.reference.referenceTo(EspialConfiguration.class);
+    this.reference.save();
 
-        EspialServiceProvider.setEspialService(new EspialServiceImpl());
+    EspialServiceProvider.setEspialService(new EspialServiceImpl());
 
-        database = new Database();
-        database.open(this.config.get().jdbc());
+    database = new Database();
+    database.open(this.config.get().jdbc());
 
-        Component message = Format.component(
-                Component.text()
-                    .append(Component.text(
-                                    "Interactive mode is enabled. Disable it with ")
-                            .color(NamedTextColor.WHITE)
-                            .append(Component.text("/es i")
-                                    .color(NamedTextColor.YELLOW))
-                            .append(Component.text(".").color(NamedTextColor.WHITE))
-                    ));
-        Task task = Task.builder().execute(() ->
-                inspectingPlayers.forEach(uuid -> {
-                    Sponge.server().player(uuid).ifPresent(player -> {
-                        player.sendActionBar(message);
-                    });
-                })).plugin(container).interval(1, TimeUnit.SECONDS).build();
+    Component message =
+        Format.component(
+            Component.text()
+                .append(
+                    Component.text("Interactive mode is enabled. Disable it with ")
+                        .color(NamedTextColor.WHITE)
+                        .append(Component.text("/es i").color(NamedTextColor.YELLOW))
+                        .append(Component.text(".").color(NamedTextColor.WHITE))));
+    Task task =
+        Task.builder()
+            .execute(
+                () ->
+                    inspectingPlayers.forEach(
+                        uuid -> {
+                          Sponge.server()
+                              .player(uuid)
+                              .ifPresent(
+                                  player -> {
+                                    player.sendActionBar(message);
+                                  });
+                        }))
+            .plugin(container)
+            .interval(1, TimeUnit.SECONDS)
+            .build();
 
-        Sponge.asyncScheduler()
-                .submit(task, "Espial interactive mode broadcast");
-    }
+    Sponge.asyncScheduler().submit(task, "Espial interactive mode broadcast");
+  }
 
-    @Listener
-    public void onServerStarting(final StartingEngineEvent<Server> event) {
-        Sponge.eventManager()
-                .registerListeners(container, new BlockListeners());
-        Sponge.eventManager()
-                .registerListeners(container, new InteractListener());
-        Sponge.eventManager()
-                .registerListeners(container, new PlayerLeaveListener());
-        Sponge.eventManager()
-                .registerListeners(container, new SignInteractEvent());
-        Sponge.eventManager()
-                .registerListeners(container, new EntityListeners());
-    }
+  @Listener
+  public void onServerStarting(final StartingEngineEvent<Server> event) {
+    Sponge.eventManager().registerListeners(container, new BlockListeners());
+    Sponge.eventManager().registerListeners(container, new InteractListener());
+    Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
+    Sponge.eventManager().registerListeners(container, new SignInteractEvent());
+    Sponge.eventManager().registerListeners(container, new EntityListeners());
+  }
 
-    @Listener
-    public void onRegisterCommands(
-            final RegisterCommandEvent<Command.Parameterized> event) {
-        Commands.register(this.container, event);
-    }
+  @Listener
+  public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
+    Commands.register(this.container, event);
+  }
 
-    public void showPluginSplash() {
-        logger.info("Espial - Version {}", container.metadata().version().toString());
-    }
+  public void showPluginSplash() {
+    logger.info("Espial - Version {}", container.metadata().version().toString());
+  }
 
-    public PluginContainer getContainer() {
-        return this.container;
-    }
+  public PluginContainer getContainer() {
+    return this.container;
+  }
 
-    public ValueReference<EspialConfiguration, CommentedConfigurationNode> getConfig() {
-        return config;
-    }
+  public ValueReference<EspialConfiguration, CommentedConfigurationNode> getConfig() {
+    return config;
+  }
 
-    public Database getDatabase() {
-        return this.database;
-    }
+  public Database getDatabase() {
+    return this.database;
+  }
 
-    public EspialService getEspialService() {
-        return EspialServiceProvider.getEspialService();
-    }
+  public EspialService getEspialService() {
+    return EspialServiceProvider.getEspialService();
+  }
 
-    public TransactionManager getTransactionManager() {
-        return getEspialService().getTransactionManager();
-    }
+  public TransactionManager getTransactionManager() {
+    return getEspialService().getTransactionManager();
+  }
 
-    public List<UUID> getInspectingPlayers() {
-        return inspectingPlayers;
-    }
+  public List<UUID> getInspectingPlayers() {
+    return inspectingPlayers;
+  }
 
-    public Map<Player, ScheduledTask> getBlockOutlines() {
-        return blockOutlines;
-    }
+  public Map<Player, ScheduledTask> getBlockOutlines() {
+    return blockOutlines;
+  }
 
-    public Logger getLogger() {
-        return this.logger;
-    }
+  public Logger getLogger() {
+    return this.logger;
+  }
 }

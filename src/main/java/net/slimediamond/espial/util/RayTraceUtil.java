@@ -8,12 +8,15 @@ import org.spongepowered.api.world.LocatableBlock;
 import java.util.Optional;
 
 public class RayTraceUtil {
-    public static Optional<LocatableBlock> getBlockFacingPlayer(Player player) {
-        Optional<RayTraceResult<LocatableBlock>> result =
-                RayTrace.block().sourceEyePosition(player).direction(player)
-                        .world(player.serverLocation().world()).limit(4)
-                        .execute();
+  public static Optional<LocatableBlock> getBlockFacingPlayer(Player player) {
+    Optional<RayTraceResult<LocatableBlock>> result =
+        RayTrace.block()
+            .sourceEyePosition(player)
+            .direction(player)
+            .world(player.serverLocation().world())
+            .limit(4)
+            .execute();
 
-        return result.map(RayTraceResult::selectedObject);
-    }
+    return result.map(RayTraceResult::selectedObject);
+  }
 }

@@ -13,131 +13,128 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Optional;
 
-public interface HangingDeathAction
-        extends EntityAction, NBTStorable, Submittable<EntityRecord> {
+public interface HangingDeathAction extends EntityAction, NBTStorable, Submittable<EntityRecord> {
 
-    static Builder builder() {
-        return new Builder();
+  static Builder builder() {
+    return new Builder();
+  }
+
+  EntityType<?> getEntityType();
+
+  default ServerLocation getServerLocation() {
+    return ServerLocation.of(
+        ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
+  }
+
+  class Builder {
+    private EspialActor actor;
+    private EntityType<?> entityType;
+    private int x, y, z;
+    private String world;
+    private EventType eventType;
+    private NBTData nbtData;
+
+    public Builder actor(EspialActor actor) {
+      this.actor = actor;
+      return this;
     }
 
-    EntityType<?> getEntityType();
-
-    default ServerLocation getServerLocation() {
-        return ServerLocation.of(ResourceKey.of(getWorld().split(":")[0],
-                getWorld().split(":")[1]), getX(), getY(), getZ());
+    public Builder entity(EntityType<?> entityType) {
+      this.entityType = entityType;
+      return this;
     }
 
-    class Builder {
-        private EspialActor actor;
-        private EntityType<?> entityType;
-        private int x, y, z;
-        private String world;
-        private EventType eventType;
-        private NBTData nbtData;
-
-        public Builder actor(EspialActor actor) {
-            this.actor = actor;
-            return this;
-        }
-
-        public Builder entity(EntityType<?> entityType) {
-            this.entityType = entityType;
-            return this;
-        }
-
-        public Builder x(int x) {
-            this.x = x;
-            return this;
-        }
-
-        public Builder y(int y) {
-            this.y = y;
-            return this;
-        }
-
-        public Builder z(int z) {
-            this.z = z;
-            return this;
-        }
-
-        public Builder location(ServerLocation location) {
-            this.x = location.blockX();
-            this.y = location.blockY();
-            this.z = location.blockZ();
-            return this;
-        }
-
-        public Builder withNBTData(NBTData nbtData) {
-            this.nbtData = nbtData;
-            return this;
-        }
-
-        public Builder world(String world) {
-            this.world = world;
-            return this;
-        }
-
-        public Builder event(EventType eventType) {
-            this.eventType = eventType;
-            return this;
-        }
-
-        public HangingDeathAction build() {
-            return new HangingDeathAction() {
-
-                @Override
-                public EntityType<?> getEntityType() {
-                    return entityType;
-                }
-
-                @Override
-                public EspialActor getActor() {
-                    return actor;
-                }
-
-                @Override
-                public int getX() {
-                    return x;
-                }
-
-                @Override
-                public int getY() {
-                    return y;
-                }
-
-                @Override
-                public int getZ() {
-                    return z;
-                }
-
-                @Override
-                public String getWorld() {
-                    return world;
-                }
-
-                @Override
-                public EventType getEventType() {
-                    return eventType;
-                }
-
-                @Override
-                public Optional<NBTData> getNBT() {
-                    return Optional.ofNullable(nbtData);
-                }
-
-                @Override
-                public void setNBT(NBTData data) {
-                    nbtData = data;
-                }
-
-                @Override
-                public SubmittableResult<EntityRecord> submit()
-                        throws Exception {
-                    return SubmittableResult.of(
-                            (EntityRecord) Espial.getInstance().getDatabase()
-                                    .submit(this).orElse(null));
-                }
-            };
-        }
+    public Builder x(int x) {
+      this.x = x;
+      return this;
     }
+
+    public Builder y(int y) {
+      this.y = y;
+      return this;
+    }
+
+    public Builder z(int z) {
+      this.z = z;
+      return this;
+    }
+
+    public Builder location(ServerLocation location) {
+      this.x = location.blockX();
+      this.y = location.blockY();
+      this.z = location.blockZ();
+      return this;
+    }
+
+    public Builder withNBTData(NBTData nbtData) {
+      this.nbtData = nbtData;
+      return this;
+    }
+
+    public Builder world(String world) {
+      this.world = world;
+      return this;
+    }
+
+    public Builder event(EventType eventType) {
+      this.eventType = eventType;
+      return this;
+    }
+
+    public HangingDeathAction build() {
+      return new HangingDeathAction() {
+
+        @Override
+        public EntityType<?> getEntityType() {
+          return entityType;
+        }
+
+        @Override
+        public EspialActor getActor() {
+          return actor;
+        }
+
+        @Override
+        public int getX() {
+          return x;
+        }
+
+        @Override
+        public int getY() {
+          return y;
+        }
+
+        @Override
+        public int getZ() {
+          return z;
+        }
+
+        @Override
+        public String getWorld() {
+          return world;
+        }
+
+        @Override
+        public EventType getEventType() {
+          return eventType;
+        }
+
+        @Override
+        public Optional<NBTData> getNBT() {
+          return Optional.ofNullable(nbtData);
+        }
+
+        @Override
+        public void setNBT(NBTData data) {
+          nbtData = data;
+        }
+
+        @Override
+        public SubmittableResult<EntityRecord> submit() throws Exception {
+          return SubmittableResult.of(
+              (EntityRecord) Espial.getInstance().getDatabase().submit(this).orElse(null));
+        }
+      };
+    }
+  }
 }

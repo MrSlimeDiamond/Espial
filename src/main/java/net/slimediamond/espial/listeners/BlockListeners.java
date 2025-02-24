@@ -34,165 +34,169 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockListeners {
-    @Listener(order = Order.EARLY)
-    public void preBlockAction(ChangeBlockEvent.Pre event) throws Exception {
-        if (event.cause().root() instanceof Player player) {
-            if (Espial.getInstance().getInspectingPlayers()
-                    .contains(player.profile().uuid())) {
+  @Listener(order = Order.EARLY)
+  public void preBlockAction(ChangeBlockEvent.Pre event) throws Exception {
+    if (event.cause().root() instanceof Player player) {
+      if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
 
-                event.setCancelled(true);
+        event.setCancelled(true);
 
-                for (ServerLocation location : event.locations()) {
-                    Query.builder()
-                            .type(QueryType.LOOKUP)
-                            .min(location)
-                            .sort(Sort.REVERSE_CHRONOLOGICAL)
-                            .caller(player)
-                            .audience(player)
-                            .spread(true)
-                            .build().submit();
-                }
-            }
+        for (ServerLocation location : event.locations()) {
+          Query.builder()
+              .type(QueryType.LOOKUP)
+              .min(location)
+              .sort(Sort.REVERSE_CHRONOLOGICAL)
+              .caller(player)
+              .audience(player)
+              .spread(true)
+              .build()
+              .submit();
         }
+      }
+    }
+  }
+
+  @Listener(order = Order.LATE)
+  @IsCancelled(Tristate.FALSE)
+  public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
+    @Nullable Living living;
+    Object source = event.cause().root();
+
+    if (event.cause().root() instanceof InteractBlockEvent.Primary) {
+      source = ((InteractBlockEvent.Primary) event.cause().root()).source();
+    } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
+      source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
     }
 
-    @Listener(order = Order.LATE)
-    @IsCancelled(Tristate.FALSE)
-    public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
-        @Nullable Living living;
-        Object source = event.cause().root();
+    if (source instanceof Player player) {
+      if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
 
-        if (event.cause().root() instanceof InteractBlockEvent.Primary) {
-            source = ((InteractBlockEvent.Primary) event.cause()
-                    .root()).source();
-        } else if (event.cause()
-                .root() instanceof InteractBlockEvent.Secondary) {
-            source = ((InteractBlockEvent.Secondary) event.cause()
-                    .root()).source();
-        }
+        event.setCancelled(true);
 
-        if (source instanceof Player player) {
-            if (Espial.getInstance().getInspectingPlayers()
-                    .contains(player.profile().uuid())) {
+        BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
 
-                event.setCancelled(true);
+        Query.builder()
+            .type(QueryType.LOOKUP)
+            .min(block.location().get())
+            .caller(player)
+            .sort(Sort.REVERSE_CHRONOLOGICAL)
+            .audience(player)
+            .spread(true)
+            .build()
+            .submit();
+        return;
+      }
+    }
 
-                BlockSnapshot block =
-                        event.transactions().stream().findAny().get()
-                                .defaultReplacement();
+    if (source instanceof Living) {
+      living = (Living) source;
+    } else {
+      if (!Espial.getInstance().getConfig().get().logServerChanges()) {
+        return;
+      }
+      living = null; // Server action
+    }
 
-                Query.builder()
-                        .type(QueryType.LOOKUP)
-                        .min(block.location().get())
-                        .caller(player)
-                        .sort(Sort.REVERSE_CHRONOLOGICAL)
-                        .audience(player)
-                        .spread(true)
-                        .build().submit();
+    event
+        .transactions()
+        .forEach(
+            transaction -> {
+              // These are almost always useless, and just flood the database.
+              // It's stuff like "this water spread"
+
+              if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) {
                 return;
-            }
-        }
+              }
 
-        if (source instanceof Living) {
-            living = (Living) source;
-        } else {
-            if (!Espial.getInstance().getConfig().get().logServerChanges()) {
-                return;
-            }
-            living = null; // Server action
-        }
-
-        event.transactions().forEach(transaction -> {
-            // These are almost always useless, and just flood the database.
-            // It's stuff like "this water spread"
-
-            if (transaction.operation().equals(Operations.MODIFY.get()) &&
-                    living == null) {
-                return;
-            }
-
-            try {
+              try {
                 EventType type = EventTypes.fromSponge(transaction.operation());
                 BlockSnapshot snapshot;
 
                 if (transaction.operation().equals(Operations.PLACE.get())) {
-                    snapshot = transaction.finalReplacement();
+                  snapshot = transaction.finalReplacement();
                 } else {
-                    snapshot = transaction.original();
+                  snapshot = transaction.original();
                 }
 
                 // Only log modifications that are actually useful
-                if (transaction.operation().equals(Operations.MODIFY.get()) &&
-                        !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
-                    return;
+                if (transaction.operation().equals(Operations.MODIFY.get())
+                    && !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
+                  return;
                 }
 
                 JsonNBTData jsonNBTData = new JsonNBTData();
 
                 if (BlockUtil.SIGNS.contains(snapshot.state().type())) {
-                    snapshot.createArchetype().ifPresent(blockEntity -> {
-                        List<Component> frontComponents = null;
-                        List<Component> backComponents = null;
+                  snapshot
+                      .createArchetype()
+                      .ifPresent(
+                          blockEntity -> {
+                            List<Component> frontComponents = null;
+                            List<Component> backComponents = null;
 
-                        if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
-                            frontComponents =
-                                    blockEntity.get(Keys.SIGN_FRONT_TEXT)
-                                            .map(text -> new ArrayList<>(
-                                                    text.lines().get()))
-                                            .orElseGet(ArrayList::new);
-                        }
+                            if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
+                              frontComponents =
+                                  blockEntity
+                                      .get(Keys.SIGN_FRONT_TEXT)
+                                      .map(text -> new ArrayList<>(text.lines().get()))
+                                      .orElseGet(ArrayList::new);
+                            }
 
-                        if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
-                            backComponents =
-                                    blockEntity.get(Keys.SIGN_BACK_TEXT)
-                                            .map(text -> new ArrayList<>(
-                                                    text.lines().get()))
-                                            .orElseGet(ArrayList::new);
-                        }
+                            if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
+                              backComponents =
+                                  blockEntity
+                                      .get(Keys.SIGN_BACK_TEXT)
+                                      .map(text -> new ArrayList<>(text.lines().get()))
+                                      .orElseGet(ArrayList::new);
+                            }
 
-                        List<String> frontText = null;
-                        List<String> backText = null;
+                            List<String> frontText = null;
+                            List<String> backText = null;
 
-                        if (frontComponents != null) {
-                            frontText = frontComponents.stream()
-                                    .map(component -> GsonComponentSerializer.gson()
-                                            .serialize(component)).toList();
-                        }
+                            if (frontComponents != null) {
+                              frontText =
+                                  frontComponents.stream()
+                                      .map(
+                                          component ->
+                                              GsonComponentSerializer.gson().serialize(component))
+                                      .toList();
+                            }
 
-                        if (backComponents != null) {
-                            backText = backComponents.stream()
-                                    .map(component -> GsonComponentSerializer.gson()
-                                            .serialize(component)).toList();
-                        }
+                            if (backComponents != null) {
+                              backText =
+                                  backComponents.stream()
+                                      .map(
+                                          component ->
+                                              GsonComponentSerializer.gson().serialize(component))
+                                      .toList();
+                            }
 
-                        if (frontComponents != null && backComponents != null) {
-                            jsonNBTData.setSignData(
-                                    new JsonSignData(frontText, backText));
-                        }
-                    });
+                            if (frontComponents != null && backComponents != null) {
+                              jsonNBTData.setSignData(new JsonSignData(frontText, backText));
+                            }
+                          });
                 }
 
                 EspialActor actor = new EspialActorImpl(living);
 
-                BlockAction.Builder builder = BlockAction.builder()
-                        .blockId(snapshot.state().type()
-                                .key(RegistryTypes.BLOCK_TYPE).formatted())
+                BlockAction.Builder builder =
+                    BlockAction.builder()
+                        .blockId(snapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted())
                         .event(type)
                         .actor(actor)
                         .event(EventTypes.fromSponge(transaction.operation()))
                         .location(snapshot.location().get())
-                        .world(snapshot.location().get().worldKey()
-                                .formatted());
+                        .world(snapshot.location().get().worldKey().formatted());
 
                 if (NBTApplier.update(jsonNBTData, snapshot.state())) {
-                    builder.withNBTData(jsonNBTData);
+                  builder.withNBTData(jsonNBTData);
                 }
 
                 builder.build().submit();
 
-            } catch (Exception e) {
+              } catch (Exception e) {
                 throw new RuntimeException(e);
-            }
-        });
-    }
+              }
+            });
+  }
 }

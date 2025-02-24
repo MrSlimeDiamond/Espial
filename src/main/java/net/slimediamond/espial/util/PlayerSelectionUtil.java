@@ -6,27 +6,24 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3d;
 
 public class PlayerSelectionUtil {
-    public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(
-            Player player, int range) {
+  public static Pair<ServerLocation, ServerLocation> getCuboidAroundPlayer(
+      Player player, int range) {
 
-        player.sendMessage(Format.text("Using a cuboid with a range of " +
-                range + " blocks for this query."));
+    player.sendMessage(
+        Format.text("Using a cuboid with a range of " + range + " blocks for this query."));
 
-        Vector3d pos = player.position();
+    Vector3d pos = player.position();
 
-        double minX = pos.x() - range;
-        double minY = pos.y() - range;
-        double minZ = pos.z() - range;
+    double minX = pos.x() - range;
+    double minY = pos.y() - range;
+    double minZ = pos.z() - range;
 
-        double maxX = pos.x() + range;
-        double maxY = pos.y() + range;
-        double maxZ = pos.z() + range;
+    double maxX = pos.x() + range;
+    double maxY = pos.y() + range;
+    double maxZ = pos.z() + range;
 
-        return Pair.of(
-                ServerLocation.of(player.serverLocation().world(),
-                        new Vector3d(minX, minY, minZ)),
-                ServerLocation.of(player.serverLocation().world(),
-                        new Vector3d(maxX, maxY, maxZ))
-        );
-    }
+    return Pair.of(
+        ServerLocation.of(player.serverLocation().world(), new Vector3d(minX, minY, minZ)),
+        ServerLocation.of(player.serverLocation().world(), new Vector3d(maxX, maxY, maxZ)));
+  }
 }

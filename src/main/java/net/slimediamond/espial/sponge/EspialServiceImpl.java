@@ -32,163 +32,152 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
-    private TransactionManager transactionManager;
+  private TransactionManager transactionManager;
 
-    public EspialServiceImpl() {
-        this.transactionManager = new TransactionManagerImpl();
+  public EspialServiceImpl() {
+    this.transactionManager = new TransactionManagerImpl();
+  }
+
+  @Override
+  public TransactionManager getTransactionManager() {
+    return transactionManager;
+  }
+
+  @Override
+  public List<EspialRecord> query(Query query) throws Exception {
+    return Espial.getInstance().getDatabase().query(query);
+  }
+
+  @Override
+  public SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception {
+    List<EspialRecord> result = this.query(query);
+    List<EspialRecord> actions = new ArrayList<>(result);
+    if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
+      actions.sort(Comparator.comparing(EspialRecord::getTimestamp).reversed());
+    } else if (query.getSort() == Sort.CHRONOLOGICAL) {
+      actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
     }
 
-    @Override
-    public TransactionManager getTransactionManager() {
-        return transactionManager;
+    StringBuilder argsPreview = new StringBuilder();
+
+    if (query.getPlayerUUID() != null) {
+      argsPreview
+          .append("Player: ")
+          .append(
+              Sponge.server().userManager().load(query.getPlayerUUID()).get().get().name()); // what
     }
 
-    @Override
-    public List<EspialRecord> query(Query query) throws Exception {
-        return Espial.getInstance().getDatabase().query(query);
+    if (query.getBlockId() != null) {
+      if (!argsPreview.isEmpty()) argsPreview.append(" ");
+      argsPreview.append("Block: ").append(query.getBlockId());
     }
 
-    @Override
-    public SubmittableResult<List<EspialRecord>> submitQuery(Query query)
-            throws Exception {
-        List<EspialRecord> result = this.query(query);
-        List<EspialRecord> actions = new ArrayList<>(result);
-        if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
-            actions.sort(Comparator.comparing(EspialRecord::getTimestamp)
-                    .reversed());
-        } else if (query.getSort() == Sort.CHRONOLOGICAL) {
-            actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
+    if (!Objects.equals(query.getTimestamp(), Timestamp.from(Instant.ofEpochMilli(0)))
+        && query.getTimestamp() != null) {
+      if (!argsPreview.isEmpty()) argsPreview.append(" ");
+      argsPreview.append("After: ").append(Format.date(query.getTimestamp()));
+    }
+
+    // TODO: Asynchronous processing, and probably some queue
+    this.process(actions, query, argsPreview.toString());
+
+    return SubmittableResult.of(actions);
+  }
+
+  @Override
+  public SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception {
+    Optional<EspialRecord> result = Espial.getInstance().getDatabase().submit(action);
+    return result
+        .<SubmittableResult<? extends EspialRecord>>map(SubmittableResult::new)
+        .orElse(null);
+  }
+
+  @Override
+  public Optional<User> getBlockOwner(int x, int y, int z)
+      throws SQLException, ExecutionException, InterruptedException {
+    return Espial.getInstance().getDatabase().getBlockOwner(x, y, z);
+  }
+
+  private void process(List<EspialRecord> records, Query query, String argsPreview)
+      throws Exception {
+    if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
+      String msg = "processed";
+
+      switch (query.getType()) {
+        case ROLLBACK -> msg = "rolled back";
+        case RESTORE -> msg = "restored";
+      }
+
+      List<Integer> success = new ArrayList<>();
+      int skipped = 0;
+
+      for (EspialRecord record : records) {
+        TransactionStatus status;
+        switch (query.getType()) {
+          case ROLLBACK -> status = record.rollback();
+          case RESTORE -> status = record.restore();
+          default -> status = TransactionStatus.UNSUPPORTED;
         }
 
-        StringBuilder argsPreview = new StringBuilder();
-
-        if (query.getPlayerUUID() != null) {
-            argsPreview.append("Player: ")
-                    .append(Sponge.server().userManager()
-                            .load(query.getPlayerUUID()).get().get().name()); // what
-        }
-
-        if (query.getBlockId() != null) {
-            if (!argsPreview.isEmpty()) argsPreview.append(" ");
-            argsPreview.append("Block: ").append(query.getBlockId());
-        }
-
-        if (!Objects.equals(query.getTimestamp(),
-                Timestamp.from(Instant.ofEpochMilli(0))) && query.getTimestamp() != null) {
-            if (!argsPreview.isEmpty()) argsPreview.append(" ");
-            argsPreview.append("After: ").append(Format.date(query.getTimestamp()));
-        }
-
-        // TODO: Asynchronous processing, and probably some queue
-        this.process(actions, query, argsPreview.toString());
-
-        return SubmittableResult.of(actions);
-    }
-
-    @Override
-    public SubmittableResult<? extends EspialRecord> submitAction(Action action)
-            throws Exception {
-        Optional<EspialRecord> result =
-                Espial.getInstance().getDatabase().submit(action);
-        return result.<SubmittableResult<? extends EspialRecord>>map(
-                SubmittableResult::new).orElse(null);
-    }
-
-    @Override
-    public Optional<User> getBlockOwner(int x, int y, int z)
-            throws SQLException, ExecutionException, InterruptedException {
-        return Espial.getInstance().getDatabase().getBlockOwner(x, y, z);
-    }
-
-
-    private void process(List<EspialRecord> records, Query query,
-                         String argsPreview)
-            throws Exception {
-        if (query.getType() == QueryType.ROLLBACK ||
-                query.getType() == QueryType.RESTORE) {
-            String msg = "processed";
-
-            switch (query.getType()) {
-                case ROLLBACK -> msg = "rolled back";
-                case RESTORE -> msg = "restored";
-            }
-
-            List<Integer> success = new ArrayList<>();
-            int skipped = 0;
-
-            for (EspialRecord record : records) {
-                TransactionStatus status;
-                switch (query.getType()) {
-                    case ROLLBACK -> status = record.rollback();
-                    case RESTORE -> status = record.restore();
-                    default -> status = TransactionStatus.UNSUPPORTED;
-                }
-
-                if (status == TransactionStatus.SUCCESS) {
-                    success.add(record.getId());
-                } else {
-                    skipped++;
-                }
-            }
-
-            TextComponent.Builder builder = Component.text();
-
-            if (!success.isEmpty()) {
-                builder.append(Component.text(success.size()))
-                        .append(Component.text(" action(s) were "))
-                        .append(Component.text(msg))
-                        .color(NamedTextColor.WHITE);
-
-                // Commit a transaction but only if we will use it later
-                // for example: lookups won't be added here, but rollbacks will
-                if (query.getType().isReversible()) {
-                    EspialTransaction transaction =
-                            new EspialTransactionImpl(success, query);
-                    Espial.getInstance().getTransactionManager()
-                            .add(transaction.getUser(), transaction);
-                }
-
-            } else {
-                builder.append(Component.text("Nothing was " + msg)
-                        .color(NamedTextColor.WHITE));
-            }
-
-            if (skipped != 0) {
-                builder.append(Component.text(", with " + skipped + " skipped")
-                        .color(NamedTextColor.WHITE));
-            }
-
-            builder.append(Component.text(".").color(NamedTextColor.WHITE));
-
-            query.getAudience().sendMessage(Format.component(builder.build()));
-        } else if (query.getType() == QueryType.LOOKUP) {
-            List<Component> contents =
-                    Format.generateLookupContents(records,
-                            query.isSpread());
-
-            if (contents.isEmpty()) {
-                query.getAudience().sendMessage(Format.error("No data was " +
-                        "found."));
-
-                return;
-            }
-
-          PaginationList.Builder builder = PaginationList.builder()
-                  .title(Format.title("Lookup results"))
-                  .padding(Format.PADDING);
-
-          if (!argsPreview.isEmpty()) {
-              builder.header(
-                      Format.truncate(Component.text("Parameters: ")
-                              .color(Format.HINT_COLOR)
-                              .append(Component.text(argsPreview).color(NamedTextColor.GRAY))));
-          }
-          builder.contents(contents).sendTo(query.getAudience());
-
+        if (status == TransactionStatus.SUCCESS) {
+          success.add(record.getId());
         } else {
-            // Some other query type that we don't currently support
-            query.getAudience().sendMessage(Format.error("This query type is " +
-                    "not supported."));
+          skipped++;
         }
+      }
+
+      TextComponent.Builder builder = Component.text();
+
+      if (!success.isEmpty()) {
+        builder
+            .append(Component.text(success.size()))
+            .append(Component.text(" action(s) were "))
+            .append(Component.text(msg))
+            .color(NamedTextColor.WHITE);
+
+        // Commit a transaction but only if we will use it later
+        // for example: lookups won't be added here, but rollbacks will
+        if (query.getType().isReversible()) {
+          EspialTransaction transaction = new EspialTransactionImpl(success, query);
+          Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+        }
+
+      } else {
+        builder.append(Component.text("Nothing was " + msg).color(NamedTextColor.WHITE));
+      }
+
+      if (skipped != 0) {
+        builder.append(
+            Component.text(", with " + skipped + " skipped").color(NamedTextColor.WHITE));
+      }
+
+      builder.append(Component.text(".").color(NamedTextColor.WHITE));
+
+      query.getAudience().sendMessage(Format.component(builder.build()));
+    } else if (query.getType() == QueryType.LOOKUP) {
+      List<Component> contents = Format.generateLookupContents(records, query.isSpread());
+
+      if (contents.isEmpty()) {
+        query.getAudience().sendMessage(Format.error("No data was found."));
+
+        return;
+      }
+
+      PaginationList.Builder builder =
+          PaginationList.builder().title(Format.title("Lookup results")).padding(Format.PADDING);
+
+      if (!argsPreview.isEmpty()) {
+        builder.header(
+            Format.truncate(
+                Component.text("Parameters: ")
+                    .color(Format.HINT_COLOR)
+                    .append(Component.text(argsPreview).color(NamedTextColor.GRAY))));
+      }
+      builder.contents(contents).sendTo(query.getAudience());
+
+    } else {
+      // Some other query type that we don't currently support
+      query.getAudience().sendMessage(Format.error("This query type is not supported."));
     }
+  }
 }

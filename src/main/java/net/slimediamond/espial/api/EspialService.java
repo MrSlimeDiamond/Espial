@@ -18,46 +18,46 @@ import java.util.concurrent.ExecutionException;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public interface EspialService {
-    /**
-     * Get the transaction manager
-     * @return Transaction manager
-     */
-    TransactionManager getTransactionManager();
+  /**
+   * Get the transaction manager
+   *
+   * @return Transaction manager
+   */
+  TransactionManager getTransactionManager();
 
-    /**
-     * Query a block
-     *
-     * @param query Query
-     */
-    List<EspialRecord> query(Query query) throws Exception;
+  /**
+   * Query a block
+   *
+   * @param query Query
+   */
+  List<EspialRecord> query(Query query) throws Exception;
 
-    /**
-     * Submit a query
-     *
-     * @param query The query to be submitted
-     */
-    SubmittableResult<List<EspialRecord>> submitQuery(Query query)
-            throws Exception;
+  /**
+   * Submit a query
+   *
+   * @param query The query to be submitted
+   */
+  SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception;
 
-    /**
-     * Get the player owner of a block
-     *
-     * @param x X coordinate of the block
-     * @param y Y coordinate of the block
-     * @param z Z coordinate of the block
-     * @return {@link Optional} of a Sponge {@link User} (player) who is the block owner if we can locate one.
-     * @throws SQLException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    Optional<User> getBlockOwner(int x, int y, int z)
-            throws SQLException, ExecutionException, InterruptedException;
+  /**
+   * Get the player owner of a block
+   *
+   * @param x X coordinate of the block
+   * @param y Y coordinate of the block
+   * @param z Z coordinate of the block
+   * @return {@link Optional} of a Sponge {@link User} (player) who is the block owner if we can
+   *     locate one.
+   * @throws SQLException
+   * @throws ExecutionException
+   * @throws InterruptedException
+   */
+  Optional<User> getBlockOwner(int x, int y, int z)
+      throws SQLException, ExecutionException, InterruptedException;
 
-    /**
-     * Submit an action to be inserted into the database
-     *
-     * @param action Action to submit
-     */
-    SubmittableResult<? extends EspialRecord> submitAction(Action action)
-            throws Exception;
+  /**
+   * Submit an action to be inserted into the database
+   *
+   * @param action Action to submit
+   */
+  SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception;
 }

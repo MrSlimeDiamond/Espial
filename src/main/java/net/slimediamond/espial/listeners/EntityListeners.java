@@ -16,56 +16,51 @@ import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.item.ItemTypes;
 
-
 public class EntityListeners {
-    @Listener(order = Order.POST)
-    public void onEntityDestruct(DestructEntityEvent event) {
-        if (event.cause().root() instanceof Player player) {
-            // Hanging entity death (like an item frame)
-            if (event.entity() instanceof Hanging hanging) {
-                try {
-                    NBTData nbtData =
-                            new JsonNBTData(hanging.hangingDirection().get(),
-                                    null, null, false);
+  @Listener(order = Order.POST)
+  public void onEntityDestruct(DestructEntityEvent event) {
+    if (event.cause().root() instanceof Player player) {
+      // Hanging entity death (like an item frame)
+      if (event.entity() instanceof Hanging hanging) {
+        try {
+          NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
 
-                    HangingDeathAction.builder()
-                            .actor(new EspialActorImpl(player))
-                            .entity(hanging.type())
-                            .world(event.entity().serverLocation().worldKey()
-                                    .formatted())
-                            .location(event.entity().serverLocation())
-                            .event(EventTypes.HANGING_DEATH)
-                            .withNBTData(nbtData)
-                            .build().submit();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
+          HangingDeathAction.builder()
+              .actor(new EspialActorImpl(player))
+              .entity(hanging.type())
+              .world(event.entity().serverLocation().worldKey().formatted())
+              .location(event.entity().serverLocation())
+              .event(EventTypes.HANGING_DEATH)
+              .withNBTData(nbtData)
+              .build()
+              .submit();
+        } catch (Exception e) {
+          throw new RuntimeException(e);
         }
+      }
     }
+  }
 
-    @Listener(order = Order.POST)
-    public void onAttackEntity(AttackEntityEvent event) throws Exception {
-        // log item frame contents when it's removed
-        if (event.entity() instanceof ItemFrame itemFrame) {
-            if (event.cause().root() instanceof DamageSource damageSource) {
-                if (damageSource.indirectSource().isPresent()) {
-                    if (damageSource.indirectSource()
-                            .get() instanceof Player player) {
-                        if (!itemFrame.item().get().type()
-                                .equals(ItemTypes.AIR.get())) {
-                            ItemFrameRemoveAction.builder()
-                                    .itemType(itemFrame.item().get().type())
-                                    .actor(new EspialActorImpl(player))
-                                    .location(itemFrame.serverLocation())
-                                    .world(event.entity().serverLocation()
-                                            .worldKey().formatted())
-                                    .event(EventTypes.ITEM_FRAME_REMOVE)
-                                    .build().submit();
-                        }
-                    }
-                }
+  @Listener(order = Order.POST)
+  public void onAttackEntity(AttackEntityEvent event) throws Exception {
+    // log item frame contents when it's removed
+    if (event.entity() instanceof ItemFrame itemFrame) {
+      if (event.cause().root() instanceof DamageSource damageSource) {
+        if (damageSource.indirectSource().isPresent()) {
+          if (damageSource.indirectSource().get() instanceof Player player) {
+            if (!itemFrame.item().get().type().equals(ItemTypes.AIR.get())) {
+              ItemFrameRemoveAction.builder()
+                  .itemType(itemFrame.item().get().type())
+                  .actor(new EspialActorImpl(player))
+                  .location(itemFrame.serverLocation())
+                  .world(event.entity().serverLocation().worldKey().formatted())
+                  .event(EventTypes.ITEM_FRAME_REMOVE)
+                  .build()
+                  .submit();
             }
+          }
         }
+      }
     }
+  }
 }

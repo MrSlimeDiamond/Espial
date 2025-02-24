@@ -1,17 +1,17 @@
 package net.slimediamond.espial.api.query;
 
 public enum QueryType {
-    LOOKUP(false),
-    ROLLBACK(true),
-    RESTORE(true);
+  LOOKUP(false),
+  ROLLBACK(true),
+  RESTORE(true);
 
-    private final boolean reversible;
+  private final boolean reversible;
 
-    QueryType(boolean reversible) {
-        this.reversible = reversible;
-    }
+  QueryType(boolean reversible) {
+    this.reversible = reversible;
+  }
 
-    public boolean isReversible() {
-        return this.reversible;
-    }
+  public boolean isReversible() {
+    return this.reversible;
+  }
 }

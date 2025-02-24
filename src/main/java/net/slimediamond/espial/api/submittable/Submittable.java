@@ -6,8 +6,6 @@ package net.slimediamond.espial.api.submittable;
  * @author Findlay Richardson (SlimeDiamond)
  */
 public interface Submittable<T> {
-    /**
-     * Submit something to be done
-     */
-    SubmittableResult<T> submit() throws Exception;
+  /** Submit something to be done */
+  SubmittableResult<T> submit() throws Exception;
 }

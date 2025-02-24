@@ -25,61 +25,59 @@ import java.util.Comparator;
 import java.util.List;
 
 public class NearbySignsCommand implements CommandExecutor {
-    @Override
-    public CommandResult execute(CommandContext context)
-            throws CommandException {
-        // FIXME: Query only for signs in the database
-        if (context.cause().root() instanceof Player player) {
-            int range;
-            if (context.hasFlag("range")) {
-                range = context.requireOne(CommandParameters.LOOKUP_RANGE);
-            } else {
-                // Default to 5 blocks
-                context.sendMessage(Format.defaults("-r 5"));
-                range = 5;
-            }
+  @Override
+  public CommandResult execute(CommandContext context) throws CommandException {
+    // FIXME: Query only for signs in the database
+    if (context.cause().root() instanceof Player player) {
+      int range;
+      if (context.hasFlag("range")) {
+        range = context.requireOne(CommandParameters.LOOKUP_RANGE);
+      } else {
+        // Default to 5 blocks
+        context.sendMessage(Format.defaults("-r 5"));
+        range = 5;
+      }
 
-            Pair<ServerLocation, ServerLocation> locations =
-                    PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
-            try {
-                Query query = Query.builder()
-                        .type(QueryType.LOOKUP)
-                        .min(locations.getLeft())
-                        .max(locations.getRight())
-                        .caller(player)
-                        .audience(player)
-                        .build();
+      Pair<ServerLocation, ServerLocation> locations =
+          PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+      try {
+        Query query =
+            Query.builder()
+                .type(QueryType.LOOKUP)
+                .min(locations.getLeft())
+                .max(locations.getRight())
+                .caller(player)
+                .audience(player)
+                .build();
 
-                List<EspialRecord> signs =
-                        Espial.getInstance().getEspialService().query(query)
-                                .stream()
-                                .filter(record -> record instanceof BlockRecord)
-                                .filter(record -> BlockUtil.SIGNS.contains(
-                                        ((BlockAction) record.getAction()).getBlockType()))
-                                .sorted(Comparator.comparing(EspialRecord::getTimestamp).reversed())
-                                .toList();
+        List<EspialRecord> signs =
+            Espial.getInstance().getEspialService().query(query).stream()
+                .filter(record -> record instanceof BlockRecord)
+                .filter(
+                    record ->
+                        BlockUtil.SIGNS.contains(((BlockAction) record.getAction()).getBlockType()))
+                .sorted(Comparator.comparing(EspialRecord::getTimestamp).reversed())
+                .toList();
 
-                List<Component> contents =
-                        Format.generateLookupContents(signs, true);
+        List<Component> contents = Format.generateLookupContents(signs, true);
 
-                if (contents.isEmpty()) {
-                    context.sendMessage(Format.error("Could not find any " +
-                            "signs nearby."));
-                    return CommandResult.success();
-                }
-
-                PaginationList.builder()
-                        .title(Format.title("Nearby Signs"))
-                        .padding(Format.PADDING)
-                        .contents(contents)
-                        .sendTo(player);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            context.sendMessage(Format.playersOnly());
+        if (contents.isEmpty()) {
+          context.sendMessage(Format.error("Could not find any signs nearby."));
+          return CommandResult.success();
         }
 
-        return CommandResult.success();
+        PaginationList.builder()
+            .title(Format.title("Nearby Signs"))
+            .padding(Format.PADDING)
+            .contents(contents)
+            .sendTo(player);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      context.sendMessage(Format.playersOnly());
     }
+
+    return CommandResult.success();
+  }
 }

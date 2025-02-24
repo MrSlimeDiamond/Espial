@@ -25,80 +25,90 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class SignInfoCommand implements CommandExecutor {
-    @Override
-    public CommandResult execute(CommandContext context)
-            throws CommandException {
-        if (context.cause().root() instanceof Player player) {
-            RayTraceUtil.getBlockFacingPlayer(player).ifPresentOrElse(block -> {
+  @Override
+  public CommandResult execute(CommandContext context) throws CommandException {
+    if (context.cause().root() instanceof Player player) {
+      RayTraceUtil.getBlockFacingPlayer(player)
+          .ifPresentOrElse(
+              block -> {
                 if (BlockUtil.SIGNS.contains(block.blockState().type())) {
-                    // player is looking at a sign
-                    ServerLocation location = block.serverLocation();
-                    String blockId = RegistryTypes.BLOCK_TYPE.get()
-                            .valueKey(block.blockState().type()).formatted();
+                  // player is looking at a sign
+                  ServerLocation location = block.serverLocation();
+                  String blockId =
+                      RegistryTypes.BLOCK_TYPE
+                          .get()
+                          .valueKey(block.blockState().type())
+                          .formatted();
 
-                    try {
-                        Query query = Query.builder()
-                                .type(QueryType.LOOKUP)
-                                .min(location)
-                                .block(blockId)
-                                .caller(player)
-                                .audience(player)
-                                .build();
+                  try {
+                    Query query =
+                        Query.builder()
+                            .type(QueryType.LOOKUP)
+                            .min(location)
+                            .block(blockId)
+                            .caller(player)
+                            .audience(player)
+                            .build();
 
-                        List<BlockRecord> blocks =
-                                Espial.getInstance().getEspialService()
-                                        .query(query)
-                                        .stream()
-                                        .filter(record -> record instanceof BlockRecord)
-                                        .map(record -> (BlockRecord) record) // Cast safely
-                                        .filter(blockRecord -> BlockUtil.SIGNS.contains(
-                                                ((BlockAction) blockRecord.getAction()).getBlockType()))
-                                        .toList();
+                    List<BlockRecord> blocks =
+                        Espial.getInstance().getEspialService().query(query).stream()
+                            .filter(record -> record instanceof BlockRecord)
+                            .map(record -> (BlockRecord) record) // Cast safely
+                            .filter(
+                                blockRecord ->
+                                    BlockUtil.SIGNS.contains(
+                                        ((BlockAction) blockRecord.getAction()).getBlockType()))
+                            .toList();
 
-                        BlockRecord target = blocks.get(0); // top index
+                    BlockRecord target = blocks.get(0); // top index
 
-                        Component name =
-                                Format.getDisplayName(target.getAction());
+                    Component name = Format.getDisplayName(target.getAction());
 
-                        var builder = Component.text()
-                                .append(Format.component(Component.text(
-                                                "That sign was last modified by ")
+                    var builder =
+                        Component.text()
+                            .append(
+                                Format.component(
+                                    Component.text("That sign was last modified by ")
                                         .color(NamedTextColor.WHITE)
-                                        .append(name.color(
-                                                NamedTextColor.YELLOW))));
+                                        .append(name.color(NamedTextColor.YELLOW))));
 
-                        var info = Component.text().append(Format.prefix);
+                    var info = Component.text().append(Format.prefix);
 
-                        info.append(Component.newline());
-                        info.append(Component.text("Date: ")
-                                .color(NamedTextColor.DARK_AQUA)
-                                .append(Component.text(Format.date(target.getTimestamp()))
-                                        .color(NamedTextColor.WHITE)));
+                    info.append(Component.newline());
+                    info.append(
+                        Component.text("Date: ")
+                            .color(NamedTextColor.DARK_AQUA)
+                            .append(
+                                Component.text(Format.date(target.getTimestamp()))
+                                    .color(NamedTextColor.WHITE)));
 
-                        ((BlockAction) target.getAction()).getNBT()
-                                .flatMap(NBTDataParser::parseNBT)
-                                .ifPresent(info::append);
+                    ((BlockAction) target.getAction())
+                        .getNBT()
+                        .flatMap(NBTDataParser::parseNBT)
+                        .ifPresent(info::append);
 
-                        builder.append(Component.text(" (...)")
-                                .color(NamedTextColor.GRAY)
-                                .hoverEvent(HoverEvent.showText(info)));
-                        context.sendMessage(builder.build());
+                    builder.append(
+                        Component.text(" (...)")
+                            .color(NamedTextColor.GRAY)
+                            .hoverEvent(HoverEvent.showText(info)));
+                    context.sendMessage(builder.build());
 
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                  } catch (Exception e) {
+                    throw new RuntimeException(e);
+                  }
 
                 } else {
-                    context.sendMessage(Format.error("The block you are " +
-                            "looking at is not a sign."));
+                  context.sendMessage(
+                      Format.error("The block you are looking at is not a sign."));
                 }
-            }, () -> {
+              },
+              () -> {
                 context.sendMessage(Format.noBlockFound());
-            });
-        } else {
-            context.sendMessage(Format.playersOnly());
-        }
-
-        return CommandResult.success();
+              });
+    } else {
+      context.sendMessage(Format.playersOnly());
     }
+
+    return CommandResult.success();
+  }
 }
