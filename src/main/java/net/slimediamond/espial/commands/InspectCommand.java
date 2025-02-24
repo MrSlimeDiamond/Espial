@@ -75,22 +75,12 @@ public class InspectCommand implements CommandExecutor {
                     .title(Format.title("Looking closer at an action..."))
                     .padding(Format.PADDING)
                     .contents(Component.text()
-                            .append(Component.text("[")
-                                    .color(NamedTextColor.GRAY)
-                                    .append(Component.text("STOP")
-                                            .color(NamedTextColor.RED))
-                                    .append(Component.text("]")
-                                            .color(NamedTextColor.GRAY))
+                            .append(Format.button("STOP", NamedTextColor.RED)
                                     .clickEvent(ClickEvent.runCommand(
                                             "/espial inspect stop"))
                                     .hoverEvent(HoverEvent.showText(
                                             Component.text("Stop particles"))))
-                            .append(Component.text(" [")
-                                    .color(NamedTextColor.GRAY)
-                                    .append(Component.text("TP")
-                                            .color(NamedTextColor.GREEN))
-                                    .append(Component.text("]")
-                                            .color(NamedTextColor.GRAY))
+                            .append(Format.button("TP", NamedTextColor.GREEN)
                                     .clickEvent(
                                             SpongeComponents.executeCallback(
                                                     cause -> this.teleportPlayer(
@@ -99,12 +89,7 @@ public class InspectCommand implements CommandExecutor {
                                     .hoverEvent(HoverEvent.showText(
                                             Component.text(
                                                     "Teleport to this block"))))
-                            .append(Component.text(" [")
-                                    .color(NamedTextColor.GRAY)
-                                    .append(Component.text(undoActionMessage)
-                                            .color(NamedTextColor.YELLOW))
-                                    .append(Component.text("]")
-                                            .color(NamedTextColor.GRAY))
+                            .append(Format.button(undoActionMessage, NamedTextColor.YELLOW)
                                     .clickEvent(
                                             ClickEvent.runCommand(undoCommand))
                                     .hoverEvent(HoverEvent.showText(
