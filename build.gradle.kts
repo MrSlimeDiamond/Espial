@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "net.slimediamond"
-version = "1.2"
+version = "1.2.1"
 
 repositories {
     mavenCentral()
@@ -25,7 +25,7 @@ dependencies {
 
 sponge {
     apiVersion("14.0.0-SNAPSHOT")
-    license("All-Rights-Reserved")
+    license("MIT")
     loader {
         name(PluginLoaders.JAVA_PLAIN)
         version("1.0")
@@ -33,7 +33,7 @@ sponge {
     plugin("espial") {
         displayName("Espial")
         entrypoint("net.slimediamond.espial.Espial")
-        description("Plugin for logging and viewing block actions")
+        description("A plugin for looking up blocks and fixing grief")
         dependency("spongeapi") {
             loadOrder(PluginDependency.LoadOrder.AFTER)
             optional(false)
