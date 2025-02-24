@@ -11,16 +11,53 @@ import java.util.function.Supplier;
 /**
  * Block groups and stuff
  *
- * @author SlimeDiamond
+ * @author Findlay Richardson (SlimeDiamond)
  * @author mrhell228
  */
 @SuppressWarnings("unchecked")
 public class BlockUtil {
     public static final HashSet<BlockType> SIGNS = builder()
-            .add(BlockTypes.ACACIA_SIGN, BlockTypes.BIRCH_SIGN,
-                    BlockTypes.DARK_OAK_SIGN, BlockTypes.JUNGLE_SIGN,
-                    BlockTypes.OAK_SIGN, BlockTypes.SPRUCE_SIGN)
-            .add(BlockTypes.CRIMSON_SIGN, BlockTypes.WARPED_SIGN)
+            .add(
+                    // Standing signs
+                    BlockTypes.ACACIA_SIGN, BlockTypes.BIRCH_SIGN,
+                    BlockTypes.DARK_OAK_SIGN,
+                    BlockTypes.JUNGLE_SIGN, BlockTypes.OAK_SIGN,
+                    BlockTypes.SPRUCE_SIGN,
+                    BlockTypes.CRIMSON_SIGN, BlockTypes.WARPED_SIGN,
+                    // Standing wall signs
+                    BlockTypes.ACACIA_WALL_SIGN, BlockTypes.BIRCH_WALL_SIGN,
+                    BlockTypes.DARK_OAK_WALL_SIGN,
+                    BlockTypes.JUNGLE_WALL_SIGN, BlockTypes.OAK_WALL_SIGN,
+                    BlockTypes.SPRUCE_WALL_SIGN,
+                    BlockTypes.CRIMSON_WALL_SIGN, BlockTypes.WARPED_WALL_SIGN
+            )
+            .add(
+                    // Hanging signs
+                    BlockTypes.ACACIA_HANGING_SIGN,
+                    BlockTypes.BAMBOO_HANGING_SIGN,
+                    BlockTypes.BIRCH_HANGING_SIGN,
+                    BlockTypes.CHERRY_HANGING_SIGN,
+                    BlockTypes.CRIMSON_HANGING_SIGN,
+                    BlockTypes.DARK_OAK_HANGING_SIGN,
+                    BlockTypes.JUNGLE_HANGING_SIGN, BlockTypes.OAK_HANGING_SIGN,
+                    BlockTypes.SPRUCE_HANGING_SIGN,
+                    BlockTypes.WARPED_HANGING_SIGN,
+                    BlockTypes.PALE_OAK_HANGING_SIGN,
+                    BlockTypes.MANGROVE_HANGING_SIGN,
+                    // Wall hanging signs
+                    BlockTypes.ACACIA_WALL_HANGING_SIGN,
+                    BlockTypes.BAMBOO_WALL_HANGING_SIGN,
+                    BlockTypes.BIRCH_WALL_HANGING_SIGN,
+                    BlockTypes.CHERRY_WALL_HANGING_SIGN,
+                    BlockTypes.CRIMSON_WALL_HANGING_SIGN,
+                    BlockTypes.DARK_OAK_WALL_HANGING_SIGN,
+                    BlockTypes.JUNGLE_WALL_HANGING_SIGN,
+                    BlockTypes.OAK_WALL_HANGING_SIGN,
+                    BlockTypes.SPRUCE_WALL_HANGING_SIGN,
+                    BlockTypes.WARPED_WALL_HANGING_SIGN,
+                    BlockTypes.PALE_OAK_WALL_HANGING_SIGN,
+                    BlockTypes.MANGROVE_WALL_HANGING_SIGN
+            )
             .build();
     public static final HashSet<BlockType> AIR = builder()
             .add(BlockTypes.AIR, BlockTypes.VOID_AIR, BlockTypes.CAVE_AIR)
