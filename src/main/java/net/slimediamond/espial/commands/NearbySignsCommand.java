@@ -21,6 +21,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class NearbySignsCommand implements CommandExecutor {
@@ -45,7 +46,6 @@ public class NearbySignsCommand implements CommandExecutor {
                         .type(QueryType.LOOKUP)
                         .min(locations.getLeft())
                         .max(locations.getRight())
-                        .sort(Sort.REVERSE_CHRONOLOGICAL)
                         .caller(player)
                         .audience(player)
                         .build();
@@ -56,6 +56,7 @@ public class NearbySignsCommand implements CommandExecutor {
                                 .filter(record -> record instanceof BlockRecord)
                                 .filter(record -> BlockUtil.SIGNS.contains(
                                         ((BlockAction) record.getAction()).getBlockType()))
+                                .sorted(Comparator.comparing(EspialRecord::getTimestamp).reversed())
                                 .toList();
 
                 List<Component> contents =
