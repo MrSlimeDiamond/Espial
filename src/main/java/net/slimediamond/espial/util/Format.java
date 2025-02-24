@@ -100,6 +100,14 @@ public class Format {
                 .build();
     }
 
+    public static Component button(String text, NamedTextColor color) {
+        return Component.text()
+                .append(Component.text("[").color(PADDING_COLOR))
+                .append(Component.text(text).color(color))
+                .append(Component.text("] ").color(PADDING_COLOR))
+                .build();
+    } 
+
     public static String date(Date date) {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
         return dateFormat.format(new Date(date.getTime()));
