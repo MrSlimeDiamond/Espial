@@ -1,7 +1,6 @@
 package net.slimediamond.espial;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
@@ -123,7 +122,7 @@ public class Commands {
                                         PlayerSelectionUtil.getCuboidAroundPlayer(
                                         player, range);
 
-                                ArgumentUtil.Result requirements =
+                                ArgumentUtil.Requirements requirements =
                                         ArgumentUtil.parse(context, QueryType.LOOKUP);
 
                                 if (!requirements.shouldContinue()) return CommandResult.success();

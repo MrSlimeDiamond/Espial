@@ -1,7 +1,6 @@
 package net.slimediamond.espial.commands;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
@@ -69,15 +68,15 @@ public class NearbySignsCommand implements CommandExecutor {
                 }
 
                 PaginationList.builder()
-                        .title(Format.text("Nearby signs"))
+                        .title(Format.title("Nearby Signs"))
+                        .padding(Format.PADDING)
                         .contents(contents)
                         .sendTo(player);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            context.sendMessage(
-                    Component.text("You must be a player to use this."));
+            context.sendMessage(Format.playersOnly());
         }
 
         return CommandResult.success();

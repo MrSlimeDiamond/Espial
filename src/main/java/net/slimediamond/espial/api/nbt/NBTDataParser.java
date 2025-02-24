@@ -2,8 +2,8 @@ package net.slimediamond.espial.api.nbt;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.slimediamond.espial.util.Format;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +25,7 @@ public class NBTDataParser {
 
             builder.append(Component.newline());
             builder.append(
-                    Component.text("Front:").color(NamedTextColor.DARK_AQUA));
+                    Component.text("Front:").color(Format.HOVER_HINT_COLOR));
             builder.append(signLines(frontComponents));
 
             List<Component> backComponents = backLines.stream()
@@ -34,7 +34,7 @@ public class NBTDataParser {
 
             builder.append(Component.newline());
             builder.append(
-                    Component.text("Back:").color(NamedTextColor.DARK_AQUA));
+                    Component.text("Back:").color(Format.HOVER_HINT_COLOR));
             builder.append(signLines(backComponents));
 
             shouldReturn = true;
@@ -43,9 +43,9 @@ public class NBTDataParser {
         if (data.getDirection() != null) {
             builder.append(Component.newline());
             builder.append(Component.text("Direction: ")
-                    .color(NamedTextColor.DARK_AQUA));
+                    .color(Format.HOVER_HINT_COLOR));
             builder.append(Component.text(data.getDirection().toString())
-                    .color(NamedTextColor.WHITE));
+                    .color(Format.HOVER_TEXT_COLOR));
 
             shouldReturn = true;
         }
@@ -53,9 +53,9 @@ public class NBTDataParser {
         if (data.getAxis() != null) {
             builder.append(Component.newline());
             builder.append(
-                    Component.text("Axis: ").color(NamedTextColor.DARK_AQUA));
+                    Component.text("Axis: ").color(Format.HOVER_HINT_COLOR));
             builder.append(Component.text(data.getAxis().toString())
-                    .color(NamedTextColor.WHITE));
+                    .color(Format.HOVER_TEXT_COLOR));
 
             shouldReturn = true;
         }
@@ -63,9 +63,9 @@ public class NBTDataParser {
         if (data.isWaterlogged()) {
             builder.append(Component.newline());
             builder.append(Component.text("Waterlogged: ")
-                    .color(NamedTextColor.DARK_AQUA));
+                    .color(Format.HOVER_HINT_COLOR));
             builder.append(Component.text(data.isWaterlogged())
-                    .color(NamedTextColor.WHITE));
+                    .color(Format.HOVER_TEXT_COLOR));
 
             shouldReturn = true;
         }
@@ -84,7 +84,7 @@ public class NBTDataParser {
             builder.append(
                     Component.text("Line ")
                             .append(Component.text((i + 1) + ": "))
-                            .color(NamedTextColor.DARK_AQUA)
+                            .color(Format.HOVER_HINT_COLOR)
             );
             // Append the actual line content
             builder.append(components.get(i));

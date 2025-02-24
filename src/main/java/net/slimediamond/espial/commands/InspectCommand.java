@@ -36,8 +36,7 @@ public class InspectCommand implements CommandExecutor {
         Player player = (Player) context.cause().root();
 
         if (player == null) {
-            context.sendMessage(Component.text("Only players can run this!")
-                    .color(NamedTextColor.RED));
+            context.sendMessage(Format.playersOnly());
             return CommandResult.success();
         }
 
@@ -55,8 +54,7 @@ public class InspectCommand implements CommandExecutor {
                     Espial.getInstance().getDatabase().queryId(id);
 
             if (record == null) {
-                return CommandResult.error(Component.text(
-                        "Unable to find a database index with that ID!"));
+                context.sendMessage(Format.error("Could not find a database index with that ID."));
             }
 
             this.teleportPlayer(player, record.getAction());
@@ -74,7 +72,8 @@ public class InspectCommand implements CommandExecutor {
             }
 
             PaginationList.builder()
-                    .title(Format.text("Looking closer at an action..."))
+                    .title(Format.title("Looking closer at an action..."))
+                    .padding(Format.PADDING)
                     .contents(Component.text()
                             .append(Component.text("[")
                                     .color(NamedTextColor.GRAY)
@@ -113,28 +112,28 @@ public class InspectCommand implements CommandExecutor {
                                                     "Undo this action"))))
                             .append(Component.newline())
                             .append(Component.text("Source: ")
-                                    .color(NamedTextColor.GREEN))
-                            .append(displayName)
+                                    .color(Format.THEME_COLOR))
+                            .append(displayName.color(Format.NAME_COLOR))
                             .append(Component.newline())
                             .append(Component.text("Type: ")
-                                    .color(NamedTextColor.GREEN))
+                                    .color(Format.THEME_COLOR))
                             .append(Format.makeHoverableAction(
                                             record.getAction().getEventType(), false)
-                                    .color(NamedTextColor.YELLOW))
+                                    .color(Format.INFO_COLOR))
                             .append(Component.newline())
                             .append(Component.text("Coordinates: ")
-                                    .color(NamedTextColor.GREEN))
+                                    .color(Format.THEME_COLOR))
                             .append(Component.text(
                                             record.getAction().getX() + " " +
                                                     record.getAction().getY() + " " +
                                                     record.getAction().getZ())
-                                    .color(NamedTextColor.YELLOW))
+                                    .color(Format.INFO_COLOR))
                             .append(Component.newline())
                             .append(Component.text("Item in hand: ")
-                                    .color(NamedTextColor.GREEN))
+                                    .color(Format.THEME_COLOR))
                             .append(Component.text(
                                             record.getAction().getActor().getItem())
-                                    .color(NamedTextColor.YELLOW))
+                                    .color(Format.INFO_COLOR))
                             .build()
                     ).sendTo(context.cause().audience());
 
