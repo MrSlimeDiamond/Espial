@@ -35,22 +35,22 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                                     block.location().blockY(),
                                     block.location().blockZ())
                             .ifPresentOrElse(user -> {
-                                context.sendMessage(Format.component(Component.text()
-                                        .append(Component.text(user.name())
-                                                .color(NamedTextColor.YELLOW)
+                                context.sendMessage(Format.component(Component.text("This ")
+                                        .append(Component.text(
+                                                        block.blockState()
+                                                        .type()
+                                                        .key(RegistryTypes.BLOCK_TYPE)
+                                                        .formatted()
+                                                        .split(":")[1])
+                                                .color(Format.TEXT_COLOR)
                                                 .append(Component.space())
                                                 .append(Component.text(
-                                                                "placed this ")
-                                                        .color(NamedTextColor.WHITE))
-                                                .append(Component.text(
-                                                                block.blockState()
-                                                                        .type()
-                                                                        .key(RegistryTypes.BLOCK_TYPE)
-                                                                        .formatted()
-                                                                        .split(":")[1])
-                                                        .color(NamedTextColor.YELLOW))
+                                                                "was placed by ")
+                                                        .color(Format.THEME_COLOR))
+                                                .append(Component.text(user.name())
+                                                        .color(Format.TEXT_COLOR))
                                                 .append(Component.text(".")
-                                                        .color(NamedTextColor.WHITE))
+                                                        .color(Format.THEME_COLOR))
                                         )));
                             }, () -> {
                                 context.sendMessage(Format.error("Could not " +
