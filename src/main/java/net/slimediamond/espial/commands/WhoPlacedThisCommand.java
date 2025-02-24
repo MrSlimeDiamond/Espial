@@ -36,12 +36,7 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                                     block.location().blockZ())
                             .ifPresentOrElse(user -> {
                                 context.sendMessage(Format.component(Component.text("This ")
-                                        .append(Component.text(
-                                                        block.blockState()
-                                                        .type()
-                                                        .key(RegistryTypes.BLOCK_TYPE)
-                                                        .formatted()
-                                                        .split(":")[1])
+                                        .append(block.blockState().type().asComponent() // idk if this will work
                                                 .color(Format.TEXT_COLOR)
                                                 .append(Component.space())
                                                 .append(Component.text(
