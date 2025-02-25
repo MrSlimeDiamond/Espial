@@ -43,15 +43,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Database {
   boolean logPlayerPosition;
   private Connection conn;
 
   private PreparedStatement insertAction;
-  private PreparedStatement queryCoords;
+  //private PreparedStatement queryCoords;
   private PreparedStatement queryId;
-  private PreparedStatement queryRange;
+  //private PreparedStatement queryRange;
   private PreparedStatement getBlockOwner;
   private PreparedStatement setRolledBack;
   private PreparedStatement insertNBTdata;
@@ -133,13 +134,15 @@ public class Database {
                 + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
             Statement.RETURN_GENERATED_KEYS);
 
-    queryCoords =
-        conn.prepareStatement(
-            "SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+//    queryCoords =
+//        conn.prepareStatement(
+//            "SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? " +
+//                    "AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
     queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-    queryRange =
-        conn.prepareStatement(
-            "SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
+//    queryRange =
+//        conn.prepareStatement(
+//            "SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? " +
+//                    "AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
     getBlockOwner =
         conn.prepareStatement(
             "SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
@@ -236,22 +239,45 @@ public class Database {
         query.getTimestamp() == null
             ? Timestamp.from(Instant.ofEpochMilli(0))
             : query.getTimestamp();
-    String uuid = query.getPlayerUUID() == null ? null : query.getPlayerUUID().toString();
+
+    StringBuilder sql = new StringBuilder("SELECT * FROM blocklog WHERE world" +
+            " = ? AND time > ?");
+
+    if (query.getMax() == null) {
+      sql.append(" AND x = ? AND y = ? AND z = ? ");
+    } else {
+      sql.append(" AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN " +
+              "? and ? ");
+    }
+
+    List<UUID> uuids = query.getPlayerUUIDs();
+    if (uuids != null && !uuids.isEmpty()) {
+      List<String> players = new ArrayList<>();
+      uuids.forEach(uuid -> players.add("\"" + uuid.toString() + "\""));
+      sql.append(" AND player_uuid IN (").append(String.join(", ", players)).append(")");
+    }
+
+    List<String> blocks = query.getBlockIds();
+    if (blocks != null && !blocks.isEmpty()) {
+      List<String> quoted = new ArrayList<>();
+      blocks.forEach(block -> quoted.add("\"" + block + "\""));
+      sql.append(" AND block_id IN (").append(String.join(", ", quoted)).append(")");
+    }
 
     List<EspialRecord> actions = new ArrayList<>();
     ResultSet rs;
 
+    PreparedStatement statement = conn.prepareStatement(sql.toString());
+    statement.setString(1, query.getMax().worldKey().formatted());
+    statement.setTimestamp(2, timestamp);
+
     if (query.getMax() == null) {
       // single. Query coords
-      queryCoords.setString(1, query.getMin().worldKey().formatted());
-      queryCoords.setInt(2, query.getMin().blockX());
-      queryCoords.setInt(3, query.getMin().blockY());
-      queryCoords.setInt(4, query.getMin().blockZ());
-      queryCoords.setString(5, uuid);
-      queryCoords.setString(6, query.getBlockId());
-      queryCoords.setTimestamp(7, timestamp);
+      statement.setInt(3, query.getMin().blockX());
+      statement.setInt(4, query.getMin().blockY());
+      statement.setInt(5, query.getMin().blockZ());
 
-      rs = queryCoords.executeQuery();
+      rs = statement.executeQuery();
     } else {
       // Ranged lookup
 
@@ -265,22 +291,17 @@ public class Database {
       Arrays.sort(y);
       Arrays.sort(z);
 
-      queryRange.setString(1, query.getMin().worldKey().formatted());
 
-      queryRange.setInt(2, x[0]);
-      queryRange.setInt(3, x[1]);
+      statement.setInt(3, x[0]);
+      statement.setInt(4, x[1]);
 
-      queryRange.setInt(4, y[0]);
-      queryRange.setInt(5, y[1]);
+      statement.setInt(5, y[0]);
+      statement.setInt(6, y[1]);
 
-      queryRange.setInt(6, z[0]);
-      queryRange.setInt(7, z[1]);
+      statement.setInt(7, z[0]);
+      statement.setInt(8, z[1]);
 
-      queryRange.setString(8, uuid);
-      queryRange.setString(9, query.getBlockId());
-      queryRange.setTimestamp(10, timestamp);
-
-      rs = queryRange.executeQuery();
+      rs = statement.executeQuery();
     }
 
     while (rs.next()) {

@@ -53,7 +53,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
    * @return Target player UUID
    */
   @Nullable
-  UUID getPlayerUUID();
+  List<UUID> getPlayerUUIDs();
 
   /**
    * The block type we are targeting
@@ -61,7 +61,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
    * @return Block type
    */
   @Nullable
-  String getBlockId();
+  List<String> getBlockIds();
 
   /**
    * Get sorting order of this query
@@ -97,8 +97,8 @@ public interface Query extends Submittable<List<EspialRecord>> {
     private ServerLocation min;
     private ServerLocation max;
     private Timestamp timestamp;
-    private UUID playerUUID;
-    private String blockId;
+    private List<UUID> playerUUIDs;
+    private List<String> blockIds;
     private Sort sort;
     private Object user;
     private Audience audience;
@@ -123,13 +123,13 @@ public interface Query extends Submittable<List<EspialRecord>> {
       return this;
     }
 
-    public Builder player(@Nullable UUID playerUUID) {
-      this.playerUUID = playerUUID;
+    public Builder players(@Nullable List<UUID> playerUUIDs) {
+      this.playerUUIDs = playerUUIDs;
       return this;
     }
 
-    public Builder block(@Nullable String blockId) {
-      this.blockId = blockId;
+    public Builder blocks(@Nullable List<String> blockIds) {
+      this.blockIds = blockIds;
       return this;
     }
 
@@ -181,13 +181,13 @@ public interface Query extends Submittable<List<EspialRecord>> {
         }
 
         @Override
-        public @Nullable UUID getPlayerUUID() {
-          return playerUUID;
+        public @Nullable List<UUID> getPlayerUUIDs() {
+          return playerUUIDs;
         }
 
         @Override
-        public @Nullable String getBlockId() {
-          return blockId;
+        public @Nullable List<String> getBlockIds() {
+          return blockIds;
         }
 
         @Override

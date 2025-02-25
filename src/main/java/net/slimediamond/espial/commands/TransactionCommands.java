@@ -45,15 +45,15 @@ public class TransactionCommands {
     Query.Builder builder =
         Query.builder()
             .type(type)
-            .player(args.getUUID())
+            .players(args.getUUIDs())
             .sort(sort)
             .caller(player)
             .spread(context.hasFlag("s"))
             .audience(player)
             .after(args.getTimestamp());
 
-    if (args.getBlockId() != null) {
-      builder.block(args.getBlockId());
+    if (args.getBlocks() != null) {
+      builder.blocks(args.getBlocks());
     }
 
     if (context.hasFlag("worldedit")) { // Range lookup

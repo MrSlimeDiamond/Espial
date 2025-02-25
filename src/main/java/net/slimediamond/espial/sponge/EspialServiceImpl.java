@@ -29,6 +29,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
@@ -60,22 +62,30 @@ public class EspialServiceImpl implements EspialService {
 
     StringBuilder argsPreview = new StringBuilder();
 
-    if (query.getPlayerUUID() != null) {
+    if (query.getPlayerUUIDs() != null && !query.getPlayerUUIDs().isEmpty()) {
+      List<String> players = new ArrayList<>();
+      for (UUID uuid : query.getPlayerUUIDs()) {
+        players.add(Sponge.server().userManager().load(uuid).get().get().name());
+      }
       argsPreview
-          .append("Player: ")
-          .append(
-              Sponge.server().userManager().load(query.getPlayerUUID()).get().get().name()); // what
+          .append(" Players: ")
+          .append("[" + String.join(", ", players) + "]");
     }
 
-    if (query.getBlockId() != null) {
-      if (!argsPreview.isEmpty()) argsPreview.append(" ");
-      argsPreview.append("Block: ").append(query.getBlockId());
+    if (query.getBlockIds() != null && !query.getBlockIds().isEmpty()) {
+      List<String> blocks = new ArrayList<>();
+      for (String block : query.getBlockIds()) {
+        blocks.add(block.split(":")[1]);
+      }
+      argsPreview
+              .append(" Blocks: ")
+              .append("[" + String.join(", ", blocks) + "]");
     }
 
     if (!Objects.equals(query.getTimestamp(), Timestamp.from(Instant.ofEpochMilli(0)))
         && query.getTimestamp() != null) {
       if (!argsPreview.isEmpty()) argsPreview.append(" ");
-      argsPreview.append("After: ").append(Format.date(query.getTimestamp()));
+      argsPreview.append(" After: ").append(Format.date(query.getTimestamp()));
     }
 
     // TODO: Asynchronous processing, and probably some queue
@@ -169,7 +179,7 @@ public class EspialServiceImpl implements EspialService {
       if (!argsPreview.isEmpty()) {
         builder.header(
             Format.truncate(
-                Component.text("Parameters: ")
+                Component.text("Parameters:")
                     .color(Format.HINT_COLOR)
                     .append(Component.text(argsPreview).color(NamedTextColor.GRAY))));
       }

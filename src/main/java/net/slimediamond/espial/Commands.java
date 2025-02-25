@@ -157,7 +157,7 @@ public class Commands {
                                 Query.builder()
                                     .min(selection.getLeft())
                                     .max(selection.getRight())
-                                    .player(requirements.getUUID())
+                                    .players(requirements.getUUIDs())
                                     .spread(context.hasFlag("s"))
                                     .after(requirements.getTimestamp())
                                     .audience(context.cause().audience())
@@ -165,8 +165,8 @@ public class Commands {
                                     .sort(Sort.REVERSE_CHRONOLOGICAL)
                                     .type(QueryType.LOOKUP);
 
-                            if (requirements.getBlockId() != null) {
-                              builder.block(requirements.getBlockId());
+                            if (requirements.getBlocks() != null) {
+                              builder.blocks(requirements.getBlocks());
                             }
 
                             try {

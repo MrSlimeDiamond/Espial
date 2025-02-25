@@ -10,14 +10,23 @@ import org.spongepowered.api.registry.RegistryTypes;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class ArgumentUtil {
 
   public static Requirements parse(CommandContext context, QueryType type) {
-    UUID uuid = parseFilter(context, "player", CommandParameters.LOOKUP_PLAYER);
+    List<UUID> uuids = Collections.emptyList();
+    List<BlockState> blocks = Collections.emptyList();
+    if (context.hasFlag("player")) {
+      uuids = (List<UUID>) context.all(CommandParameters.LOOKUP_PLAYER).stream().toList();
+    }
 
-    BlockState blockState = parseFilter(context, "block", CommandParameters.LOOKUP_BLOCK);
+    if (context.hasFlag("block")) {
+      blocks = (List<BlockState>) context.all(CommandParameters.LOOKUP_BLOCK);
+    }
 
     Timestamp timestamp;
     try {
@@ -32,18 +41,22 @@ public class ArgumentUtil {
       return new Requirements(null, null, null, false);
     }
 
-    String blockId = null;
+    List<String> blockIds =
+            blocks.stream().map(block -> RegistryTypes.BLOCK_TYPE.get().valueKey(block.type()).formatted()).toList();
 
-    if (blockState != null) {
-      blockId = RegistryTypes.BLOCK_TYPE.get().valueKey(blockState.type()).formatted();
-    }
 
-    return new Requirements(timestamp, uuid, blockId, true);
+    return new Requirements(timestamp, uuids, blockIds, true);
   }
 
-  private static <T> T parseFilter(
-      CommandContext context, String flag, Parameter.Value<T> parameter) {
+  private static <T> T parseOne(CommandContext context, String flag,
+                                Parameter.Value<T> parameter) {
     return context.hasFlag(flag) ? context.requireOne(parameter) : null;
+  }
+
+  private static <T> Collection<? extends T> parseAll(CommandContext context,
+                                                      String flag,
+                                                      Parameter.Value<T> parameter) {
+    return context.hasFlag(flag) ? context.all(parameter) : null;
   }
 
   private static Timestamp parseTimestamp(CommandContext context, QueryType type) {
@@ -61,14 +74,16 @@ public class ArgumentUtil {
 
   public static final class Requirements {
     private Timestamp timestamp;
-    private UUID uuid;
-    private String blockId;
+    private List<UUID> uuids;
+    private List<String> blocks;
     private boolean shouldContinue;
 
-    public Requirements(Timestamp timestamp, UUID uuid, String blockId, boolean shouldContinue) {
+    public Requirements(Timestamp timestamp, List<UUID> uuids,
+                        List<String> blocks,
+                        boolean shouldContinue) {
       this.timestamp = timestamp;
-      this.uuid = uuid;
-      this.blockId = blockId;
+      this.uuids = uuids;
+      this.blocks = blocks;
       this.shouldContinue = shouldContinue;
     }
 
@@ -76,12 +91,12 @@ public class ArgumentUtil {
       return timestamp;
     }
 
-    public UUID getUUID() {
-      return uuid;
+    public List<UUID> getUUIDs() {
+      return uuids;
     }
 
-    public String getBlockId() {
-      return blockId;
+    public List<String> getBlocks() {
+      return blocks;
     }
 
     public boolean shouldContinue() {

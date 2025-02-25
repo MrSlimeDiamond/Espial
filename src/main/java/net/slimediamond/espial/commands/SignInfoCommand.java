@@ -45,7 +45,7 @@ public class SignInfoCommand implements CommandExecutor {
                         Query.builder()
                             .type(QueryType.LOOKUP)
                             .min(location)
-                            .block(blockId)
+                            .blocks(List.of(blockId))
                             .caller(player)
                             .audience(player)
                             .build();
