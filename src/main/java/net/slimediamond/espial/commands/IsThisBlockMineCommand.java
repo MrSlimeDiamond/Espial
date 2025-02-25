@@ -50,7 +50,8 @@ public class IsThisBlockMineCommand implements CommandExecutor {
                 } catch (SQLException | ExecutionException | InterruptedException e) {
                   context.sendMessage(
                       Component.text(
-                              "Unfortunately, an error occurred when looking up this block's owner. If this persists, tell an admin!")
+                              "Unfortunately, an error occurred when looking up this block's owner. " +
+                                      "If this persists, tell an admin!")
                           .color(NamedTextColor.RED));
                   throw new RuntimeException(e);
                 }
@@ -58,7 +59,8 @@ public class IsThisBlockMineCommand implements CommandExecutor {
               () -> {
                 context.sendMessage(
                     Component.text(
-                            "Could not find the block in front of you, perhaps try to move closer?")
+                            "Could not find the block in front of you, " +
+                                    "perhaps try to move closer?")
                         .color(NamedTextColor.RED));
               });
     }

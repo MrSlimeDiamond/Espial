@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
+import net.slimediamond.espial.sponge.user.ServerActor;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.hanging.ItemFrame;
 import org.spongepowered.api.entity.living.player.Player;
@@ -19,24 +20,31 @@ import org.spongepowered.api.item.ItemTypes;
 public class EntityListeners {
   @Listener(order = Order.POST)
   public void onEntityDestruct(DestructEntityEvent event) {
-    if (event.cause().root() instanceof Player player) {
-      // Hanging entity death (like an item frame)
-      if (event.entity() instanceof Hanging hanging) {
-        try {
-          NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
+    if (event.entity() instanceof Hanging hanging) {
+      try {
+        NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
 
-          HangingDeathAction.builder()
-              .actor(new EspialActorImpl(player))
-              .entity(hanging.type())
-              .world(event.entity().serverLocation().worldKey().formatted())
-              .location(event.entity().serverLocation())
-              .event(EventTypes.HANGING_DEATH)
-              .withNBTData(nbtData)
-              .build()
-              .submit();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
+        HangingDeathAction.Builder builder =
+            HangingDeathAction.builder()
+                .entity(hanging.type())
+                .world(event.entity().serverLocation().worldKey().formatted())
+                .location(event.entity().serverLocation())
+                .event(EventTypes.HANGING_DEATH)
+                .withNBTData(nbtData);
+
+        if (event.cause().root() instanceof Player player) {
+          builder.actor(new EspialActorImpl(player));
+        } else {
+          // Likely caused by the block an item frame is on
+          // was broken or something similar.
+
+          // TODO: We should track the contents of the item frame here
+          builder.actor(new ServerActor());
         }
+
+        builder.build().submit();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
   }
