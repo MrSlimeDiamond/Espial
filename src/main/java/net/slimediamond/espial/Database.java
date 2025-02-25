@@ -270,7 +270,7 @@ public class Database {
     ResultSet rs;
 
     PreparedStatement statement = conn.prepareStatement(sql.toString());
-    statement.setString(1, query.getMax().worldKey().formatted());
+    statement.setString(1, query.getMin().worldKey().formatted());
     statement.setTimestamp(2, timestamp);
 
     if (query.getMax() == null) {
