@@ -13,6 +13,7 @@ import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -41,23 +42,23 @@ public class NearbySignsCommand implements CommandExecutor {
       Pair<ServerLocation, ServerLocation> locations =
           PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
       try {
-        Query query =
-            Query.builder()
-                .type(QueryType.LOOKUP)
-                .min(locations.getLeft())
-                .max(locations.getRight())
-                .caller(player)
-                .audience(player)
-                .build();
-
         List<EspialRecord> signs =
-            Espial.getInstance().getEspialService().query(query).stream()
-                .filter(record -> record instanceof BlockRecord)
-                .filter(
-                    record ->
-                        BlockUtil.SIGNS.contains(((BlockAction) record.getAction()).getBlockType()))
-                .sorted(Comparator.comparing(EspialRecord::getTimestamp).reversed())
-                .toList();
+            Espial.getInstance()
+                .getEspialService()
+                .query(
+                    Query.builder()
+                        .type(QueryType.LOOKUP)
+                        .min(locations.getLeft())
+                        .max(locations.getRight())
+                        .caller(player)
+                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                        .blocks(
+                            BlockUtil.SIGNS.stream()
+                                .map(blockType -> BlockTypes.registry().valueKey(blockType).formatted())
+                                .toList())
+                        .audience(player)
+                        .spread(true)
+                        .build());
 
         List<Component> contents = Format.generateLookupContents(signs, true);
 

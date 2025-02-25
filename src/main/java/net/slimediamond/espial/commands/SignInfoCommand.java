@@ -20,8 +20,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class SignInfoCommand implements CommandExecutor {
