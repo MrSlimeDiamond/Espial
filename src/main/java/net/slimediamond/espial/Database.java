@@ -12,6 +12,7 @@ import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.query.Query;
+import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -39,6 +40,7 @@ import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -306,6 +308,12 @@ public class Database {
 
     while (rs.next()) {
       actions.add(blockFromRs(rs));
+    }
+
+    if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
+      actions.sort(Comparator.comparing(EspialRecord::getTimestamp).reversed());
+    } else if (query.getSort() == Sort.CHRONOLOGICAL) {
+      actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
     }
 
     return actions;

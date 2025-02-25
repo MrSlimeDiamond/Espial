@@ -52,13 +52,7 @@ public class EspialServiceImpl implements EspialService {
 
   @Override
   public SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception {
-    List<EspialRecord> result = this.query(query);
-    List<EspialRecord> actions = new ArrayList<>(result);
-    if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
-      actions.sort(Comparator.comparing(EspialRecord::getTimestamp).reversed());
-    } else if (query.getSort() == Sort.CHRONOLOGICAL) {
-      actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
-    }
+    List<EspialRecord> actions = this.query(query);
 
     StringBuilder argsPreview = new StringBuilder();
 
