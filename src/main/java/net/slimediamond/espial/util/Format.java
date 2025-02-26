@@ -94,7 +94,7 @@ public class Format {
     return Component.text().append(prefix).append(Component.text(text).color(TITLE_COLOR)).build();
   }
 
-  public static Component button(String text, NamedTextColor color) {
+  public static Component chip(String text, NamedTextColor color) {
     return Component.text()
         .append(Component.text("[").color(PADDING_COLOR))
         .append(Component.text(text).color(color))

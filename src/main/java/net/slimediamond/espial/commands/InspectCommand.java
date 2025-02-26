@@ -73,18 +73,18 @@ public class InspectCommand implements CommandExecutor {
           .contents(
               Component.text()
                   .append(
-                      Format.button("STOP", NamedTextColor.RED)
+                      Format.chip("STOP", NamedTextColor.RED)
                           .clickEvent(ClickEvent.runCommand("/espial inspect stop"))
                           .hoverEvent(HoverEvent.showText(Component.text("Stop particles"))))
                   .append(
-                      Format.button("TP", NamedTextColor.GREEN)
+                      Format.chip("TP", NamedTextColor.GREEN)
                           .clickEvent(
                               SpongeComponents.executeCallback(
                                   cause -> this.teleportPlayer(player, record.getAction())))
                           .hoverEvent(
                               HoverEvent.showText(Component.text("Teleport to this block"))))
                   .append(
-                      Format.button(undoActionMessage, NamedTextColor.YELLOW)
+                      Format.chip(undoActionMessage, NamedTextColor.YELLOW)
                           .clickEvent(ClickEvent.runCommand(undoCommand))
                           .hoverEvent(HoverEvent.showText(Component.text("Undo this action"))))
                   .append(Component.newline())

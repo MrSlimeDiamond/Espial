@@ -39,7 +39,7 @@ public class HelpCommand implements CommandExecutor {
                 String name = subcommand.aliases().stream().findFirst().get();
 
                 TextComponent.Builder builder =
-                    Component.text().append(Format.text("Help for: " + name));
+                    Component.text().append(Format.title("Help for: " + name));
 
                 subcommand
                     .command()
@@ -48,17 +48,17 @@ public class HelpCommand implements CommandExecutor {
                         desc -> {
                           builder
                               .append(Component.newline())
-                              .append(Component.text("Description: ").color(NamedTextColor.YELLOW))
+                              .append(Component.text("Description: ").color(Format.THEME_COLOR))
                               .append(desc)
-                              .color(NamedTextColor.WHITE);
+                              .color(Format.TEXT_COLOR);
                         });
 
                 builder
                     .append(Component.newline())
-                    .append(Component.text("Aliases: ").color(NamedTextColor.YELLOW))
+                    .append(Component.text("Aliases: ").color(Format.THEME_COLOR))
                     .append(
                         Component.text(String.join(", ", subcommand.aliases()))
-                            .color(NamedTextColor.WHITE));
+                            .color(Format.TEXT_COLOR));
 
                 List<Component> flags = new ArrayList<>();
                 subcommand
@@ -83,22 +83,16 @@ public class HelpCommand implements CommandExecutor {
                                     }
                                   });
                           flags.add(
-                              Component.space()
-                                  .append(Component.text("[").color(NamedTextColor.GRAY))
-                                  .append(
-                                      Component.text(shortestAlias)
-                                          .color(flagColour.get())
-                                          .hoverEvent(
-                                              HoverEvent.showText(
-                                                  Component.text(String.join(" | ", aliases))
-                                                      .color(NamedTextColor.WHITE))))
-                                  .append(Component.text("]").color(NamedTextColor.GRAY)));
+                            Component.text("") 
+                                .append(
+                                    Format.chip(shortestAlias, flagColour.get())
+                                        .hoverEvent(HoverEvent.showText(Component.text(String.join(" | ", aliases))))));
                         });
 
                 if (!flags.isEmpty()) {
                   builder
                       .append(Component.newline())
-                      .append(Component.text("Flags:").color(NamedTextColor.YELLOW));
+                      .append(Component.text("Flags: ").color(Format.THEME_COLOR));
                   builder.append(flags);
                 }
 
@@ -106,7 +100,7 @@ public class HelpCommand implements CommandExecutor {
               });
     } else {
       // FIXME: Other root commands (like /whoplacedthis)
-      context.sendMessage(Format.text("Help"));
+      context.sendMessage(Format.title("Help"));
       Command.Parameterized command = Commands.commands.get(0);
       List<Parameter.Subcommand> sortedSubcommands =
           command.subcommands().stream()
@@ -128,7 +122,7 @@ public class HelpCommand implements CommandExecutor {
                                   + subcommand.aliases().stream()
                                       .max(Comparator.comparingInt(String::length))
                                       .get())
-                          .color(NamedTextColor.GREEN)
+                          .color(Format.THEME_COLOR)
                           .hoverEvent(
                               HoverEvent.showText(
                                   Component.text(
@@ -145,7 +139,7 @@ public class HelpCommand implements CommandExecutor {
           Optional<Component> description = subcommand.command().shortDescription(context.cause());
 
           if (description.isPresent()) {
-            builder.append(Component.text(" - ")).append(description.get());
+            builder.append(Component.text(" - ")).append(description.get().color(Format.TEXT_COLOR));
           } else {
             continue;
           }
