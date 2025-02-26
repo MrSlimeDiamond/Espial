@@ -16,10 +16,14 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.3.9")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.3.10")
+    //compileOnly("com.sk89q.worldedit:worldedit-sponge:7.3.10")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
 
+    // HACKHACK: Include a WorldEdit jar yourself
+    // https://ore.spongepowered.org/EngineHub/WorldEdit/versions
+    // EngineHub repo is broken - raised this to them. They might fix.
     compileOnly(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }
 
