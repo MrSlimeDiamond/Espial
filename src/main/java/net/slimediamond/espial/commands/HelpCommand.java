@@ -13,6 +13,8 @@ import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.service.pagination.PaginationList;
+
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,9 +100,11 @@ public class HelpCommand implements CommandExecutor {
 
                 contents.add(builder.build());
               });
+              for (Component content : contents) {
+                context.sendMessage(content);
+              }     
     } else {
       // FIXME: Other root commands (like /whoplacedthis)
-      context.sendMessage(Format.title("Help"));
       Command.Parameterized command = Commands.commands.get(0);
       List<Parameter.Subcommand> sortedSubcommands =
           command.subcommands().stream()
@@ -147,10 +151,11 @@ public class HelpCommand implements CommandExecutor {
           contents.add(builder.build());
         }
       }
-    }
-
-    for (Component content : contents) {
-      context.sendMessage(content);
+      PaginationList.builder()
+          .title(Format.title("Help"))
+          .padding(Format.PADDING)
+          .contents(contents)
+          .sendTo(context.cause().audience());
     }
 
     return CommandResult.success();
