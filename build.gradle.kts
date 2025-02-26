@@ -78,12 +78,13 @@ tasks.withType(AbstractArchiveTask::class).configureEach {
 }
 
 tasks.shadowJar {
+    archiveClassifier.set("")
     mergeServiceFiles()
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
 }
 
 tasks.register<Jar>("apiJar") {
-    archiveClassifier.set("")
+    archiveClassifier.set("api")
     from(sourceSets.main.get().output)
     include("net/slimediamond/espial/api/**")
 }
