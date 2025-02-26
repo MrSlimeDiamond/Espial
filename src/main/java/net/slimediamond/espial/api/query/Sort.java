@@ -7,6 +7,12 @@ public enum Sort {
   /** Reverse chronological order - newest first */
   REVERSE_CHRONOLOGICAL,
 
+  /** Newest index last */
+  ID_ASCENDING,
+
+  /** Newest index first */
+  ID_DESCENDING,
+
   /** Whatever the database gives us */
   DEFAULT
 }

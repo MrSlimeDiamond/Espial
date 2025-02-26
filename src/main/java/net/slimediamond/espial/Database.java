@@ -310,7 +310,11 @@ public class Database {
       actions.add(blockFromRs(rs));
     }
 
-    if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
+    if (query.getSort() == Sort.ID_ASCENDING) {
+      actions.sort(Comparator.comparing(EspialRecord::getId));
+    } else if (query.getSort() == Sort.ID_DESCENDING) {
+      actions.sort(Comparator.comparing(EspialRecord::getId).reversed());
+    } else if (query.getSort() == Sort.REVERSE_CHRONOLOGICAL) {
       actions.sort(Comparator.comparing(EspialRecord::getTimestamp).reversed());
     } else if (query.getSort() == Sort.CHRONOLOGICAL) {
       actions.sort(Comparator.comparing(EspialRecord::getTimestamp));
