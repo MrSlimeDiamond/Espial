@@ -68,10 +68,8 @@ public class BlockListeners {
     } else if (event.cause().root() instanceof InteractBlockEvent.Secondary.Pre) {
       source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
     } else if (event.cause().root() instanceof InteractItemEvent.Secondary) {
-        source = ((InteractItemEvent.Secondary) event.cause().root()).source();
+      source = ((InteractItemEvent.Secondary) event.cause().root()).source();
     }
-
-    System.out.println(event.cause().root().getClass().getName());
 
     if (source instanceof Player player) {
       if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
