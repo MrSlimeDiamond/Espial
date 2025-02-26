@@ -26,6 +26,7 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
+import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.server.ServerLocation;
@@ -56,17 +57,21 @@ public class BlockListeners {
     }
   }
 
-  @Listener(order = Order.LATE)
+  @Listener(order = Order.POST)
   @IsCancelled(Tristate.FALSE)
   public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
     @Nullable Living living;
     Object source = event.cause().root();
 
-    if (event.cause().root() instanceof InteractBlockEvent.Primary) {
+    if (event.cause().root() instanceof InteractBlockEvent.Primary.Start) {
       source = ((InteractBlockEvent.Primary) event.cause().root()).source();
-    } else if (event.cause().root() instanceof InteractBlockEvent.Secondary) {
+    } else if (event.cause().root() instanceof InteractBlockEvent.Secondary.Pre) {
       source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
+    } else if (event.cause().root() instanceof InteractItemEvent.Secondary) {
+        source = ((InteractItemEvent.Secondary) event.cause().root()).source();
     }
+
+    System.out.println(event.cause().root().getClass().getName());
 
     if (source instanceof Player player) {
       if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
