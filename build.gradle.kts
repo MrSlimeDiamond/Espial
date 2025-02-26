@@ -83,13 +83,14 @@ tasks.shadowJar {
 }
 
 tasks.register<Jar>("apiJar") {
-    archiveClassifier.set("api")
+    archiveClassifier.set("")
     from(sourceSets.main.get().output)
     include("net/slimediamond/espial/api/**")
 }
 
 tasks.build {
     dependsOn(tasks.shadowJar)
+    dependsOn("apiJar")
 }
 
 artifacts {
