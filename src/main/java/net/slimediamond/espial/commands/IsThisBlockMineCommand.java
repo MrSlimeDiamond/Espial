@@ -18,17 +18,16 @@ public class IsThisBlockMineCommand implements CommandExecutor {
   public CommandResult execute(CommandContext context) throws CommandException {
     if (context.cause().root() instanceof Player player) {
       RayTraceUtil.getBlockFacingPlayer(player)
-          .ifPresentOrElse(
-              block -> {
+          .ifPresentOrElse(block -> {
                 try {
                   Espial.getInstance()
                       .getDatabase()
                       .getBlockOwner(
+                          block.serverLocation().worldKey().formatted(),
                           block.location().blockX(),
                           block.location().blockY(),
                           block.location().blockZ())
-                      .ifPresentOrElse(
-                          user -> {
+                      .ifPresentOrElse(user -> {
                             if (user.profile().uuid().equals(player.profile().uuid())) {
                               context.sendMessage(
                                   Component.text("This block was placed by you!")

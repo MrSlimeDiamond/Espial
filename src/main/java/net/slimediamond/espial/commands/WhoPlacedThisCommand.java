@@ -28,10 +28,11 @@ public class WhoPlacedThisCommand implements CommandExecutor {
         try {
           Espial.getInstance()
               .getDatabase()
-              .getBlockOwner(
-                  block.location().blockX(), block.location().blockY(), block.location().blockZ())
-              .ifPresentOrElse(
-                  user -> {
+              .getBlockOwner(block.serverLocation().worldKey().formatted(),
+                      block.location().blockX(),
+                      block.location().blockY(),
+                      block.location().blockZ())
+              .ifPresentOrElse(user -> {
                     context.sendMessage(
                         Format.component(
                             Component.text("This ")

@@ -59,7 +59,7 @@ public interface EspialService {
    * @throws ExecutionException
    * @throws InterruptedException
    */
-  Optional<User> getBlockOwner(int x, int y, int z)
+  Optional<User> getBlockOwner(String world, int x, int y, int z)
       throws SQLException, ExecutionException, InterruptedException;
 
   /**

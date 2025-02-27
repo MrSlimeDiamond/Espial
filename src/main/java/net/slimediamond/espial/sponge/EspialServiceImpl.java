@@ -103,9 +103,9 @@ public class EspialServiceImpl implements EspialService {
   }
 
   @Override
-  public Optional<User> getBlockOwner(int x, int y, int z)
+  public Optional<User> getBlockOwner(String world, int x, int y, int z)
       throws SQLException, ExecutionException, InterruptedException {
-    return Espial.getInstance().getDatabase().getBlockOwner(x, y, z);
+    return Espial.getInstance().getDatabase().getBlockOwner(world, x, y, z);
   }
 
   private void process(List<EspialRecord> records, Query query, String argsPreview)

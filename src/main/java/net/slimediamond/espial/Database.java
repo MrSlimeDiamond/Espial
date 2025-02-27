@@ -53,9 +53,7 @@ public class Database {
   private Connection conn;
 
   private PreparedStatement insertAction;
-  //private PreparedStatement queryCoords;
   private PreparedStatement queryId;
-  //private PreparedStatement queryRange;
   private PreparedStatement getBlockOwner;
   private PreparedStatement setRolledBack;
   private PreparedStatement insertNBTdata;
@@ -137,18 +135,10 @@ public class Database {
                 + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
             Statement.RETURN_GENERATED_KEYS);
 
-//    queryCoords =
-//        conn.prepareStatement(
-//            "SELECT * FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? " +
-//                    "AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
     queryId = conn.prepareStatement("SELECT * FROM blocklog WHERE id = ?");
-//    queryRange =
-//        conn.prepareStatement(
-//            "SELECT * FROM blocklog WHERE world = ? AND x BETWEEN ? and ? AND y BETWEEN ? and ? " +
-//                    "AND z BETWEEN ? AND ? AND player_uuid = COALESCE(?, player_uuid) AND block_id = COALESCE(?, block_id) AND time > COALESCE(?, time)");
     getBlockOwner =
         conn.prepareStatement(
-            "SELECT player_uuid FROM blocklog WHERE x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+            "SELECT player_uuid FROM blocklog WHERE world = ? AND x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
     setRolledBack = conn.prepareStatement("UPDATE blocklog SET rolled_back = ? WHERE id = ?");
     insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
     getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
@@ -352,11 +342,12 @@ public class Database {
     return null;
   }
 
-  public Optional<User> getBlockOwner(int x, int y, int z)
+  public Optional<User> getBlockOwner(String world, int x, int y, int z)
       throws SQLException, ExecutionException, InterruptedException {
-    getBlockOwner.setInt(1, x);
-    getBlockOwner.setInt(2, y);
-    getBlockOwner.setInt(3, z);
+    getBlockOwner.setString(1, world);
+    getBlockOwner.setInt(2, x);
+    getBlockOwner.setInt(3, y);
+    getBlockOwner.setInt(4, z);
 
     ResultSet rs = getBlockOwner.executeQuery();
     if (rs.next()) {
