@@ -416,11 +416,25 @@ public class Database {
 
     boolean rolledBack = rs.getBoolean("rolled_back");
 
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(playerUUID);
+    } catch (IllegalArgumentException e) {
+      uuid = null;
+    }
+
+    boolean isPlayer = uuid == null;
+
     EspialActor actor =
         new EspialActor() {
           @Override
           public String getUUID() {
             return playerUUID;
+          }
+
+          @Override
+          public boolean isPlayer() {
+            return isPlayer;
           }
 
           @Override

@@ -12,6 +12,13 @@ public interface EspialActor {
   String getUUID();
 
   /**
+   * Whether the actor is a player
+   *
+   * @return If the actor is a player
+   */
+  boolean isPlayer();
+
+  /**
    * Get the actor's position
    *
    * @return Actor position

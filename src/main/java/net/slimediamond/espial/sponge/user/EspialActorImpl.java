@@ -36,6 +36,11 @@ public class EspialActorImpl implements EspialActor {
   }
 
   @Override
+  public boolean isPlayer() {
+    return living instanceof Player;
+  }
+
+  @Override
   public @Nullable Vector3d getPosition() {
     return living.position();
   }

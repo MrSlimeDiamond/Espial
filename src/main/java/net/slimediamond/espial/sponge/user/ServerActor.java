@@ -11,6 +11,11 @@ public class ServerActor implements EspialActor {
     }
 
     @Override
+    public boolean isPlayer() {
+        return false;
+    }
+
+    @Override
     public @Nullable Vector3d getPosition() {
         return null;
     }
