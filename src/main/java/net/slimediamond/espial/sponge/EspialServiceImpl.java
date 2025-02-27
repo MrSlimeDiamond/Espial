@@ -6,14 +6,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.event.EventManager;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.sponge.event.EventManagerImpl;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import net.slimediamond.espial.util.Format;
@@ -25,24 +26,29 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
   private TransactionManager transactionManager;
+  private EventManager eventManager;
 
   public EspialServiceImpl() {
     this.transactionManager = new TransactionManagerImpl();
+    this.eventManager = new EventManagerImpl();
   }
 
   @Override
   public TransactionManager getTransactionManager() {
     return transactionManager;
+  }
+
+  @Override
+  public EventManager getEventManager() {
+    return eventManager;
   }
 
   @Override

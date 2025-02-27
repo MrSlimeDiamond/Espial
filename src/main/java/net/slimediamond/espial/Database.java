@@ -9,6 +9,8 @@ import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
 import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
+import net.slimediamond.espial.api.event.EspialPostInsertRecordEvent;
+import net.slimediamond.espial.api.event.EspialPreInsertActionEvent;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.query.Query;
@@ -45,7 +47,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class Database {
   boolean logPlayerPosition;
@@ -164,6 +165,16 @@ public class Database {
    * @throws JsonProcessingException If JSON errors.
    */
   public Optional<EspialRecord> submit(Action action) throws Exception {
+    EspialPreInsertActionEvent event = new EspialPreInsertActionEvent(action.getActor(), action);
+    Espial.getInstance()
+        .getEspialService()
+        .getEventManager()
+        .callAll(event);
+
+    if (event.isCancelled()) {
+      return Optional.empty();
+    }
+
     insertAction.setInt(1, action.getEventType().getId()); // Type
     insertAction.setTimestamp(2, Timestamp.from(Instant.now())); // Timestamp
     insertAction.setString(3, action.getActor().getUUID()); // Actor UUID
@@ -230,7 +241,14 @@ public class Database {
         }
       }
 
-      return Optional.of(this.queryId(id));
+      EspialRecord record = this.queryId(id);
+
+      Espial.getInstance()
+          .getEspialService()
+          .getEventManager()
+          .callAll(new EspialPostInsertRecordEvent(actor, record));
+
+      return Optional.of(record);
     } else {
       return Optional.empty();
     }
