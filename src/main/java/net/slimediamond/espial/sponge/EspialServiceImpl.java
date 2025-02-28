@@ -57,6 +57,11 @@ public class EspialServiceImpl implements EspialService {
   }
 
   @Override
+  public Optional<EspialRecord> getRecordById(int id) throws Exception {
+    return Optional.ofNullable(Espial.getInstance().getDatabase().queryId(id));
+  }
+
+  @Override
   public SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception {
     List<EspialRecord> actions = this.query(query);
 
