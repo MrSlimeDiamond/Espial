@@ -4,13 +4,11 @@ import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.api.query.QueryType;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +35,8 @@ public class ArgumentUtil {
               "Could not parse time argument "
                   + "'"
                   + context.requireOne(CommandParameters.TIME)
-                  + "'."));
+                  + "': "
+                  + e.getMessage()));
       return new Requirements(null, null, null, false);
     }
 
@@ -46,17 +45,6 @@ public class ArgumentUtil {
 
 
     return new Requirements(timestamp, uuids, blockIds, true);
-  }
-
-  private static <T> T parseOne(CommandContext context, String flag,
-                                Parameter.Value<T> parameter) {
-    return context.hasFlag(flag) ? context.requireOne(parameter) : null;
-  }
-
-  private static <T> Collection<? extends T> parseAll(CommandContext context,
-                                                      String flag,
-                                                      Parameter.Value<T> parameter) {
-    return context.hasFlag(flag) ? context.all(parameter) : null;
   }
 
   private static Timestamp parseTimestamp(CommandContext context, QueryType type) {

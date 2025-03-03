@@ -54,12 +54,6 @@ public class Format {
 
   public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
 
-  // Character pixel widths based on Minecraft's font
-  // https://chatgpt.com/share/67bb92d9-34cc-8012-ab3e-ab6df408b3ca
-  private static final int DEFAULT_WIDTH = 6;
-  private static final java.util.Map<Character, Integer> CHAR_WIDTHS =
-      java.util.Map.of('i', 3, 'l', 3, '.', 3, ' ', 4, 'M', 9, 'W', 9, '@', 9);
-
   public static Component prefix = Component.text("Espial › ").color(THEME_COLOR);
 
   public static Component component(Component component) {
@@ -107,59 +101,53 @@ public class Format {
     return dateFormat.format(new Date(date.getTime()));
   }
 
-  // ChatGPT...
   public static Component truncate(Component component) {
-    int maxWidth = 320;
+    return truncate(component, 60);
+  }
+
+  /**
+   * Truncate a string to make it shorter, and append a '...' if we can't fit it
+   *
+   * @param component Component to truncate
+   * @param max Maximum number of characters
+   * @return Truncated component
+   */
+  public static Component truncate(Component component, int max) {
     String ellipsis = " ...";
-    int ellipsisWidth = getPixelWidth(ellipsis);
-    int currentWidth = 0;
     List<Component> result = new ArrayList<>();
+    int count = 0;
 
     for (Segment seg : flatten(component)) {
       String text = seg.text;
       Style style = seg.style;
-      StringBuilder builder = new StringBuilder();
 
-      for (int i = 0; i < text.length(); i++) {
-        char c = text.charAt(i);
-        int cw = CHAR_WIDTHS.getOrDefault(c, DEFAULT_WIDTH);
-        if (currentWidth + cw > maxWidth - ellipsisWidth) {
-          if (!builder.isEmpty()) result.add(Component.text(builder.toString(), style));
-          result.add(Component.text(ellipsis, style));
-          return Component.join(JoinConfiguration.noSeparators(), result)
-              .hoverEvent(HoverEvent.showText(component));
-        }
-
-        builder.append(c);
-        currentWidth += cw;
+      if (count + text.length() > max) {
+        result.add(Component.text(text.substring(0, max - count) + ellipsis, style));
+        return Component.join(JoinConfiguration.noSeparators(), result)
+            .hoverEvent(HoverEvent.showText(component));
       }
-      if (!builder.isEmpty()) result.add(Component.text(builder.toString(), style));
+
+      result.add(Component.text(text, style));
+      count += text.length();
     }
     return Component.join(JoinConfiguration.noSeparators(), result);
   }
 
   private static List<Segment> flatten(Component comp) {
     List<Segment> segments = new ArrayList<>();
-    if (comp instanceof TextComponent) {
-      TextComponent tc = (TextComponent) comp;
-      if (!tc.content().isEmpty()) {
-        segments.add(new Segment(tc.content(), tc.style()));
-      }
+    if (comp instanceof TextComponent tc && !tc.content().isEmpty()) {
+      segments.add(new Segment(tc.content(), tc.style()));
     }
-    for (Component child : comp.children()) {
-      segments.addAll(flatten(child));
-    }
+    comp.children().forEach(child -> segments.addAll(flatten(child)));
     return segments;
   }
 
-  private static int getPixelWidth(String text) {
-    int width = 0;
-    for (char c : text.toCharArray()) {
-      width += CHAR_WIDTHS.getOrDefault(c, DEFAULT_WIDTH);
-    }
-    return width;
-  }
-
+    /**
+     * Get the display name of an action's actor.
+     *
+     * @param action The action
+     * @return Display name component
+     */
   public static Component getDisplayName(Action action) {
     String uuidString = action.getActor().getUUID();
 
@@ -191,6 +179,13 @@ public class Format {
         .orElseGet(() -> Component.text(uuidString).color(NAME_COLOR));
   }
 
+    /**
+     * Generate the lookup contents based on a set of {@link EspialRecord}s
+     *
+     * @param records The records to generate the content based on
+     * @param spread Whether to group the records
+     * @return List of {@link Component}s to display
+     */
   public static List<Component> generateLookupContents(List<EspialRecord> records, boolean spread) {
     List<Component> contents = new ArrayList<>();
 
