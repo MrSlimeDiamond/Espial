@@ -1,3 +1,7 @@
+before_script:
+ - mkdir -p libs/
+ - wget -O libs/worldedit-sponge.jar "https://ci.enginehub.org/guestAuth/repository/download/bt10/26202:id/worldedit-sponge-api14-7.3.11-SNAPSHOT-dist.jar"
+
 include:
   - component: $CI_SERVER_FQDN/$CI_PROJECT_NAMESPACE/ci-cd/gradle@v0.2.0
     inputs:
