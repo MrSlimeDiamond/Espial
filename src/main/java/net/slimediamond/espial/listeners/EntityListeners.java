@@ -7,6 +7,7 @@ import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import net.slimediamond.espial.sponge.user.ServerActor;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.hanging.ItemFrame;
 import org.spongepowered.api.entity.living.player.Player;
@@ -16,13 +17,19 @@ import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.util.Direction;
 
 public class EntityListeners {
   @Listener(order = Order.POST)
   public void onEntityDestruct(DestructEntityEvent event) {
     if (event.entity() instanceof Hanging hanging) {
       try {
-        NBTData nbtData = new JsonNBTData(hanging.hangingDirection().get(), null, null, false);
+        Direction hangingDirection = null;
+        if (hanging.supports(Keys.DIRECTION)) {
+          hangingDirection = hanging.hangingDirection().get();
+        }
+
+        NBTData nbtData = new JsonNBTData(hangingDirection, null, null, false);
 
         HangingDeathAction.Builder builder =
             HangingDeathAction.builder()
