@@ -19,6 +19,7 @@ import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.user.EspialActor;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
@@ -474,12 +475,7 @@ public class Database {
         return new BlockRecord(uid, timestamp, rolledBack, action);
       }
       if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
-        EntityType<?> entityType =
-            EntityTypes.registry()
-                .value(
-                    ResourceKey.of(
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+        EntityType<?> entityType = EntityTypes.registry().value(SpongeUtil.getResourceKey(blockId));
 
         action =
             HangingDeathAction.builder()
@@ -495,12 +491,7 @@ public class Database {
 
         return new EntityRecord(uid, timestamp, rolledBack, action);
       } else if (eventType.getActionType().equals(ActionType.ITEM_FRAME_REMOVE)) {
-        ItemType itemType =
-            ItemTypes.registry()
-                .value(
-                    ResourceKey.of(
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
-                        blockId.split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
+        ItemType itemType = ItemTypes.registry().value(SpongeUtil.getResourceKey(blockId));
 
         action =
             ItemFrameRemoveAction.builder()

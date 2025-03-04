@@ -5,8 +5,8 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import net.slimediamond.espial.util.BlockUtil;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -30,7 +30,7 @@ public class InteractListener {
       if (blocksToCheck.contains(blockType)) {
         BlockAction.builder()
             .event(EventTypes.MODIFY)
-            .blockId(BlockTypes.registry().valueKey(blockType).formatted())
+            .blockId(SpongeUtil.getBlockId(blockType))
             .world(event.block().world().formatted())
             .location(event.block().location().get())
             .actor(new EspialActorImpl(player))

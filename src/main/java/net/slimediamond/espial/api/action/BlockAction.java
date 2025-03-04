@@ -7,6 +7,7 @@ import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.submittable.Submittable;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.user.EspialActor;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
@@ -31,7 +32,11 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
 
   default ServerLocation getServerLocation() {
     return ServerLocation.of(
-        ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
+        SpongeUtil.getWorld(getWorld()).orElseThrow(() ->
+                new RuntimeException("Action stores an invalid world")),
+        getX(),
+        getY(),
+        getZ());
   }
 
   default BlockType getBlockType() {

@@ -12,6 +12,7 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.command.CommandExecutor;
@@ -54,7 +55,7 @@ public class NearbySignsCommand implements CommandExecutor {
                         .sort(Sort.REVERSE_CHRONOLOGICAL)
                         .blocks(
                             BlockUtil.SIGNS.stream()
-                                .map(blockType -> BlockTypes.registry().valueKey(blockType).formatted())
+                                .map(SpongeUtil::getBlockId)
                                 .toList())
                         .audience(player)
                         .spread(true)

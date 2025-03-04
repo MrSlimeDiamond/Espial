@@ -7,7 +7,7 @@ import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.submittable.Submittable;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.user.EspialActor;
-import org.spongepowered.api.ResourceKey;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -23,7 +23,11 @@ public interface HangingDeathAction extends EntityAction, NBTStorable, Submittab
 
   default ServerLocation getServerLocation() {
     return ServerLocation.of(
-        ResourceKey.of(getWorld().split(":")[0], getWorld().split(":")[1]), getX(), getY(), getZ());
+        SpongeUtil.getWorld(getWorld()).orElseThrow(() ->
+                new RuntimeException("Action stores an invalid world")),
+        getX(),
+        getY(),
+        getZ());
   }
 
   class Builder {
