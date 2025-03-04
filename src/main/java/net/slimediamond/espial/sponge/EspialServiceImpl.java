@@ -18,9 +18,12 @@ import net.slimediamond.espial.sponge.event.EventManagerImpl;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import net.slimediamond.espial.util.Format;
+import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.pagination.PaginationList;
+import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.api.world.server.ServerWorld;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -110,7 +113,22 @@ public class EspialServiceImpl implements EspialService {
   @Override
   public Optional<User> getBlockOwner(String world, int x, int y, int z)
       throws SQLException, ExecutionException, InterruptedException {
-    return Espial.getInstance().getDatabase().getBlockOwner(world, x, y, z);
+    Optional<User> userOptional = Espial.getInstance().getDatabase().getBlockOwner(world, x, y, z);
+
+    if (userOptional.isEmpty()) {
+      ServerWorld serverWorld = SpongeUtil.getWorld(world).orElseThrow(() ->
+              new RuntimeException("getBlockOwner supplied a non-existent " +
+                      "world."));
+      return ServerLocation.of(serverWorld, x, y, z).createSnapshot().creator().flatMap(uuid -> {
+          try {
+              return Sponge.server().userManager().load(uuid).get();
+          } catch (InterruptedException | ExecutionException e) {
+              throw new RuntimeException(e);
+          }
+      });
+    } else {
+      return userOptional;
+    }
   }
 
   private void process(List<EspialRecord> records, Query query, String argsPreview)
