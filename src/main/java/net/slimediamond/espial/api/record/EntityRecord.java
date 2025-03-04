@@ -9,6 +9,11 @@ import org.spongepowered.api.entity.Entity;
 
 import java.sql.Timestamp;
 
+/**
+ * An entity record.
+ *
+ * @author SlimeDiamond
+ */
 public class EntityRecord extends AbstractRecord {
   private final Action action;
 

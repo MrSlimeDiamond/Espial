@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 /**
  * Block groups and stuff
  *
- * @author Findlay Richardson (SlimeDiamond)
+ * @author SlimeDiamond
  * @author mrhell228
  */
 @SuppressWarnings("unchecked")

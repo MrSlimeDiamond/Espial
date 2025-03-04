@@ -5,7 +5,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
-import net.slimediamond.espial.api.nbt.NBTDataParser;
+import net.slimediamond.espial.util.NBTDataParser;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.BlockRecord;

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 /**
  * Stored NBT data on a record.
  *
- * @author Findlay Richardson (SlimeDiamond)
+ * @author SlimeDiamond
  */
 public interface NBTData {
 

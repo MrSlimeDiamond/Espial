@@ -5,6 +5,11 @@ import net.slimediamond.espial.api.transaction.TransactionStatus;
 
 import java.sql.Timestamp;
 
+/**
+ * A record from the database.
+ *
+ * @author SlimeDiamond
+ */
 public interface EspialRecord {
   /**
    * The ID (primary key value) of the record.

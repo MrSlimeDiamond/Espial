@@ -4,6 +4,11 @@ import net.slimediamond.espial.api.nbt.NBTData;
 
 import java.util.Optional;
 
+/**
+ * Something which can store NBT data
+ *
+ * @author SlimeDiamond
+ */
 public interface NBTStorable {
   /**
    * Get the NBT data if it is available.

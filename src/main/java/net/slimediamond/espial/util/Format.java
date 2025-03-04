@@ -14,7 +14,6 @@ import net.slimediamond.espial.api.action.HangingDeathAction;
 import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
 import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
-import net.slimediamond.espial.api.nbt.NBTDataParser;
 import net.slimediamond.espial.api.record.EspialRecord;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;

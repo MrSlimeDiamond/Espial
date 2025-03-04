@@ -1,5 +1,10 @@
 package net.slimediamond.espial.api.event;
 
+/**
+ * Manages events.
+ *
+ * @author SlimeDiamond
+ */
 public interface EventManager {
   /**
    * Call an event

@@ -2,6 +2,11 @@ package net.slimediamond.espial.api.action.event;
 
 import net.slimediamond.espial.api.action.ActionType;
 
+/**
+ * An event type
+ *
+ * @author SlimeDiamond
+ */
 public interface EventType {
 
   static Builder builder() {

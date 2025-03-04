@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Block log service
  *
- * @author Findlay Richardson (SlimeDiamond)
+ * @author SlimeDiamond
  */
 public interface EspialService {
   /**

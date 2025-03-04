@@ -33,7 +33,12 @@ public class EventTypes {
           .id(1)
           .build();
   public static final EventType DECAY =
-      EventType.builder().name("Decay").verb("decayed").action(ActionType.BLOCK).id(2).build();
+      EventType.builder()
+          .name("Decay")
+          .verb("decayed")
+          .action(ActionType.BLOCK)
+          .id(2)
+          .build();
   public static final EventType GROWTH =
       EventType.builder()
           .name("growth")
@@ -88,6 +93,7 @@ public class EventTypes {
           .action(ActionType.ITEM_FRAME_REMOVE)
           .id(10)
           .build();
+
   private static final List<EventType> types = new ArrayList<>();
   private static final Map<Integer, EventType> ids = new HashMap<>();
   private static final Map<Operation, EventType> operations =

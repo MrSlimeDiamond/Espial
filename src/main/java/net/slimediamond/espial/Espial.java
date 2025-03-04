@@ -86,17 +86,14 @@ public class Espial {
     Component message =
         Format.component(
             Component.text()
-                .append(
-                    Component.text("Interactive mode is enabled. Disable it with ")
+                .append(Component.text("Interactive mode is enabled. Disable it with ")
                         .color(NamedTextColor.WHITE)
                         .append(Component.text("/es i").color(NamedTextColor.YELLOW))
                         .append(Component.text(".").color(NamedTextColor.WHITE))));
     Task task =
         Task.builder()
-            .execute(
-                () ->
-                    inspectingPlayers.forEach(
-                        uuid -> {
+            .execute(() ->
+                    inspectingPlayers.forEach(uuid -> {
                           Sponge.server()
                               .player(uuid)
                               .ifPresent(

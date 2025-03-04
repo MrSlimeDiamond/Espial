@@ -3,6 +3,11 @@ package net.slimediamond.espial.api.action;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.user.EspialActor;
 
+/**
+ * An action done by a player
+ *
+ * @author SlimeDiamond
+ */
 public interface Action {
   /**
    * Get the actor of this action

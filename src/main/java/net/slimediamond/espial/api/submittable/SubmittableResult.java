@@ -3,7 +3,7 @@ package net.slimediamond.espial.api.submittable;
 /**
  * The result of a {@link Submittable} action.
  *
- * @author Findlay Richardson (SlimeDiamond)
+ * @author SlimeDiamond
  */
 public final class SubmittableResult<T> {
   private final T value;

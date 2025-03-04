@@ -6,7 +6,7 @@ import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
-import net.slimediamond.espial.api.nbt.NBTApplier;
+import net.slimediamond.espial.util.NBTApplier;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.query.Query;

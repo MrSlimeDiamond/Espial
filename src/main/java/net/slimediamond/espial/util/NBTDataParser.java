@@ -1,9 +1,9 @@
-package net.slimediamond.espial.api.nbt;
+package net.slimediamond.espial.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.util.Format;
+import net.slimediamond.espial.api.nbt.NBTData;
 
 import java.util.List;
 import java.util.Optional;

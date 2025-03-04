@@ -5,6 +5,12 @@ import net.slimediamond.espial.api.query.QueryType;
 
 import java.util.List;
 
+/**
+ * The result of a reversible {@link net.slimediamond.espial.api.query.Query}
+ * so that it can be undone/redone.
+ *
+ * @author SlimeDiamond
+ */
 public interface EspialTransaction {
   /**
    * The type of transaction this is

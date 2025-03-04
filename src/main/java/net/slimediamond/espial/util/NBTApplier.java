@@ -1,7 +1,8 @@
-package net.slimediamond.espial.api.nbt;
+package net.slimediamond.espial.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.Keys;
@@ -9,6 +10,12 @@ import org.spongepowered.api.data.Keys;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Applies NBT data for an Action.
+ * Currently implemented with {@link JsonNBTData}
+ *
+ * @author SlimeDiamond
+ */
 public class NBTApplier {
   public static NBTData createNBTData(BlockState blockState) {
     return createNBTData(new JsonNBTData(), blockState);

@@ -2,6 +2,11 @@ package net.slimediamond.espial.api.event;
 
 import net.slimediamond.espial.api.user.EspialActor;
 
+/**
+ * An event which can be cancelled
+ *
+ * @author SlimeDiamond
+ */
 public abstract class AbstractCancellable extends AbstractEvent {
   private boolean cancelled;
 

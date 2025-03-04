@@ -13,6 +13,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A query.
+ *
+ * @author SlimeDiamond
+ */
 public interface Query extends Submittable<List<EspialRecord>> {
   static Builder builder() {
     return new Builder();

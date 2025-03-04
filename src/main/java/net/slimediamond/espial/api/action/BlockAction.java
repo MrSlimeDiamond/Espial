@@ -18,6 +18,11 @@ import org.spongepowered.api.world.server.ServerLocation;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * An action that affects a block
+ *
+ * @author SlimeDiamond
+ */
 public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecord> {
   static Builder builder() {
     return new Builder();

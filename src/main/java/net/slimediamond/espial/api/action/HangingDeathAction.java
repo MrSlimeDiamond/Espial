@@ -13,6 +13,12 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Optional;
 
+/**
+ * An action which kills a hanging entity, such as
+ * an item frame, or a painting
+ *
+ * @author SlimeDiamond
+ */
 public interface HangingDeathAction extends EntityAction, NBTStorable, Submittable<EntityRecord> {
 
   static Builder builder() {

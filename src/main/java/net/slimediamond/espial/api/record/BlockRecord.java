@@ -14,6 +14,11 @@ import org.spongepowered.api.block.BlockTypes;
 import java.sql.Timestamp;
 import java.util.List;
 
+/**
+ * A block record.
+ *
+ * @author SlimeDiamond
+ */
 public class BlockRecord extends AbstractRecord {
   public BlockRecord(int id, Timestamp timestamp, boolean rolledBack, Action action) {
     super(id, timestamp, rolledBack, action);

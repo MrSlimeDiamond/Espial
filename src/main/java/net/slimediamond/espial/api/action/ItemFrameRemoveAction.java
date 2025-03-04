@@ -9,6 +9,11 @@ import net.slimediamond.espial.api.user.EspialActor;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.world.server.ServerLocation;
 
+/**
+ * An action that removes an item from an item frame
+ *
+ * @author SlimeDiamond
+ */
 public interface ItemFrameRemoveAction extends EntityAction, Submittable<EntityRecord> {
   static Builder builder() {
     return new Builder();

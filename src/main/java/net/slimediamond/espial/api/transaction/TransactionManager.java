@@ -1,5 +1,10 @@
 package net.slimediamond.espial.api.transaction;
 
+/**
+ * Manages {@link EspialTransaction}s.
+ *
+ * @author SlimeDiamond
+ */
 public interface TransactionManager {
   /**
    * Add a transaction to a user
