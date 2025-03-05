@@ -10,6 +10,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -129,7 +130,26 @@ public interface Query extends Submittable<List<EspialRecord>> {
     }
 
     public Builder players(@Nullable List<UUID> playerUUIDs) {
-      this.playerUUIDs = playerUUIDs;
+      if (playerUUIDs == null) return this;
+      if (this.playerUUIDs == null) {
+        this.playerUUIDs = playerUUIDs;
+      } else {
+        this.playerUUIDs.addAll(playerUUIDs);
+      }
+      return this;
+    }
+
+    public Builder addPlayers(@NonNull UUID... uuids) {
+      if (this.playerUUIDs == null) {
+        this.playerUUIDs = List.of(uuids);
+      } else {
+        this.playerUUIDs.addAll(List.of(uuids));
+      }
+      return this;
+    }
+
+    public Builder addPlayer(@NonNull UUID... players) {
+      this.addPlayers(players);
       return this;
     }
 
