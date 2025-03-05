@@ -3,6 +3,8 @@ import org.spongepowered.plugin.metadata.model.PluginDependency
 
 plugins {
     `java-library`
+    `maven-publish`
+    id("signing")
     id("org.spongepowered.gradle.plugin") version "2.2.0"
     id("com.gradleup.shadow") version "9.0.0-beta8"
 }
@@ -83,7 +85,7 @@ tasks.shadowJar {
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
 }
 
-tasks.register<Jar>("apiJar") {
+val apiJar by tasks.registering(Jar::class) {
     archiveClassifier.set("api")
     from(sourceSets.main.get().output)
     include("net/slimediamond/espial/api/**")
@@ -96,4 +98,64 @@ tasks.build {
 
 artifacts {
     archives(tasks.shadowJar)
+}
+
+java {
+  withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = "espial"
+
+            // Attach the API JAR
+            artifact(tasks["apiJar"]) {
+                classifier = "api"
+            }
+
+            pom {
+                name.set("Espial")
+                description.set("A plugin for looking up blocks and fixing grief")
+                url.set("https://github.com/MrSlimeDiamond/Espial")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("SlimeDiamond")
+                        name.set("Findlay Richardson")
+                        email.set("findlayrichardson3@gmail.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/MrSlimeDiamond/Espial.git")
+                    developerConnection.set("scm:git:ssh://github.com/MrSlimeDiamond/Espial.git")
+                    url.set("https://github.com/MrSlimeDiamond/Espial")
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/MrSlimeDiamond/Espial")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["maven"])
 }
