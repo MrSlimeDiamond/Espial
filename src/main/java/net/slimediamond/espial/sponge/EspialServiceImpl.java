@@ -15,7 +15,7 @@ import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.sponge.event.EventManagerImpl;
-import net.slimediamond.espial.sponge.transaction.EspialTransactionImpl;
+import net.slimediamond.espial.api.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.SpongeUtil;

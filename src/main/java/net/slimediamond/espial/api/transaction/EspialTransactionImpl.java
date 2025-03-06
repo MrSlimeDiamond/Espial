@@ -1,4 +1,4 @@
-package net.slimediamond.espial.sponge.transaction;
+package net.slimediamond.espial.api.transaction;
 
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.Espial;
@@ -6,7 +6,6 @@ import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.transaction.EspialTransaction;
 
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class EspialTransactionImpl implements EspialTransaction {
 
   public static int redo(List<Integer> ids, QueryType type) throws Exception {
     if (type == QueryType.ROLLBACK) {
-      // Restore all IDs
+      // Rollback all IDs
       for (int id : ids) {
         EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
         if (record instanceof BlockRecord) {

@@ -111,7 +111,7 @@ publishing {
 
             // Attach the API JAR
             artifact(tasks["apiJar"]) {
-                classifier = "api"
+                classifier = ""
             }
 
             pom {
@@ -151,6 +151,9 @@ publishing {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
                 password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
             }
+        }
+        maven {
+            url = uri("${System.getProperty("user.home")}/.m2/repository")
         }
     }
 }

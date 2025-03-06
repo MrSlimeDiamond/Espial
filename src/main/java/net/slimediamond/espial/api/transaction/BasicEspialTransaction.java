@@ -1,8 +1,7 @@
-package net.slimediamond.espial.sponge.transaction;
+package net.slimediamond.espial.api.transaction;
 
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.api.query.QueryType;
-import net.slimediamond.espial.api.transaction.EspialTransaction;
 
 import java.util.List;
 

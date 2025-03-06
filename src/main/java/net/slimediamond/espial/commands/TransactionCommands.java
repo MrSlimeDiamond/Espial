@@ -9,7 +9,7 @@ import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
-import net.slimediamond.espial.sponge.transaction.BasicEspialTransaction;
+import net.slimediamond.espial.api.transaction.BasicEspialTransaction;
 import net.slimediamond.espial.util.ArgumentUtil;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.PlayerSelectionUtil;
