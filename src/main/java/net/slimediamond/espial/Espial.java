@@ -6,6 +6,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.EspialServiceProvider;
 import net.slimediamond.espial.api.transaction.TransactionManager;
+import net.slimediamond.espial.commands.BaseCommand;
+import net.slimediamond.espial.commands.IsThisBlockMineCommand;
+import net.slimediamond.espial.commands.NearbySignsCommand;
+import net.slimediamond.espial.commands.WhoPlacedThisCommand;
+import net.slimediamond.espial.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.listeners.BlockListeners;
 import net.slimediamond.espial.listeners.EntityListeners;
 import net.slimediamond.espial.listeners.InteractListener;
@@ -118,7 +123,20 @@ public class Espial {
 
   @Listener
   public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
-    Commands.register(this.container, event);
+    // Root command (/espial)
+    register(event, new BaseCommand());
+
+    // Separate commands
+    register(event, new WhoPlacedThisCommand());
+    register(event, new IsThisBlockMineCommand());
+    register(event, new NearbySignsCommand());
+  }
+
+  private void register(RegisterCommandEvent<Command.Parameterized> event,
+                        AbstractCommand command) {
+    event.register(container, command.build(),
+            command.getAliases().get(0),
+            command.getAliases().toArray(new String[0]));
   }
 
   public void showPluginSplash() {

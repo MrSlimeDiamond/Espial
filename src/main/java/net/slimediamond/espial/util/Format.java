@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class Format {
+public final class Format {
   /* No initialization */
   private Format() {}
 
@@ -50,6 +50,7 @@ public class Format {
   public static final NamedTextColor HOVER_HINT_COLOR = HINT_COLOR;
   public static final NamedTextColor HOVER_TEXT_COLOR = NamedTextColor.GRAY;
   public static final NamedTextColor ERROR_COLOR = NamedTextColor.RED;
+  public static final NamedTextColor COMMAND_HINT_COLOR = NamedTextColor.AQUA;
 
   public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
 
@@ -85,6 +86,22 @@ public class Format {
 
   public static Component title(String text) {
     return Component.text().append(prefix).append(Component.text(text).color(TITLE_COLOR)).build();
+  }
+
+  public static Component commandHint(String command) {
+    return commandHint(command, command, null);
+  }
+
+  public static Component commandHint(String display, String command,
+                                      Component hover) {
+    Component component = Component.text("[").color(NamedTextColor.GOLD)
+            .append(Component.text(display).color(COMMAND_HINT_COLOR))
+            .append(Component.text("]").color(NamedTextColor.GOLD));
+    if (hover != null) {
+      component = component.hoverEvent(HoverEvent.showText(hover));
+    }
+
+    return component.clickEvent(ClickEvent.runCommand(command));
   }
 
   public static Component chip(String text, NamedTextColor color) {

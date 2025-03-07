@@ -1,20 +1,30 @@
 package net.slimediamond.espial.commands;
 
+import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.util.RayTraceUtil;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
 
-import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
+public class IsThisBlockMineCommand extends AbstractCommand {
 
-public class IsThisBlockMineCommand implements CommandExecutor {
-  @Override
+    /**
+     * Constructor for a command
+     */
+    public IsThisBlockMineCommand() {
+        super("espial.command.isthisblockmine", Component.text("Check if a " +
+                "block was placed by you"));
+        addAlias("isthisblockmine");
+        addAlias("isthismyblock");
+    }
+
+    @Override
   public CommandResult execute(CommandContext context) throws CommandException {
     if (context.cause().root() instanceof Player player) {
       RayTraceUtil.getBlockFacingPlayer(player)

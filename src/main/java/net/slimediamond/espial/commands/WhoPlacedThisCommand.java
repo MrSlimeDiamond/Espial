@@ -1,21 +1,26 @@
 package net.slimediamond.espial.commands;
 
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.RayTraceUtil;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.LocatableBlock;
 
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
+public class WhoPlacedThisCommand extends AbstractCommand {
 
-public class WhoPlacedThisCommand implements CommandExecutor {
+  public WhoPlacedThisCommand() {
+    super("espial.command.whoplacedthis", Component.text("Check who placed a " +
+            "block and nothing else"));
+    addAlias("whoplacedthis");
+  }
 
   @Override
   public CommandResult execute(CommandContext context) throws CommandException {
@@ -49,9 +54,7 @@ public class WhoPlacedThisCommand implements CommandExecutor {
                                         .append(
                                             Component.text(user.name()).color(Format.TEXT_COLOR))
                                         .append(Component.text(".").color(Format.THEME_COLOR)))));
-                  },
-                  () ->
-                      context.sendMessage(
+                  }, () -> context.sendMessage(
                           Format.error("Could not find a block owner which was a player.")));
         } catch (SQLException | ExecutionException | InterruptedException e) {
           throw new RuntimeException(e);

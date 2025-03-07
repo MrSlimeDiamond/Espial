@@ -1,7 +1,7 @@
 package net.slimediamond.espial.util;
 
-import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.api.query.QueryType;
+import net.slimediamond.espial.commands.subsystem.CommandParameters;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.registry.RegistryTypes;

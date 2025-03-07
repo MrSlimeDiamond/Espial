@@ -1,19 +1,21 @@
 package net.slimediamond.espial.commands;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.slimediamond.espial.CommandParameters;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.commands.subsystem.AbstractCommand;
+import net.slimediamond.espial.commands.subsystem.CommandParameters;
 import net.slimediamond.espial.util.Format;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -25,10 +27,17 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.math.vector.Vector3d;
 
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
+public class InspectCommand extends AbstractCommand {
 
-public class InspectCommand implements CommandExecutor {
+  /**
+   * Constructor for a command
+   */
+  InspectCommand() {
+    super("espial.command.inspect", Component.text("Inspect command callback " +
+            "for /espial lookup"));
+    addAlias("inspect");
+    showInHelp(false);
+  }
 
   @Override
   public CommandResult execute(CommandContext context) throws CommandException {
