@@ -36,6 +36,8 @@ public class InspectCommand extends AbstractCommand {
     super("espial.command.inspect", Component.text("Inspect command callback " +
             "for /espial lookup"));
     addAlias("inspect");
+    addChild(new StopCommand());
+    addParameter(CommandParameters.GENERIC_ID);
     showInHelp(false);
   }
 
@@ -50,7 +52,6 @@ public class InspectCommand extends AbstractCommand {
 
     if (!context.hasAny(CommandParameters.GENERIC_ID)) {
       this.stopOutline(player);
-      context.sendMessage(Component.text("No longer inspecting.").color(NamedTextColor.GREEN));
       return CommandResult.success();
     }
 
@@ -171,6 +172,7 @@ public class InspectCommand extends AbstractCommand {
       Espial.getInstance().getBlockOutlines().get(player).cancel();
       Espial.getInstance().getBlockOutlines().remove(player);
     }
+    player.sendMessage(Format.text("Inspection particles stopped."));
   }
 
   private void teleportPlayer(Player player, Action action) {
@@ -182,6 +184,23 @@ public class InspectCommand extends AbstractCommand {
       player.setRotation(playerRotation);
     } else {
       player.setPosition(new Vector3d(action.getX(), action.getY(), action.getZ()));
+    }
+  }
+
+  private class StopCommand extends AbstractCommand {
+    StopCommand() {
+      super("espial.command.inspect", Component.text("Stop inspecting"));
+      addAlias("stop");
+    }
+
+    @Override
+    public CommandResult execute(CommandContext context) {
+      if (context.subject() instanceof Player player) {
+        stopOutline(player);
+      } else {
+        context.sendMessage(Format.playersOnly());
+      }
+      return CommandResult.success();
     }
   }
 }
