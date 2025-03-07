@@ -183,7 +183,7 @@ public class TransactionCommands {
     RollbackId() {
       super(
           "espial.command.rollbackid",
-          Component.text("Roll back a record " + "using its internal ID"));
+          Component.text("Roll back a record using its internal ID"));
       addAlias("rollbackid");
       addAlias("rbid");
       addParameter(CommandParameters.GENERIC_ID);
@@ -227,7 +227,7 @@ public class TransactionCommands {
     RestoreId() {
       super(
           "espial.command.restoreid",
-          Component.text("Restore a record " + "using its internal ID"));
+          Component.text("Restore a record using its internal ID"));
       addAlias("restoreid");
       addAlias("rsid");
       addParameter(CommandParameters.GENERIC_ID);
