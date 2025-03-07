@@ -30,6 +30,8 @@ public class NearbySignsCommand extends AbstractCommand {
   public NearbySignsCommand() {
     super("espial.command.signs", Component.text("View signs near you"));
     addAlias("nearbysigns");
+    addAlias("signsnearby");
+    addAlias("signs");
     addFlag(Flag.builder().aliases("r", "range").setParameter(CommandParameters.LOOKUP_RANGE).build(),
             Component.text("The range to look up around you"));
   }

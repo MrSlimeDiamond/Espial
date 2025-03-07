@@ -22,6 +22,7 @@ public class IsThisBlockMineCommand extends AbstractCommand {
                 "block was placed by you"));
         addAlias("isthisblockmine");
         addAlias("isthismyblock");
+        addAlias("myblock");
     }
 
     @Override
