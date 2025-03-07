@@ -1,5 +1,6 @@
 package net.slimediamond.espial.util;
 
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.commands.subsystem.CommandParameters;
 import org.spongepowered.api.block.BlockState;
@@ -53,8 +54,10 @@ public class ArgumentUtil {
       return new Timestamp(DurationParser.parseDurationAndSubtract(time));
     }
     if (type != QueryType.LOOKUP) {
-      context.sendMessage(Format.defaults("-t 3d"));
-      return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
+      String defaultTime = Espial.getInstance().getConfig().get().getDefaultTime();
+      context.sendMessage(Format.defaults("-t " + defaultTime));
+//      return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
+      return Timestamp.from(Instant.ofEpochMilli(DurationParser.parseDurationAndSubtract(defaultTime)));
     } else {
       return Timestamp.from(Instant.ofEpochMilli(0)); // gotta catch 'em all!
     }

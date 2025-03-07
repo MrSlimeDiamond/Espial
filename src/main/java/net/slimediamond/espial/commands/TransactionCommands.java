@@ -326,9 +326,11 @@ public class TransactionCommands {
     public CommandResult execute(CommandContext context) throws CommandException {
       // TODO: Make this better, probably make a requirements class or something
       if (context.subject() instanceof Player player) {
-        int range = 5; // TODO: Default value
+        int range = Espial.getInstance().getConfig().get().getDefaultLookupRange();
         if (context.hasFlag("r")) {
           range = context.requireOne(CommandParameters.LOOKUP_RANGE);
+        } else {
+          player.sendMessage(Format.defaults("-r " + range));
         }
 
         Pair<ServerLocation, ServerLocation> selection =

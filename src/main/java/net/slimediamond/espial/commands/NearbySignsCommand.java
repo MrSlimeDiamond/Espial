@@ -43,9 +43,9 @@ public class NearbySignsCommand extends AbstractCommand {
       if (context.hasFlag("range")) {
         range = context.requireOne(CommandParameters.LOOKUP_RANGE);
       } else {
-        // Default to 5 blocks
-        context.sendMessage(Format.defaults("-r 5"));
-        range = 5;
+        // Default to the config value
+        range = Espial.getInstance().getConfig().get().getDefaultLookupRange();
+        context.sendMessage(Format.defaults("-r " + range));
       }
 
       Pair<ServerLocation, ServerLocation> locations =
