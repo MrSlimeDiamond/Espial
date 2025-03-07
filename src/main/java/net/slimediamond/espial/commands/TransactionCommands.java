@@ -35,9 +35,9 @@ public class TransactionCommands {
   private static final Map<Flag, Component> flags =
       Map.of(
           Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build(),
-              Component.text("The range to look up"),
+              Component.text("The range to query"),
           Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build(),
-              Component.text("Whether to use WorldEdit"),
+              Component.text("Use your WorldEdit selection"),
           Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build(),
               Component.text("Filter by a specific player"),
           Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build(),
