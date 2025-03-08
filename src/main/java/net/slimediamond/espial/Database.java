@@ -415,7 +415,7 @@ public class Database {
       uuid = null;
     }
 
-    boolean isPlayer = uuid == null;
+    boolean isPlayer = uuid != null;
 
     EspialActor actor =
         new EspialActor() {
