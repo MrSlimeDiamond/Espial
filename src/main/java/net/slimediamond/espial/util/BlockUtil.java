@@ -49,7 +49,7 @@ public class BlockUtil {
               BlockTypes.OAK_HANGING_SIGN,
               BlockTypes.SPRUCE_HANGING_SIGN,
               BlockTypes.WARPED_HANGING_SIGN,
-              BlockTypes.PALE_OAK_HANGING_SIGN,
+//              BlockTypes.PALE_OAK_HANGING_SIGN,
               BlockTypes.MANGROVE_HANGING_SIGN,
               // Wall hanging signs
               BlockTypes.ACACIA_WALL_HANGING_SIGN,
@@ -62,7 +62,7 @@ public class BlockUtil {
               BlockTypes.OAK_WALL_HANGING_SIGN,
               BlockTypes.SPRUCE_WALL_HANGING_SIGN,
               BlockTypes.WARPED_WALL_HANGING_SIGN,
-              BlockTypes.PALE_OAK_WALL_HANGING_SIGN,
+//              BlockTypes.PALE_OAK_WALL_HANGING_SIGN,
               BlockTypes.MANGROVE_WALL_HANGING_SIGN)
           .build();
   public static final HashSet<BlockType> AIR =
