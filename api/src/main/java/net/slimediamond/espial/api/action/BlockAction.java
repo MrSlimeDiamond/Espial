@@ -1,6 +1,6 @@
 package net.slimediamond.espial.api.action;
 
-import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -9,11 +9,13 @@ import net.slimediamond.espial.api.submittable.SubmittableResult;
 import net.slimediamond.espial.api.user.EspialActor;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.math.vector.Vector3i;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -110,6 +112,15 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
       this.x = location.blockX();
       this.y = location.blockY();
       this.z = location.blockZ();
+      this.world = location.worldKey().formatted();
+
+      return this;
+    }
+
+    public Builder position(Vector3i position) {
+      this.x = position.x();
+      this.y = position.y();
+      this.z = position.z();
 
       return this;
     }
@@ -117,6 +128,12 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
     public Builder world(String world) {
       this.world = world;
       return this;
+    }
+
+    public Builder snapshot(BlockSnapshot snapshot) {
+      return position(snapshot.position())
+              .world(snapshot.world().formatted())
+              .blockId(SpongeUtil.getBlockId(snapshot.state().type()));
     }
 
     public Builder event(EventType type) {
@@ -134,7 +151,7 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
         @Override
         public SubmittableResult<BlockRecord> submit() throws Exception {
           return (SubmittableResult<BlockRecord>)
-              Espial.getInstance().getEspialService().submitAction(this);
+            EspialProviders.getEspialService().submitAction(this);
         }
 
         @Override

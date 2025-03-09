@@ -1,13 +1,14 @@
 package net.slimediamond.espial.api.transaction;
 
 import net.kyori.adventure.audience.Audience;
-import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 
 import java.util.List;
+import java.util.Optional;
 
 public class EspialTransactionImpl implements EspialTransaction {
   private final List<Integer> ids;
@@ -27,44 +28,33 @@ public class EspialTransactionImpl implements EspialTransaction {
   }
 
   public static int undo(List<Integer> ids, QueryType type) throws Exception {
-    if (type == QueryType.ROLLBACK) {
-      // Restore all IDs
-      for (int id : ids) {
-        EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-        if (record instanceof BlockRecord) {
-          record.restore();
-        }
-      }
-    } else if (type == QueryType.RESTORE) {
-      for (int id : ids) {
-        EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-        if (record instanceof BlockRecord) {
-          record.rollback();
-        }
-      }
-    }
-
-    return ids.size();
+    return process(ids, type, true);
   }
 
   public static int redo(List<Integer> ids, QueryType type) throws Exception {
-    if (type == QueryType.ROLLBACK) {
-      // Rollback all IDs
-      for (int id : ids) {
-        EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-        if (record instanceof BlockRecord) {
-          record.rollback();
-        }
-      }
-    } else if (type == QueryType.RESTORE) {
-      for (int id : ids) {
-        EspialRecord record = Espial.getInstance().getDatabase().queryId(id);
-        if (record instanceof BlockRecord) {
-          record.restore();
+    return process(ids, type, false);
+  }
+
+  private static int process(List<Integer> ids, QueryType type,
+                            boolean isUndo) throws Exception {
+    for (int id : ids) {
+      Optional<EspialRecord> record = EspialProviders.getEspialService().queryId(id);
+      if (record.isPresent() && record.get() instanceof BlockRecord) {
+        if (type == QueryType.ROLLBACK) {
+          if (isUndo) {
+            record.get().restore();
+          } else {
+            record.get().rollback();
+          }
+        } else if (type == QueryType.RESTORE) {
+          if (isUndo) {
+            record.get().rollback();
+          } else {
+            record.get().restore();
+          }
         }
       }
     }
-
     return ids.size();
   }
 

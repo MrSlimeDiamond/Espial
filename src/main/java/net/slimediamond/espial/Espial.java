@@ -1,11 +1,11 @@
 package net.slimediamond.espial;
 
-import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
-import net.slimediamond.espial.api.EspialServiceProvider;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.transaction.TransactionManager;
+import net.slimediamond.espial.bridge.SpongeBridge;
 import net.slimediamond.espial.commands.BaseCommand;
 import net.slimediamond.espial.commands.IsThisBlockMineCommand;
 import net.slimediamond.espial.commands.NearbySignsCommand;
@@ -15,6 +15,7 @@ import net.slimediamond.espial.listeners.BlockListeners;
 import net.slimediamond.espial.listeners.EntityListeners;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
+import net.slimediamond.espial.listeners.PluginListeners;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.util.Format;
@@ -24,7 +25,6 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
@@ -35,7 +35,6 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.plugin.PluginContainer;
-import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,9 +44,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@Plugin("espial")
-public class Espial {
-  private static Espial instance;
+/**
+ * Main Espial plugin class
+ *
+ * @author SlimeDiamond
+ */
+public abstract class Espial {
+  protected static Espial instance;
+  protected SpongeBridge spongeBridge;
   private final PluginContainer container;
   private final Logger logger;
   private final ConfigurationReference<CommentedConfigurationNode> reference;
@@ -57,8 +61,7 @@ public class Espial {
   private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
   private Database database;
 
-  @Inject
-  Espial(
+  protected Espial(
       final PluginContainer container,
       final Logger logger,
       final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode>
@@ -67,36 +70,35 @@ public class Espial {
     this.logger = logger;
     this.reference = reference;
 
-    instance = this;
+    // for plugin construction, server starting, etc
+    Sponge.eventManager().registerListeners(container, new PluginListeners());
   }
 
   public static Espial getInstance() {
     return instance;
   }
 
-  @Listener
-  public void onConstructPlugin(final ConstructPluginEvent event)
-      throws ConfigurateException, SQLException {
+  public SpongeBridge getSpongeBridge() {
+    return spongeBridge;
+  }
+
+  public void onConstructPlugin(final ConstructPluginEvent event) throws ConfigurateException, SQLException {
     showPluginSplash();
 
     this.config = this.reference.referenceTo(EspialConfiguration.class);
     this.reference.save();
 
-    EspialServiceProvider.setEspialService(new EspialServiceImpl());
+    EspialProviders.setEspialService(new EspialServiceImpl());
 
     database = new Database();
     database.open(this.config.get().jdbc());
 
-    Component message =
-        Format.component(
-            Component.text()
+    Component message = Format.component(Component.text()
                 .append(Component.text("Interactive mode is enabled. Disable it with ")
                         .color(NamedTextColor.WHITE)
                         .append(Component.text("/es i").color(NamedTextColor.YELLOW))
                         .append(Component.text(".").color(NamedTextColor.WHITE))));
-    Task task =
-        Task.builder()
-            .execute(() ->
+    Task task = Task.builder().execute(() ->
                     inspectingPlayers.forEach(uuid -> {
                           Sponge.server()
                               .player(uuid)
@@ -112,7 +114,6 @@ public class Espial {
     Sponge.asyncScheduler().submit(task, "Espial interactive mode broadcast");
   }
 
-  @Listener
   public void onServerStarting(final StartingEngineEvent<Server> event) {
     Sponge.eventManager().registerListeners(container, new BlockListeners());
     Sponge.eventManager().registerListeners(container, new InteractListener());
@@ -121,7 +122,6 @@ public class Espial {
     Sponge.eventManager().registerListeners(container, new EntityListeners());
   }
 
-  @Listener
   public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
     // Root command (/espial)
     register(event, new BaseCommand());
@@ -156,7 +156,7 @@ public class Espial {
   }
 
   public EspialService getEspialService() {
-    return EspialServiceProvider.getEspialService();
+    return EspialProviders.getEspialService();
   }
 
   public TransactionManager getTransactionManager() {
