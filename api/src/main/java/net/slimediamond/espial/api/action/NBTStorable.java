@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.action;
 
 import net.slimediamond.espial.api.nbt.NBTData;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -22,5 +23,5 @@ public interface NBTStorable {
    *
    * @param data The {@link NBTData} to set it to.
    */
-  void setNBT(NBTData data);
+  void setNBT(@Nullable NBTData data);
 }

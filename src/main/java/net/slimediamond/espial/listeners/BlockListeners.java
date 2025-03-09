@@ -176,12 +176,10 @@ public class BlockListeners {
 
                 BlockAction.Builder builder =
                     BlockAction.builder()
-                        .blockId(snapshot.state().type().key(RegistryTypes.BLOCK_TYPE).formatted())
                         .event(type)
                         .actor(actor)
                         .event(EventTypes.fromSponge(transaction.operation()))
-                        .location(snapshot.location().get())
-                        .world(snapshot.location().get().worldKey().formatted());
+                        .snapshot(snapshot);
 
                 if (NBTApplier.update(jsonNBTData, snapshot.state())) {
                   builder.withNBTData(jsonNBTData);
