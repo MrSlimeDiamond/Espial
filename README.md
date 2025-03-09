@@ -16,10 +16,12 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
     * Look up a block. Defaults to the block you are looking at.
     * Flags:
       *  *[--spread | -s]* - Do not group outputs
-      *  Everything from query command flags (below).
+      * Everything from query command flags (below).
   * **near**
     * Permission: espial.command.lookup
     * Look up within 5 blocks of you. Basically an alias for **/es l -r 5**
+    * Flags:
+      * Everything from query command flags (below).
   * **rollback | rb**
     * Permission: espial.command.rollback
     * Roll back a block or a range. Defaults to the block you are looking at
@@ -54,7 +56,38 @@ Inspired by the likes of [CoreProtect](https://www.spigotmc.org/resources/corepr
   * Show the player who placed a block and nothing more.
 
 ## Query command flags
-*  *[--worldedit | -w]* - Use a WorldEdit range
-*  *[--range | -r \<range\>]* - Lookup a cuboid range
-*  *[--player | -p \<player name\>]* - Only look at actions from a specific player
-*  *[--block | -b \<block id\>]* - Only look at a specific block type
+| Aliases                            | Description                                 |
+|------------------------------------|---------------------------------------------|
+| *[--worldedit \| -w]*              | Use a WorldEdit range                       |
+| *[--range \| -r \<range\>]*        | Lookup a cuboid range                       |
+| *[--player \| -p \<player name\>]* | Only look at actions from a specific player |
+| *[--block \| -b \<block id\>]*     | Only look at a specific block type          |
+
+## Server admin usage
+> Espial only supports SpongeAPI 12+
+
+1. Download a jar file from [Ore](https://ore.spongepowered.org/SlimeDiamond/Espial/versions) or GitHub
+2. Download a database loader: Tested with [SqliteLoader](https://ore.spongepowered.org/whimxiqal/SqliteLoader) and 
+  [MySQLDriver](https://ore.spongepowered.org/Semenkovsky_Ivan/MySQLDriver). (MySQL/MariaDB is recommended)
+   1. If you are using MySQL/MariaDB, you will need to set up a database manually.
+
+## Compiling
+| Directory   | Description                     |
+|-------------|---------------------------------|
+| src/        | Common source code              |
+| api/        | API source code                 |
+| sponge/api* | SpongeAPI version specific code |
+
+### General compile
+Use `gradle build` and find the jars in `build/libs` (not in the submodules)
+
+| Pattern                                      | Description                  |
+|----------------------------------------------|------------------------------|
+| `build/libs/espial-api-*`                    | API jar files                |
+| `build/libs/espial-{version}-sponge-*.jar`   | SpongeAPI jar files          |
+
+Other jar files are not relevant.
+
+### Compile only a specific submodule
+You may use `gradle :submodule:build` to get a specific submodule's file. For example: `gradle :api:build` for an API 
+jar.

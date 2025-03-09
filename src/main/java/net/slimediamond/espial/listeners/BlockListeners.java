@@ -61,15 +61,7 @@ public class BlockListeners {
   @IsCancelled(Tristate.FALSE)
   public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
     @Nullable Living living;
-    Object source = event.cause().root();
-
-    if (event.cause().root() instanceof InteractBlockEvent.Primary.Start) {
-      source = ((InteractBlockEvent.Primary) event.cause().root()).source();
-    } else if (event.cause().root() instanceof InteractBlockEvent.Secondary.Pre) {
-      source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
-    } else if (event.cause().root() instanceof InteractItemEvent.Secondary) {
-      source = ((InteractItemEvent.Secondary) event.cause().root()).source();
-    }
+    Object source = Espial.getInstance().getSpongeBridge().getRootCause(event);
 
     if (source instanceof Player player) {
       if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {

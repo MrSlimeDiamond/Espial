@@ -1,6 +1,6 @@
 package net.slimediamond.espial.api.action;
 
-import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -134,7 +134,7 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
         @Override
         public SubmittableResult<BlockRecord> submit() throws Exception {
           return (SubmittableResult<BlockRecord>)
-              Espial.getInstance().getEspialService().submitAction(this);
+            EspialProviders.getEspialService().submitAction(this);
         }
 
         @Override

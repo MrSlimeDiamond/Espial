@@ -4,14 +4,14 @@ package net.slimediamond.espial.api;
  * An {@link EspialService} provider
  *
  * <p>Usage: <code>
- *     EspialService espialService = EspialServiceProvider.getEspialService();
+ *     EspialService espialService = EspialProviders.getEspialService();
  *
  *     // ... use EspialService ...
  * </code>
  *
  * @author SlimeDiamond
  */
-public final class EspialServiceProvider {
+public class EspialProviders {
   private static EspialService espialService;
 
   /**
@@ -28,6 +28,6 @@ public final class EspialServiceProvider {
    * @param espialService The service to set it to
    */
   public static void setEspialService(EspialService espialService) {
-    EspialServiceProvider.espialService = espialService;
+    EspialProviders.espialService = espialService;
   }
 }

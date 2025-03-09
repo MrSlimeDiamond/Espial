@@ -1,11 +1,11 @@
 package net.slimediamond.espial;
 
-import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
-import net.slimediamond.espial.api.EspialServiceProvider;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.transaction.TransactionManager;
+import net.slimediamond.espial.bridge.SpongeBridge;
 import net.slimediamond.espial.commands.BaseCommand;
 import net.slimediamond.espial.commands.IsThisBlockMineCommand;
 import net.slimediamond.espial.commands.NearbySignsCommand;
@@ -35,7 +35,6 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.plugin.PluginContainer;
-import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,9 +44,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@Plugin("espial")
-public class Espial {
-  private static Espial instance;
+public abstract class Espial {
+  protected static Espial instance;
+  protected SpongeBridge spongeBridge;
   private final PluginContainer container;
   private final Logger logger;
   private final ConfigurationReference<CommentedConfigurationNode> reference;
@@ -57,7 +56,6 @@ public class Espial {
   private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
   private Database database;
 
-  @Inject
   Espial(
       final PluginContainer container,
       final Logger logger,
@@ -66,12 +64,14 @@ public class Espial {
     this.container = container;
     this.logger = logger;
     this.reference = reference;
-
-    instance = this;
   }
 
   public static Espial getInstance() {
     return instance;
+  }
+
+  public SpongeBridge getSpongeBridge() {
+    return spongeBridge;
   }
 
   @Listener
@@ -82,7 +82,7 @@ public class Espial {
     this.config = this.reference.referenceTo(EspialConfiguration.class);
     this.reference.save();
 
-    EspialServiceProvider.setEspialService(new EspialServiceImpl());
+    EspialProviders.setEspialService(new EspialServiceImpl());
 
     database = new Database();
     database.open(this.config.get().jdbc());
@@ -156,7 +156,7 @@ public class Espial {
   }
 
   public EspialService getEspialService() {
-    return EspialServiceProvider.getEspialService();
+    return EspialProviders.getEspialService();
   }
 
   public TransactionManager getTransactionManager() {
