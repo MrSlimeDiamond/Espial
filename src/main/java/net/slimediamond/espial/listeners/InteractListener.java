@@ -30,9 +30,7 @@ public class InteractListener {
       if (blocksToCheck.contains(blockType)) {
         BlockAction.builder()
             .event(EventTypes.MODIFY)
-            .blockId(SpongeUtil.getBlockId(blockType))
-            .world(event.block().world().formatted())
-            .location(event.block().location().get())
+            .snapshot(event.block())
             .actor(new EspialActorImpl(player))
             .build()
             .submit();

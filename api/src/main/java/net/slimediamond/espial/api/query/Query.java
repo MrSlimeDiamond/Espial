@@ -1,7 +1,7 @@
 package net.slimediamond.espial.api.query;
 
 import net.kyori.adventure.audience.Audience;
-import net.slimediamond.espial.Espial;
+import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.Submittable;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
@@ -10,7 +10,6 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -182,7 +181,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
       return new Query() {
         @Override
         public SubmittableResult<List<EspialRecord>> submit() throws Exception {
-          return Espial.getInstance().getEspialService().submitQuery(this);
+          return EspialProviders.getEspialService().submitQuery(this);
         }
 
         @Override

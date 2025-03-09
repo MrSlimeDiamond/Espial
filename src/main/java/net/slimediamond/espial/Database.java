@@ -15,13 +15,12 @@ import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.Sort;
-import net.slimediamond.espial.api.record.BlockRecord;
-import net.slimediamond.espial.api.record.EntityRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.user.EspialActor;
+import net.slimediamond.espial.sponge.record.BlockRecordImpl;
+import net.slimediamond.espial.sponge.record.EntityRecordImpl;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
@@ -472,7 +471,7 @@ public class Database {
                 .build();
 
         // Make a new BlockRecord
-        return new BlockRecord(uid, timestamp, rolledBack, action);
+        return new BlockRecordImpl(uid, timestamp, rolledBack, action);
       }
       if (eventType.getActionType().equals(ActionType.HANGING_DEATH)) {
         EntityType<?> entityType = EntityTypes.registry().value(SpongeUtil.getResourceKey(blockId));
@@ -489,7 +488,7 @@ public class Database {
                 .withNBTData(getNBTdata(uid).orElse(null))
                 .build();
 
-        return new EntityRecord(uid, timestamp, rolledBack, action);
+        return new EntityRecordImpl(uid, timestamp, rolledBack, action);
       } else if (eventType.getActionType().equals(ActionType.ITEM_FRAME_REMOVE)) {
         ItemType itemType = ItemTypes.registry().value(SpongeUtil.getResourceKey(blockId));
 
@@ -504,7 +503,7 @@ public class Database {
                 .z(z)
                 .build();
 
-        return new EntityRecord(uid, timestamp, rolledBack, action);
+        return new EntityRecordImpl(uid, timestamp, rolledBack, action);
       } else {
         throw new Exception("Unsupported event type");
       }

@@ -41,6 +41,14 @@ public interface EspialService {
   List<EspialRecord> query(Query query) throws Exception;
 
   /**
+   * Query an ID
+   *
+   * @param id The ID to query
+   * @return Record, if applicable
+   */
+  Optional<EspialRecord> queryId(int id) throws Exception;
+
+  /**
    * Get an Espial record by its internal ID
    *
    * @param id ID to get from
