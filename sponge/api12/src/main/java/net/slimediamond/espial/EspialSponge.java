@@ -18,12 +18,13 @@ import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
 
+// API 12
 @Plugin("espial")
-public class EspialSpongeAPI12 extends Espial {
+public class EspialSponge extends Espial {
     @Inject
-    EspialSpongeAPI12(PluginContainer container,
-                      Logger logger,
-                      @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode> reference) {
+    EspialSponge(PluginContainer container,
+                 Logger logger,
+                 @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode> reference) {
         super(container, logger, reference);
 
         instance = this;

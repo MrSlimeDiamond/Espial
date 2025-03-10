@@ -64,6 +64,8 @@ public abstract class Espial {
     this.container = container;
     this.logger = logger;
     this.reference = reference;
+
+    Sponge.eventManager().registerListeners(container, this);
   }
 
   public static Espial getInstance() {

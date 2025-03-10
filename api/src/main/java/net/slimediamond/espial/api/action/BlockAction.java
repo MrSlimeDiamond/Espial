@@ -149,6 +149,7 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
     public BlockAction build() {
       return new BlockAction() {
         @Override
+        @SuppressWarnings("unchecked")
         public SubmittableResult<BlockRecord> submit() throws Exception {
           return (SubmittableResult<BlockRecord>)
             EspialProviders.getEspialService().submitAction(this);

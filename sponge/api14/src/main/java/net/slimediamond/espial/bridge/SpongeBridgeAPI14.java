@@ -4,7 +4,7 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 
-public class SpongeBridgeAPI14 implements SpongeBridge{
+public class SpongeBridgeAPI14 implements SpongeBridge {
     @Override
     public Object getRootCause(ChangeBlockEvent event) {
         Object source = event.cause().root();
