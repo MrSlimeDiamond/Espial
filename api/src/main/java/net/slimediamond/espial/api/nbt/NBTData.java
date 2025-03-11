@@ -28,6 +28,17 @@ public interface NBTData {
   Direction getDirection();
 
   /**
+   * Get the block which we should rollback to,
+   * in instances that a place action wasn't
+   * modifying air. Will be null if it's air or
+   * if it's anything but a place action.
+   *
+   * @return Block to rollback to
+   */
+  @Nullable
+  String getRollbackBlock();
+
+  /**
    * Get a block's axis (x, y, or z)
    *
    * @return Block axis
