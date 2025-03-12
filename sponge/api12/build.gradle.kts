@@ -14,7 +14,6 @@ repositories {
 }
 
 val spongeDefault: String by project
-val pluginVersion: String by project
 val pluginName: String by project
 val pluginId: String by project
 val pluginDescription: String by project
@@ -31,7 +30,7 @@ tasks.test {
 tasks.shadowJar {
     archiveClassifier.set("sponge-12")
     mergeServiceFiles()
-    archiveBaseName.set("${pluginId}-${pluginVersion}")
+    archiveBaseName.set(pluginId)
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
 }
 
@@ -58,7 +57,6 @@ sponge {
     }
     plugin(pluginId) {
         displayName(pluginName)
-        version(pluginVersion)
         entrypoint("net.slimediamond.espial.EspialSpongeAPI12")
         description(pluginDescription)
         dependency("spongeapi") {

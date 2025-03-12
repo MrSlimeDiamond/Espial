@@ -12,8 +12,6 @@ repositories {
 }
 
 val spongeDefault: String by project
-val pluginVersion: String by project
-version = pluginVersion
 
 dependencies {
     compileOnly("org.spongepowered:spongeapi:${spongeDefault}")
