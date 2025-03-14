@@ -279,7 +279,8 @@ public final class Format {
                 new BlockTracker(
                     displayName,
                     record.getAction().getEventType(),
-                    getItemDisplayName(record).color(ITEM_COLOR));
+                    getItemDisplayName(record).color(ITEM_COLOR),
+                    record.isRolledBack());
             groupedBlocks.put(key, groupedBlocks.getOrDefault(key, 0) + 1);
             long time = record.getTimestamp().getTime();
             latestTimes.put(key, Math.max(latestTimes.getOrDefault(key, 0L), time));
@@ -287,23 +288,25 @@ public final class Format {
 
       List<Map.Entry<BlockTracker, Integer>> sortedEntries =
           new ArrayList<>(groupedBlocks.entrySet());
-      sortedEntries.sort(
-          (e1, e2) -> Long.compare(latestTimes.get(e2.getKey()), latestTimes.get(e1.getKey())));
+      sortedEntries.sort((e1, e2) ->
+                  Long.compare(latestTimes.get(e2.getKey()), latestTimes.get(e1.getKey())));
 
-      sortedEntries.forEach(
-          entry -> {
+      sortedEntries.forEach(entry -> {
             BlockTracker key = entry.getKey();
             int count = entry.getValue();
-            contents.add(
-                Component.text()
+            TextComponent.Builder builder = Component.text()
                     .append(key.name())
                     .append(Component.space())
                     .append(
-                        makeHoverableAction(entry.getKey().eventType(), true).color(ACTION_COLOR))
+                            makeHoverableAction(entry.getKey().eventType(), true).color(ACTION_COLOR))
                     .append(Component.space())
                     .append(Component.text((count > 1 ? count + "x " : "")).color(STACK_COLOR))
-                    .append(entry.getKey().block().color(ITEM_COLOR))
-                    .build());
+                    .append(entry.getKey().block().color(ITEM_COLOR));
+
+            if (key.rolledBack()) {
+              builder.decorate(TextDecoration.STRIKETHROUGH);
+            }
+            contents.add(builder.build());
           });
     }
     return contents;
@@ -325,8 +328,7 @@ public final class Format {
                         .append(Component.text(eventType.getName()).color(HOVER_TEXT_COLOR))
                         .append(Component.newline())
                         .append(Component.text("Description: ").color(HOVER_HINT_COLOR))
-                        .append(
-                            Component.text(eventType.getDescription()).color(HOVER_TEXT_COLOR)))));
+                        .append(Component.text(eventType.getDescription()).color(HOVER_TEXT_COLOR)))));
   }
 
   public static Component getItemDisplayName(EspialRecord record) {
@@ -344,7 +346,7 @@ public final class Format {
     return displayName;
   }
 
-  private record BlockTracker(Component name, EventType eventType, Component block) {}
+  private record BlockTracker(Component name, EventType eventType, Component block, boolean rolledBack) {}
 
   private record Segment(String text, Style style) {}
 }
