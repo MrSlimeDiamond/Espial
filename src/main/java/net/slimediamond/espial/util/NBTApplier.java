@@ -25,33 +25,31 @@ public class NBTApplier {
     AtomicBoolean modified = new AtomicBoolean(false);
 
     if (blockState.supports(Keys.DIRECTION)) {
-      blockState
-          .get(Keys.DIRECTION)
-          .ifPresent(
-              direction -> {
-                modified.set(true);
-                nbtData.setDirection(direction);
-              });
+      blockState.get(Keys.DIRECTION).ifPresent(direction -> {
+        modified.set(true);
+        nbtData.setDirection(direction);
+      });
     }
 
     if (blockState.supports(Keys.IS_WATERLOGGED)) {
-      blockState
-          .get(Keys.IS_WATERLOGGED)
-          .ifPresent(
-              waterlogged -> {
-                modified.set(true);
-                nbtData.setWaterlogged(waterlogged);
-              });
+      blockState.get(Keys.IS_WATERLOGGED).ifPresent(waterlogged -> {
+        modified.set(true);
+        nbtData.setWaterlogged(waterlogged);
+      });
     }
 
     if (blockState.supports(Keys.AXIS)) {
-      blockState
-          .get(Keys.AXIS)
-          .ifPresent(
-              axis -> {
-                modified.set(true);
-                nbtData.setAxis(axis);
-              });
+      blockState.get(Keys.AXIS).ifPresent(axis -> {
+        modified.set(true);
+        nbtData.setAxis(axis);
+      });
+    }
+
+    if (blockState.supports(Keys.GROWTH_STAGE)) {
+        blockState.get(Keys.GROWTH_STAGE).ifPresent(growthStage -> {
+            modified.set(true);
+            nbtData.setGrowthStage(growthStage);
+        });
     }
 
     return modified.get();

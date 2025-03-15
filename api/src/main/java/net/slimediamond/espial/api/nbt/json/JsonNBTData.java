@@ -21,6 +21,9 @@ public class JsonNBTData implements NBTData {
   @JsonProperty("axis")
   private Axis axis;
 
+  @JsonProperty("growth_stage")
+  private Integer growthStage;
+
   @JsonProperty("rollback_block")
   private String rollbackBlock;
 
@@ -36,11 +39,13 @@ public class JsonNBTData implements NBTData {
   public JsonNBTData(
       @JsonProperty("direction") Direction direction,
       @JsonProperty("axis") Axis axis,
+      @JsonProperty("growth_stage") Integer growthStage,
       @JsonProperty("rollback_block") String rollbackBlock,
       @JsonProperty("signData") JsonSignData signData,
       @JsonProperty("waterlogged") boolean waterlogged) {
     this.direction = direction;
     this.axis = axis;
+    this.growthStage = growthStage;
     this.rollbackBlock = rollbackBlock;
     this.signData = signData;
     this.waterlogged = waterlogged;
@@ -76,6 +81,12 @@ public class JsonNBTData implements NBTData {
 
   @Nullable
   @Override
+  public Integer getGrowthStage() {
+    return growthStage;
+  }
+
+  @Nullable
+  @Override
   public String getRollbackBlock() {
     return rollbackBlock;
   }
@@ -91,6 +102,10 @@ public class JsonNBTData implements NBTData {
 
   public void setAxis(Axis axis) {
     this.axis = axis;
+  }
+
+  public void setGrowthStage(Integer growthStage) {
+    this.growthStage = growthStage;
   }
 
   public void setRollbackBlock(String rollbackBlock) {

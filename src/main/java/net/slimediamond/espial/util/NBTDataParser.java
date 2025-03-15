@@ -54,6 +54,14 @@ public class NBTDataParser {
       shouldReturn = true;
     }
 
+    if (data.getGrowthStage() != null) {
+      builder.append(Component.newline());
+      builder.append(Component.text("Growth stage: ").color(Format.HOVER_HINT_COLOR));
+      builder.append(Component.text(data.getGrowthStage().toString()).color(Format.HOVER_TEXT_COLOR));
+
+      shouldReturn = true;
+    }
+
     if (data.isWaterlogged()) {
       builder.append(Component.newline());
       builder.append(Component.text("Waterlogged: ").color(Format.HOVER_HINT_COLOR));

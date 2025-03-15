@@ -57,18 +57,18 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
   default BlockState getState() {
     AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
     try {
-      this.getNBT()
-          .ifPresent(
-              nbtData -> {
-                if (nbtData.getDirection() != null) {
-                  blockState.set(
-                      blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
-                }
-
-                if (nbtData.getAxis() != null) {
-                  blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
-                }
-              });
+      this.getNBT().ifPresent(nbtData -> {
+          if (nbtData.getDirection() != null) {
+            blockState.set(
+                blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+          }
+          if (nbtData.getAxis() != null) {
+            blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+          }
+          if (nbtData.getGrowthStage() != null) {
+            blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
+          }
+        });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

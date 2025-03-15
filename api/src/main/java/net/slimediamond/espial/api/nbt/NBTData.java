@@ -28,6 +28,14 @@ public interface NBTData {
   Direction getDirection();
 
   /**
+   * Get a block's growth stage
+   *
+   * @return Growth stage
+   */
+  @Nullable
+  Integer getGrowthStage();
+
+  /**
    * Get the block which we should rollback to,
    * in instances that a place action wasn't
    * modifying air. Will be null if it's air or

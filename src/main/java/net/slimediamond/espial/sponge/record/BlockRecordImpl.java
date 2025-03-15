@@ -21,8 +21,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class BlockRecordImpl extends BlockRecord {
-    public BlockRecordImpl(int id, Timestamp timestamp, boolean rolledBack,
-                           Action action) {
+    public BlockRecordImpl(
+            int id,
+            Timestamp timestamp,
+            boolean rolledBack,
+            Action action
+    ) {
         super(id, timestamp, rolledBack, action);
     }
 
