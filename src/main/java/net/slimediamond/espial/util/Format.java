@@ -245,20 +245,14 @@ public final class Format {
                                 .build())));
 
             if (record.getAction() instanceof NBTStorable nbt) {
-              nbt.getNBT()
-                  .flatMap(NBTDataParser::parseNBT)
-                  .ifPresent(
-                      component -> {
-                        msg.append(
-                            Component.text(" (...)")
-                                .color(NamedTextColor.GRAY)
-                                .hoverEvent(
-                                    HoverEvent.showText(
-                                        component(
-                                            Component.text()
-                                                .color(NamedTextColor.WHITE)
-                                                .append(component)))));
-                      });
+              nbt.getNBT().flatMap(NBTDataParser::parseNBT)
+                      .ifPresent(component ->
+                              msg.append(Component.text(" (...)")
+                              .color(NamedTextColor.GRAY)
+                              .hoverEvent(HoverEvent.showText(title("NBT Data")
+                                      .append(Component.text()
+                                              .color(NamedTextColor.WHITE)
+                                              .append(component))))));
             }
 
             if (record.isRolledBack()) {
