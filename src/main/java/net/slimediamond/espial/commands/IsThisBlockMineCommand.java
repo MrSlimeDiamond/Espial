@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.commands.subsystem.AbstractCommand;
+import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.RayTraceUtil;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -73,6 +74,8 @@ public class IsThisBlockMineCommand extends AbstractCommand {
                                     "perhaps try to move closer?")
                         .color(NamedTextColor.RED));
               });
+    } else {
+      context.sendMessage(Format.playersOnly());
     }
     return CommandResult.success();
   }
