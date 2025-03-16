@@ -2,10 +2,8 @@ package net.slimediamond.espial;
 
 import com.google.inject.Inject;
 import net.slimediamond.espial.bridge.SpongeBridgeAPI14;
-import net.slimediamond.espial.listeners.PluginListeners;
 import net.slimediamond.espial.util.BlockUtil;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;

@@ -8,12 +8,15 @@ public class SpongeBridgeAPI14 implements SpongeBridge {
   @Override
   public Object getRootCause(ChangeBlockEvent event) {
     Object source = event.cause().root();
-    if (event.cause().root() instanceof InteractBlockEvent.Primary.Start) {
-      source = ((InteractBlockEvent.Primary) event.cause().root()).source();
-    } else if (event.cause().root() instanceof InteractBlockEvent.Secondary.Pre) {
-      source = ((InteractBlockEvent.Secondary) event.cause().root()).source();
-    } else if (event.cause().root() instanceof InteractItemEvent.Secondary) {
-      source = ((InteractItemEvent.Secondary) event.cause().root()).source();
+
+    if (source instanceof InteractBlockEvent.Primary primary) {
+      return primary.source();
+    } else if (source instanceof InteractBlockEvent.Secondary secondary) {
+      return secondary.source();
+    } else if (source instanceof InteractItemEvent.Secondary itemSecondary) {
+      return itemSecondary.source();
+    } else if (source instanceof ChangeBlockEvent.All all) {
+      return getRootCause(all);
     }
 
     return source;
