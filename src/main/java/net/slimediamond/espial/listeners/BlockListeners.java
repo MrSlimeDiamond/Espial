@@ -85,22 +85,12 @@ public class BlockListeners {
     if (source instanceof Living) {
       living = (Living) source;
     } else {
-      if (!Espial.getInstance().getConfig().get().logServerChanges()) {
         return;
-      }
-      living = null; // Server action
     }
 
     event.transactions()
         .forEach(transaction -> {
-              // These are almost always useless, and just flood the database.
-              // It's stuff like "this water spread"
-
-              if (transaction.operation().equals(Operations.MODIFY.get()) && living == null) {
-                return;
-              }
-
-              try {
+            try {
                 EventType type = EventTypes.fromSponge(transaction.operation());
                 BlockSnapshot snapshot;
 
