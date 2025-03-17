@@ -1,12 +1,15 @@
+import org.spongepowered.gradle.plugin.config.PluginLoaders
+import org.spongepowered.plugin.metadata.model.PluginDependency
+
 plugins {
     `java-library`
     `maven-publish`
     id("signing")
+    id("org.spongepowered.gradle.plugin") version "2.3.0"
     id("com.gradleup.shadow") version "9.0.0-beta8"
 }
 
 group = "net.slimediamond"
-version = "1.2.2"
 
 repositories {
     mavenCentral()
@@ -14,6 +17,9 @@ repositories {
 }
 
 val spongeDefault: String by project
+val pluginName: String by project
+val pluginId: String by project
+val pluginDescription: String by project
 
 // build in the same location
 subprojects {
@@ -69,11 +75,47 @@ tasks.shadowJar {
     archiveClassifier.set("")
     mergeServiceFiles()
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
-
-    dependsOn(":sponge:api12:shadowJar")
-    dependsOn(":sponge:api14:shadowJar")
 }
 
 artifacts {
     archives(tasks.shadowJar)
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.jar {
+    dependsOn(tasks.shadowJar)
+    enabled = false
+}
+
+artifacts {
+    archives(tasks.shadowJar)
+}
+
+sponge {
+    apiVersion(spongeDefault)
+    license("MIT")
+    loader {
+        name(PluginLoaders.JAVA_PLAIN)
+        version("1.0")
+    }
+    plugin(pluginId) {
+        displayName(pluginName)
+        entrypoint("net.slimediamond.espial.Espial")
+        description(pluginDescription)
+        dependency("spongeapi") {
+            loadOrder(PluginDependency.LoadOrder.AFTER)
+            optional(false)
+        }
+        dependency("worldedit") {
+            loadOrder(PluginDependency.LoadOrder.AFTER)
+            version("7.1.0")
+            optional(true)
+        }
+        contributor("SlimeDiamond") {
+            description("Lead Developer")
+        }
+    }
 }

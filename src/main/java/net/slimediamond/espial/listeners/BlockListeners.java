@@ -32,6 +32,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class BlockListeners {
   @Listener(order = Order.EARLY)
@@ -59,33 +60,33 @@ public class BlockListeners {
   @Listener(order = Order.POST)
   @IsCancelled(Tristate.FALSE)
   public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
-    @Nullable Living living;
-    Object source = Espial.getInstance().getSpongeBridge().getRootCause(event);
+    Living living = event.cause().first(Living.class).orElse(null);
 
-    if (source instanceof Player player) {
-      if (Espial.getInstance().getInspectingPlayers().contains(player.profile().uuid())) {
-
-        event.setCancelled(true);
-
-        BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
-
-        Query.builder()
-            .type(QueryType.LOOKUP)
-            .min(block.location().get())
-            .caller(player)
-            .sort(Sort.REVERSE_CHRONOLOGICAL)
-            .audience(player)
-            .spread(true)
-            .build()
-            .submit();
+    // Only track changes from living entities
+    // which can modify blocks
+    if (living == null) {
         return;
-      }
     }
 
-    if (source instanceof Living) {
-      living = (Living) source;
-    } else {
-        return;
+    Optional<Player> player = event.cause().first(Player.class);
+    if (player.isPresent()) {
+        if (Espial.getInstance().getInspectingPlayers().contains(player.get().profile().uuid())) {
+
+            event.setCancelled(true);
+
+            BlockSnapshot block = event.transactions().stream().findAny().get().defaultReplacement();
+
+            Query.builder()
+                    .type(QueryType.LOOKUP)
+                    .min(block.location().get())
+                    .caller(player)
+                    .sort(Sort.REVERSE_CHRONOLOGICAL)
+                    .audience(player.get())
+                    .spread(true)
+                    .build()
+                    .submit();
+            return;
+        }
     }
 
     event.transactions()

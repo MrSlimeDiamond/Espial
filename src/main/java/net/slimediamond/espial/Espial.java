@@ -1,5 +1,6 @@
 package net.slimediamond.espial;
 
+import com.google.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
@@ -35,6 +36,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.plugin.PluginContainer;
+import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -49,7 +51,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @author SlimeDiamond
  */
-public abstract class Espial {
+@Plugin("espial")
+public class Espial {
   protected static Espial instance;
   protected SpongeBridge spongeBridge;
   private final PluginContainer container;
@@ -61,6 +64,7 @@ public abstract class Espial {
   private ValueReference<EspialConfiguration, CommentedConfigurationNode> config;
   private Database database;
 
+  @Inject
   protected Espial(
       final PluginContainer container,
       final Logger logger,

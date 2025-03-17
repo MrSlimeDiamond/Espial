@@ -26,6 +26,7 @@ public class BlockRecordImpl extends BlockRecord {
 
   private TransactionStatus doRollback(BlockAction action) throws Exception {
     EventType eventType = action.getEventType();
+
     if (eventType.equals(EventTypes.BREAK)) {
       action.getServerLocation().setBlock(action.getState());
       doSignRollback(action);
@@ -36,11 +37,13 @@ public class BlockRecordImpl extends BlockRecord {
     } else if (eventType.equals(EventTypes.MODIFY)) {
       return rollbackModification(action);
     }
+
     return TransactionStatus.UNSUPPORTED;
   }
 
   private TransactionStatus doRestore(BlockAction action) throws Exception {
     EventType eventType = action.getEventType();
+
     if (eventType.equals(EventTypes.PLACE)) {
       action.getServerLocation().setBlock(action.getState());
       doSignRollback(action);
@@ -51,6 +54,7 @@ public class BlockRecordImpl extends BlockRecord {
     } else if (eventType.equals(EventTypes.MODIFY)) {
       return restoreModification(action);
     }
+
     return TransactionStatus.UNSUPPORTED;
   }
 
