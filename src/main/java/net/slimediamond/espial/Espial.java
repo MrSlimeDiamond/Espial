@@ -16,7 +16,6 @@ import net.slimediamond.espial.listeners.BlockListeners;
 import net.slimediamond.espial.listeners.EntityListeners;
 import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
-import net.slimediamond.espial.listeners.PluginListeners;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.util.Format;
@@ -26,6 +25,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
@@ -70,12 +70,11 @@ public class Espial {
       final Logger logger,
       final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode>
               reference) {
+    instance = this;
+
     this.container = container;
     this.logger = logger;
     this.reference = reference;
-
-    // for plugin construction, server starting, etc
-    Sponge.eventManager().registerListeners(container, new PluginListeners());
   }
 
   public static Espial getInstance() {
@@ -86,6 +85,7 @@ public class Espial {
     return spongeBridge;
   }
 
+  @Listener
   public void onConstructPlugin(final ConstructPluginEvent event) throws ConfigurateException, SQLException {
     showPluginSplash();
 
@@ -118,6 +118,7 @@ public class Espial {
     Sponge.asyncScheduler().submit(task, "Espial interactive mode broadcast");
   }
 
+  @Listener
   public void onServerStarting(final StartingEngineEvent<Server> event) {
     Sponge.eventManager().registerListeners(container, new BlockListeners());
     Sponge.eventManager().registerListeners(container, new InteractListener());
@@ -126,6 +127,7 @@ public class Espial {
     Sponge.eventManager().registerListeners(container, new EntityListeners());
   }
 
+  @Listener
   public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
     // Root command (/espial)
     register(event, new BaseCommand());
