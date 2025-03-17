@@ -6,7 +6,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.transaction.TransactionManager;
-import net.slimediamond.espial.bridge.SpongeBridge;
 import net.slimediamond.espial.commands.BaseCommand;
 import net.slimediamond.espial.commands.IsThisBlockMineCommand;
 import net.slimediamond.espial.commands.NearbySignsCommand;
@@ -54,7 +53,6 @@ import java.util.concurrent.TimeUnit;
 @Plugin("espial")
 public class Espial {
   protected static Espial instance;
-  protected SpongeBridge spongeBridge;
   private final PluginContainer container;
   private final Logger logger;
   private final ConfigurationReference<CommentedConfigurationNode> reference;
@@ -79,10 +77,6 @@ public class Espial {
 
   public static Espial getInstance() {
     return instance;
-  }
-
-  public SpongeBridge getSpongeBridge() {
-    return spongeBridge;
   }
 
   @Listener
