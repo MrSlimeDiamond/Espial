@@ -8,19 +8,19 @@ import java.util.List;
  * @author SlimeDiamond
  */
 public interface SignData {
-  /**
-   * The front text of a sign, stored as serialized
-   * {@link net.kyori.adventure.text.Component}s
-   *
-   * @return Sign front text
-   */
-  List<String> getFrontText();
+    /**
+     * The front text of a sign, stored as serialized
+     * {@link net.kyori.adventure.text.Component}s
+     *
+     * @return Sign front text
+     */
+    List<String> getFrontText();
 
-  /**
-   * The back text of a sign, stored as serialized
-   * {@link net.kyori.adventure.text.Component}s
-   *
-   * @return Sign back text
-   */
-  List<String> getBackText();
+    /**
+     * The back text of a sign, stored as serialized
+     * {@link net.kyori.adventure.text.Component}s
+     *
+     * @return Sign back text
+     */
+    List<String> getBackText();
 }

@@ -6,20 +6,20 @@ package net.slimediamond.espial.api.transaction;
  * @author SlimeDiamond
  */
 public enum TransactionStatus {
-  /**
-   * This transaction has already been rolled back or restored.
-   */
-  ALREADY_DONE,
-  /**
-   * Completed successfully
-   */
-  SUCCESS,
-  /**
-   * There is not yet an implementation for this
-   */
-  UNSUPPORTED,
-  /**
-   * Something went wrong
-   */
-  FAILURE
+    /**
+     * This transaction has already been rolled back or restored.
+     */
+    ALREADY_DONE,
+    /**
+     * Completed successfully
+     */
+    SUCCESS,
+    /**
+     * There is not yet an implementation for this
+     */
+    UNSUPPORTED,
+    /**
+     * Something went wrong
+     */
+    FAILURE
 }

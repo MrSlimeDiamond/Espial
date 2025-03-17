@@ -9,4 +9,5 @@ import java.lang.annotation.RetentionPolicy;
  * @author SlimeDiamond
  */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EspialEventListener {}
+public @interface EspialEventListener {
+}

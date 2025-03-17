@@ -20,61 +20,61 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.util.Direction;
 
 public class EntityListeners {
-  @Listener(order = Order.POST)
-  public void onEntityDestruct(DestructEntityEvent event) {
-    if (event.entity() instanceof Hanging hanging) {
-      try {
-        Direction hangingDirection = null;
-        if (hanging.supports(Keys.DIRECTION)) {
-          hangingDirection = hanging.hangingDirection().get();
-        }
+    @Listener(order = Order.POST)
+    public void onEntityDestruct(DestructEntityEvent event) {
+        if (event.entity() instanceof Hanging hanging) {
+            try {
+                Direction hangingDirection = null;
+                if (hanging.supports(Keys.DIRECTION)) {
+                    hangingDirection = hanging.hangingDirection().get();
+                }
 
-        NBTData nbtData = new JsonNBTData(hangingDirection, null, null, null, null, false);
+                NBTData nbtData = new JsonNBTData(hangingDirection, null, null, null, null, false);
 
-        HangingDeathAction.Builder builder = HangingDeathAction.builder()
-                .entity(hanging.type())
-                .world(event.entity().serverLocation().worldKey().formatted())
-                .location(event.entity().serverLocation())
-                .event(EventTypes.HANGING_DEATH)
-                .withNBTData(nbtData);
+                HangingDeathAction.Builder builder = HangingDeathAction.builder()
+                        .entity(hanging.type())
+                        .world(event.entity().serverLocation().worldKey().formatted())
+                        .location(event.entity().serverLocation())
+                        .event(EventTypes.HANGING_DEATH)
+                        .withNBTData(nbtData);
 
-        if (event.cause().root() instanceof Player player) {
-          builder.actor(new EspialActorImpl(player));
-        } else {
-          // Likely caused by the block an item frame is on
-          // was broken or something similar.
+                if (event.cause().root() instanceof Player player) {
+                    builder.actor(new EspialActorImpl(player));
+                } else {
+                    // Likely caused by the block an item frame is on
+                    // was broken or something similar.
 
-          // TODO: We should track the contents of the item frame here
-          builder.actor(new ServerActor());
-        }
+                    // TODO: We should track the contents of the item frame here
+                    builder.actor(new ServerActor());
+                }
 
-        builder.build().submit();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  @Listener(order = Order.POST)
-  public void onAttackEntity(AttackEntityEvent event) throws Exception {
-    // log item frame contents when it's removed
-    if (event.entity() instanceof ItemFrame itemFrame) {
-      if (event.cause().root() instanceof DamageSource damageSource) {
-        if (damageSource.indirectSource().isPresent()) {
-          if (damageSource.indirectSource().get() instanceof Player player) {
-            if (!itemFrame.item().get().type().equals(ItemTypes.AIR.get())) {
-              ItemFrameRemoveAction.builder()
-                  .itemType(itemFrame.item().get().type())
-                  .actor(new EspialActorImpl(player))
-                  .location(itemFrame.serverLocation())
-                  .world(event.entity().serverLocation().worldKey().formatted())
-                  .event(EventTypes.ITEM_FRAME_REMOVE)
-                  .build()
-                  .submit();
+                builder.build().submit();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-          }
         }
-      }
     }
-  }
+
+    @Listener(order = Order.POST)
+    public void onAttackEntity(AttackEntityEvent event) throws Exception {
+        // log item frame contents when it's removed
+        if (event.entity() instanceof ItemFrame itemFrame) {
+            if (event.cause().root() instanceof DamageSource damageSource) {
+                if (damageSource.indirectSource().isPresent()) {
+                    if (damageSource.indirectSource().get() instanceof Player player) {
+                        if (!itemFrame.item().get().type().equals(ItemTypes.AIR.get())) {
+                            ItemFrameRemoveAction.builder()
+                                    .itemType(itemFrame.item().get().type())
+                                    .actor(new EspialActorImpl(player))
+                                    .location(itemFrame.serverLocation())
+                                    .world(event.entity().serverLocation().worldKey().formatted())
+                                    .event(EventTypes.ITEM_FRAME_REMOVE)
+                                    .build()
+                                    .submit();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

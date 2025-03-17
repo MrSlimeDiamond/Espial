@@ -10,10 +10,10 @@ import java.sql.Timestamp;
  * @author SlimeDiamond
  */
 public abstract class EntityRecord extends AbstractRecord {
-  private final Action action;
+    private final Action action;
 
-  public EntityRecord(int id, Timestamp timestamp, boolean rolledBack, Action action) {
-    super(id, timestamp, rolledBack, action);
-    this.action = action;
-  }
+    public EntityRecord(int id, Timestamp timestamp, boolean rolledBack, Action action) {
+        super(id, timestamp, rolledBack, action);
+        this.action = action;
+    }
 }

@@ -5,4 +5,5 @@ package net.slimediamond.espial.api.action;
  *
  * @author SlimeDiamond
  */
-public interface EntityAction extends Action {}
+public interface EntityAction extends Action {
+}

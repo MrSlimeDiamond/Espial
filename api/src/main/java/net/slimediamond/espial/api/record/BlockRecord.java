@@ -10,7 +10,7 @@ import java.sql.Timestamp;
  * @author SlimeDiamond
  */
 public abstract class BlockRecord extends AbstractRecord {
-  public BlockRecord(int id, Timestamp timestamp, boolean rolledBack, Action action) {
-    super(id, timestamp, rolledBack, action);
-  }
+    public BlockRecord(int id, Timestamp timestamp, boolean rolledBack, Action action) {
+        super(id, timestamp, rolledBack, action);
+    }
 }

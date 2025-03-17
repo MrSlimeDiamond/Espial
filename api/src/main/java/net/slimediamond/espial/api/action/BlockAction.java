@@ -26,179 +26,176 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author SlimeDiamond
  */
 public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecord> {
-  static Builder builder() {
-    return new Builder();
-  }
+    static Builder builder() {
+        return new Builder();
+    }
 
-  /**
-   * Get the block ID (such as minecraft:string)
-   *
-   * @return Block ID
-   */
-  String getBlockId();
+    /**
+     * Get the block ID (such as minecraft:string)
+     *
+     * @return Block ID
+     */
+    String getBlockId();
 
-  default ServerLocation getServerLocation() {
-    return ServerLocation.of(
-        SpongeUtil.getWorld(getWorld()).orElseThrow(() ->
-                new RuntimeException("Action stores an invalid world")),
-        getX(),
-        getY(),
-        getZ());
-  }
+    default ServerLocation getServerLocation() {
+        return ServerLocation.of(
+                SpongeUtil.getWorld(getWorld()).orElseThrow(() ->
+                        new RuntimeException("Action stores an invalid world")),
+                getX(),
+                getY(),
+                getZ());
+    }
 
-  default BlockType getBlockType() {
-    return BlockTypes.registry()
-        .value(
-            ResourceKey.of(
+    default BlockType getBlockType() {
+        return BlockTypes.registry().value(ResourceKey.of(
                 getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[0],
                 getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
-  }
-
-  default BlockState getState() {
-    AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
-    try {
-      this.getNBT().ifPresent(nbtData -> {
-          if (nbtData.getDirection() != null) {
-            blockState.set(
-                blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
-          }
-          if (nbtData.getAxis() != null) {
-            blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
-          }
-          if (nbtData.getGrowthStage() != null) {
-            blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
-          }
-        });
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    return blockState.get();
-  }
-
-  class Builder {
-    private String blockId;
-    private EspialActor actor;
-    private int x, y, z;
-    private String world;
-    private EventType type;
-    private NBTData nbtData;
-
-    public Builder blockId(String blockId) {
-      this.blockId = blockId;
-      return this;
     }
 
-    public Builder actor(EspialActor actor) {
-      this.actor = actor;
-      return this;
+    default BlockState getState() {
+        AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
+        try {
+            this.getNBT().ifPresent(nbtData -> {
+                if (nbtData.getDirection() != null) {
+                    blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+                }
+                if (nbtData.getAxis() != null) {
+                    blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+                }
+                if (nbtData.getGrowthStage() != null) {
+                    blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return blockState.get();
     }
 
-    public Builder x(int x) {
-      this.x = x;
-      return this;
-    }
+    class Builder {
+        private String blockId;
+        private EspialActor actor;
+        private int x, y, z;
+        private String world;
+        private EventType type;
+        private NBTData nbtData;
 
-    public Builder y(int y) {
-      this.y = y;
-      return this;
-    }
-
-    public Builder z(int z) {
-      this.z = z;
-      return this;
-    }
-
-    public Builder location(ServerLocation location) {
-      this.x = location.blockX();
-      this.y = location.blockY();
-      this.z = location.blockZ();
-      this.world = location.worldKey().formatted();
-
-      return this;
-    }
-
-    public Builder position(Vector3i position) {
-      this.x = position.x();
-      this.y = position.y();
-      this.z = position.z();
-
-      return this;
-    }
-
-    public Builder world(String world) {
-      this.world = world;
-      return this;
-    }
-
-    public Builder snapshot(BlockSnapshot snapshot) {
-      return position(snapshot.position())
-              .world(snapshot.world().formatted())
-              .blockId(SpongeUtil.getBlockId(snapshot.state().type()));
-    }
-
-    public Builder event(EventType type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder withNBTData(NBTData nbtData) {
-      this.nbtData = nbtData;
-      return this;
-    }
-
-    public BlockAction build() {
-      return new BlockAction() {
-        @Override
-        public SubmittableResult<BlockRecord> submit() throws Exception {
-          return (SubmittableResult<BlockRecord>)
-            EspialProviders.getEspialService().submitAction(this);
+        public Builder blockId(String blockId) {
+            this.blockId = blockId;
+            return this;
         }
 
-        @Override
-        public String getBlockId() {
-          return blockId;
+        public Builder actor(EspialActor actor) {
+            this.actor = actor;
+            return this;
         }
 
-        @Override
-        public EspialActor getActor() {
-          return actor;
+        public Builder x(int x) {
+            this.x = x;
+            return this;
         }
 
-        @Override
-        public int getX() {
-          return x;
+        public Builder y(int y) {
+            this.y = y;
+            return this;
         }
 
-        @Override
-        public int getY() {
-          return y;
+        public Builder z(int z) {
+            this.z = z;
+            return this;
         }
 
-        @Override
-        public int getZ() {
-          return z;
+        public Builder location(ServerLocation location) {
+            this.x = location.blockX();
+            this.y = location.blockY();
+            this.z = location.blockZ();
+            this.world = location.worldKey().formatted();
+
+            return this;
         }
 
-        @Override
-        public String getWorld() {
-          return world;
+        public Builder position(Vector3i position) {
+            this.x = position.x();
+            this.y = position.y();
+            this.z = position.z();
+
+            return this;
         }
 
-        @Override
-        public EventType getEventType() {
-          return type;
+        public Builder world(String world) {
+            this.world = world;
+            return this;
         }
 
-        @Override
-        public Optional<NBTData> getNBT() {
-          return Optional.ofNullable(nbtData);
+        public Builder snapshot(BlockSnapshot snapshot) {
+            return position(snapshot.position())
+                    .world(snapshot.world().formatted())
+                    .blockId(SpongeUtil.getBlockId(snapshot.state().type()));
         }
 
-        @Override
-        public void setNBT(NBTData data) {
-          nbtData = data;
+        public Builder event(EventType type) {
+            this.type = type;
+            return this;
         }
-      };
+
+        public Builder withNBTData(NBTData nbtData) {
+            this.nbtData = nbtData;
+            return this;
+        }
+
+        public BlockAction build() {
+            return new BlockAction() {
+                @Override
+                public SubmittableResult<BlockRecord> submit() throws Exception {
+                    return (SubmittableResult<BlockRecord>)
+                            EspialProviders.getEspialService().submitAction(this);
+                }
+
+                @Override
+                public String getBlockId() {
+                    return blockId;
+                }
+
+                @Override
+                public EspialActor getActor() {
+                    return actor;
+                }
+
+                @Override
+                public int getX() {
+                    return x;
+                }
+
+                @Override
+                public int getY() {
+                    return y;
+                }
+
+                @Override
+                public int getZ() {
+                    return z;
+                }
+
+                @Override
+                public String getWorld() {
+                    return world;
+                }
+
+                @Override
+                public EventType getEventType() {
+                    return type;
+                }
+
+                @Override
+                public Optional<NBTData> getNBT() {
+                    return Optional.ofNullable(nbtData);
+                }
+
+                @Override
+                public void setNBT(NBTData data) {
+                    nbtData = data;
+                }
+            };
+        }
     }
-  }
 }

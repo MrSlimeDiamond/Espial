@@ -19,221 +19,221 @@ import java.util.UUID;
  * @author SlimeDiamond
  */
 public interface Query extends Submittable<List<EspialRecord>> {
-  static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Get query type
-   *
-   * @return Query type
-   */
-  QueryType getType();
-
-  /**
-   * The minimum location of the query
-   *
-   * @return Query minimum location
-   */
-  ServerLocation getMin();
-
-  /**
-   * The maximum location of the query
-   *
-   * @return Query maximum location
-   */
-  ServerLocation getMax();
-
-  /**
-   * The earliest date to lookup
-   *
-   * @return Query minimum timestamp
-   */
-  @Nullable
-  Timestamp getTimestamp();
-
-  /**
-   * The player UUID to target
-   *
-   * @return Target player UUID
-   */
-  @Nullable
-  List<UUID> getPlayerUUIDs();
-
-  /**
-   * The block type we are targeting
-   *
-   * @return Block type
-   */
-  @Nullable
-  List<String> getBlockIds();
-
-  /**
-   * Get sorting order of this query
-   *
-   * @return Sort order
-   */
-  Sort getSort();
-
-  /**
-   * The user which called this Identified for
-   *
-   * @return
-   */
-  Object getUser();
-
-  /**
-   * An audience to call back to
-   *
-   * @return Audience
-   */
-  Audience getAudience();
-
-  /**
-   * Whether to spread the results. Only looks on {@link QueryType} LOOKUP
-   *
-   * @return Spread
-   */
-  boolean isSpread();
-
-  class Builder {
-    boolean spread;
-    private QueryType type;
-    private ServerLocation min;
-    private ServerLocation max;
-    private Timestamp timestamp;
-    private List<UUID> playerUUIDs;
-    private List<String> blockIds;
-    private Sort sort;
-    private Object user;
-    private Audience audience;
-
-    public Builder type(QueryType type) {
-      this.type = type;
-      return this;
+    static Builder builder() {
+        return new Builder();
     }
 
-    public Builder min(ServerLocation min) {
-      this.min = min;
-      return this;
-    }
+    /**
+     * Get query type
+     *
+     * @return Query type
+     */
+    QueryType getType();
 
-    public Builder max(ServerLocation max) {
-      this.max = max;
-      return this;
-    }
+    /**
+     * The minimum location of the query
+     *
+     * @return Query minimum location
+     */
+    ServerLocation getMin();
 
-    public Builder after(@Nullable Timestamp timestamp) {
-      this.timestamp = timestamp;
-      return this;
-    }
+    /**
+     * The maximum location of the query
+     *
+     * @return Query maximum location
+     */
+    ServerLocation getMax();
 
-    public Builder players(@Nullable List<UUID> playerUUIDs) {
-      if (playerUUIDs == null) return this;
-      if (this.playerUUIDs == null) {
-        this.playerUUIDs = playerUUIDs;
-      } else {
-        this.playerUUIDs.addAll(playerUUIDs);
-      }
-      return this;
-    }
+    /**
+     * The earliest date to lookup
+     *
+     * @return Query minimum timestamp
+     */
+    @Nullable
+    Timestamp getTimestamp();
 
-    public Builder addPlayers(@NonNull UUID... uuids) {
-      if (this.playerUUIDs == null) {
-        this.playerUUIDs = List.of(uuids);
-      } else {
-        this.playerUUIDs.addAll(List.of(uuids));
-      }
-      return this;
-    }
+    /**
+     * The player UUID to target
+     *
+     * @return Target player UUID
+     */
+    @Nullable
+    List<UUID> getPlayerUUIDs();
 
-    public Builder addPlayer(@NonNull UUID... players) {
-      this.addPlayers(players);
-      return this;
-    }
+    /**
+     * The block type we are targeting
+     *
+     * @return Block type
+     */
+    @Nullable
+    List<String> getBlockIds();
 
-    public Builder blocks(@Nullable List<String> blockIds) {
-      this.blockIds = blockIds;
-      return this;
-    }
+    /**
+     * Get sorting order of this query
+     *
+     * @return Sort order
+     */
+    Sort getSort();
 
-    public Builder sort(@NonNull Sort sort) {
-      this.sort = sort;
-      return this;
-    }
+    /**
+     * The user which called this Identified for
+     *
+     * @return
+     */
+    Object getUser();
 
-    public Builder caller(@NonNull Object user) {
-      this.user = user;
-      return this;
-    }
+    /**
+     * An audience to call back to
+     *
+     * @return Audience
+     */
+    Audience getAudience();
 
-    public Builder audience(@NonNull Audience audience) {
-      this.audience = audience;
-      return this;
-    }
+    /**
+     * Whether to spread the results. Only looks on {@link QueryType} LOOKUP
+     *
+     * @return Spread
+     */
+    boolean isSpread();
 
-    public Builder spread(boolean spread) {
-      this.spread = spread;
-      return this;
-    }
+    class Builder {
+        boolean spread;
+        private QueryType type;
+        private ServerLocation min;
+        private ServerLocation max;
+        private Timestamp timestamp;
+        private List<UUID> playerUUIDs;
+        private List<String> blockIds;
+        private Sort sort;
+        private Object user;
+        private Audience audience;
 
-    public Query build() {
-      return new Query() {
-        @Override
-        public SubmittableResult<List<EspialRecord>> submit() throws Exception {
-          return EspialProviders.getEspialService().submitQuery(this);
+        public Builder type(QueryType type) {
+            this.type = type;
+            return this;
         }
 
-        @Override
-        public QueryType getType() {
-          return type;
+        public Builder min(ServerLocation min) {
+            this.min = min;
+            return this;
         }
 
-        @Override
-        public ServerLocation getMin() {
-          return min;
+        public Builder max(ServerLocation max) {
+            this.max = max;
+            return this;
         }
 
-        @Override
-        public ServerLocation getMax() {
-          return max;
+        public Builder after(@Nullable Timestamp timestamp) {
+            this.timestamp = timestamp;
+            return this;
         }
 
-        @Override
-        public @Nullable Timestamp getTimestamp() {
-          return timestamp;
+        public Builder players(@Nullable List<UUID> playerUUIDs) {
+            if (playerUUIDs == null) return this;
+            if (this.playerUUIDs == null) {
+                this.playerUUIDs = playerUUIDs;
+            } else {
+                this.playerUUIDs.addAll(playerUUIDs);
+            }
+            return this;
         }
 
-        @Override
-        public @Nullable List<UUID> getPlayerUUIDs() {
-          return playerUUIDs;
+        public Builder addPlayers(@NonNull UUID... uuids) {
+            if (this.playerUUIDs == null) {
+                this.playerUUIDs = List.of(uuids);
+            } else {
+                this.playerUUIDs.addAll(List.of(uuids));
+            }
+            return this;
         }
 
-        @Override
-        public @Nullable List<String> getBlockIds() {
-          return blockIds;
+        public Builder addPlayer(@NonNull UUID... players) {
+            this.addPlayers(players);
+            return this;
         }
 
-        @Override
-        public Sort getSort() {
-          return sort == null ? Sort.DEFAULT : sort;
+        public Builder blocks(@Nullable List<String> blockIds) {
+            this.blockIds = blockIds;
+            return this;
         }
 
-        @Override
-        public Object getUser() {
-          return user;
+        public Builder sort(@NonNull Sort sort) {
+            this.sort = sort;
+            return this;
         }
 
-        @Override
-        public Audience getAudience() {
-          return audience;
+        public Builder caller(@NonNull Object user) {
+            this.user = user;
+            return this;
         }
 
-        @Override
-        public boolean isSpread() {
-          return spread;
+        public Builder audience(@NonNull Audience audience) {
+            this.audience = audience;
+            return this;
         }
-      };
+
+        public Builder spread(boolean spread) {
+            this.spread = spread;
+            return this;
+        }
+
+        public Query build() {
+            return new Query() {
+                @Override
+                public SubmittableResult<List<EspialRecord>> submit() throws Exception {
+                    return EspialProviders.getEspialService().submitQuery(this);
+                }
+
+                @Override
+                public QueryType getType() {
+                    return type;
+                }
+
+                @Override
+                public ServerLocation getMin() {
+                    return min;
+                }
+
+                @Override
+                public ServerLocation getMax() {
+                    return max;
+                }
+
+                @Override
+                public @Nullable Timestamp getTimestamp() {
+                    return timestamp;
+                }
+
+                @Override
+                public @Nullable List<UUID> getPlayerUUIDs() {
+                    return playerUUIDs;
+                }
+
+                @Override
+                public @Nullable List<String> getBlockIds() {
+                    return blockIds;
+                }
+
+                @Override
+                public Sort getSort() {
+                    return sort == null ? Sort.DEFAULT : sort;
+                }
+
+                @Override
+                public Object getUser() {
+                    return user;
+                }
+
+                @Override
+                public Audience getAudience() {
+                    return audience;
+                }
+
+                @Override
+                public boolean isSpread() {
+                    return spread;
+                }
+            };
+        }
     }
-  }
 }
