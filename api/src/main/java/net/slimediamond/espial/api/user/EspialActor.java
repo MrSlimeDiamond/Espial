@@ -1,8 +1,5 @@
 package net.slimediamond.espial.api.user;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.math.vector.Vector3d;
-
 /**
  * The actor which did an {@link net.slimediamond.espial.api.action.Action}
  *
@@ -22,25 +19,4 @@ public interface EspialActor {
    * @return If the actor is a player
    */
   boolean isPlayer();
-
-  /**
-   * Get the actor's position
-   *
-   * @return Actor position
-   */
-  @Nullable Vector3d getPosition();
-
-  /**
-   * Get the actor's rotation
-   *
-   * @return Actor rotation
-   */
-  @Nullable Vector3d getRotation();
-
-  /**
-   * Get the actor's item in hand
-   *
-   * @return Item in hand
-   */
-  String getItem();
 }

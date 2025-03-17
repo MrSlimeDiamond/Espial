@@ -17,6 +17,7 @@ import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerLeaveListener;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
+import net.slimediamond.espial.storage.Database;
 import net.slimediamond.espial.util.Format;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;

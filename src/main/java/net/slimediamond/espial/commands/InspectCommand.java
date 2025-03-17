@@ -115,12 +115,7 @@ public class InspectCommand extends AbstractCommand {
                                   + " "
                                   + record.getAction().getZ())
                           .color(Format.INFO_COLOR))
-                  .append(Component.newline())
-                  .append(Component.text("Item in hand: ").color(Format.THEME_COLOR))
-                  .append(
-                      Component.text(record.getAction().getActor().getItem())
-                          .color(Format.INFO_COLOR))
-                  .build())
+                      .build())
           .sendTo(context.cause().audience());
 
       // We should cancel an existing particle effect if there is one
@@ -131,8 +126,6 @@ public class InspectCommand extends AbstractCommand {
       }
 
       return CommandResult.success();
-    } catch (SQLException | JsonProcessingException e) {
-      throw new RuntimeException(e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -149,8 +142,7 @@ public class InspectCommand extends AbstractCommand {
       {0, 0, 0.5}, {1, 0, 0.5}, {0, 1, 0.5}, {1, 1, 0.5}
     };
 
-    Task task =
-        Task.builder()
+    Task task = Task.builder()
             .execute(
                 () -> {
                   for (double[] offset : offsets) {
@@ -176,15 +168,7 @@ public class InspectCommand extends AbstractCommand {
   }
 
   private void teleportPlayer(Player player, Action action) {
-    Vector3d playerLocation = action.getActor().getPosition();
-    Vector3d playerRotation = action.getActor().getRotation();
-
-    if (playerLocation != null && playerRotation != null) {
-      player.setPosition(playerLocation);
-      player.setRotation(playerRotation);
-    } else {
-      player.setPosition(new Vector3d(action.getX(), action.getY(), action.getZ()));
-    }
+    player.setPosition(new Vector3d(action.getX(), action.getY(), action.getZ()));
   }
 
   private class StopCommand extends AbstractCommand {

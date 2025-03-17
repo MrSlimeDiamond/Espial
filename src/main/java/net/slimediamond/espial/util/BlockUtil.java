@@ -16,8 +16,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 public class BlockUtil {
-  public static final HashSet<BlockType> SIGNS =
-      builder()
+  public static final HashSet<BlockType> SIGNS = builder()
           .add(
               // Standing signs
               BlockTypes.ACACIA_SIGN,
@@ -63,10 +62,9 @@ public class BlockUtil {
               BlockTypes.WARPED_WALL_HANGING_SIGN,
               BlockTypes.MANGROVE_WALL_HANGING_SIGN)
           .build();
-  public static final HashSet<BlockType> AIR =
-      builder().add(BlockTypes.AIR, BlockTypes.VOID_AIR, BlockTypes.CAVE_AIR).build();
-  public static final HashSet<BlockType> PRESSURE_PLATES =
-      builder()
+  public static final HashSet<BlockType> AIR = builder()
+          .add(BlockTypes.AIR, BlockTypes.VOID_AIR, BlockTypes.CAVE_AIR).build();
+  public static final HashSet<BlockType> PRESSURE_PLATES = builder()
           .add(
               BlockTypes.ACACIA_PRESSURE_PLATE,
               BlockTypes.BIRCH_PRESSURE_PLATE,
@@ -81,8 +79,7 @@ public class BlockUtil {
               BlockTypes.HEAVY_WEIGHTED_PRESSURE_PLATE,
               BlockTypes.LIGHT_WEIGHTED_PRESSURE_PLATE)
           .build();
-  private static final HashSet<BlockType> SAPLINGS =
-      builder()
+  private static final HashSet<BlockType> SAPLINGS = builder()
           .add(
               BlockTypes.ACACIA_SAPLING,
               BlockTypes.BIRCH_SAPLING,
@@ -92,8 +89,7 @@ public class BlockUtil {
               BlockTypes.SPRUCE_SAPLING)
           .add(BlockTypes.BAMBOO_SAPLING)
           .build();
-  private static final HashSet<BlockType> LEAVES =
-      builder()
+  private static final HashSet<BlockType> LEAVES = builder()
           .add(
               BlockTypes.ACACIA_LEAVES,
               BlockTypes.BIRCH_LEAVES,
@@ -102,8 +98,7 @@ public class BlockUtil {
               BlockTypes.OAK_LEAVES,
               BlockTypes.SPRUCE_LEAVES)
           .build();
-  private static final HashSet<BlockType> FENCES =
-      builder()
+  private static final HashSet<BlockType> FENCES = builder()
           .add(
               BlockTypes.ACACIA_FENCE,
               BlockTypes.BIRCH_FENCE,
@@ -114,8 +109,7 @@ public class BlockUtil {
           .add(BlockTypes.CRIMSON_FENCE, BlockTypes.WARPED_FENCE)
           .add(BlockTypes.NETHER_BRICK_FENCE)
           .build();
-  private static final HashSet<BlockType> FENCE_GATES =
-      builder()
+  private static final HashSet<BlockType> FENCE_GATES = builder()
           .add(
               BlockTypes.ACACIA_FENCE_GATE,
               BlockTypes.BIRCH_FENCE_GATE,
@@ -125,8 +119,7 @@ public class BlockUtil {
               BlockTypes.SPRUCE_FENCE_GATE)
           .add(BlockTypes.CRIMSON_FENCE_GATE, BlockTypes.WARPED_FENCE_GATE)
           .build();
-  private static final HashSet<BlockType> DOORS =
-      builder()
+  private static final HashSet<BlockType> DOORS = builder()
           .add(
               BlockTypes.ACACIA_DOOR,
               BlockTypes.BIRCH_DOOR,
@@ -137,8 +130,7 @@ public class BlockUtil {
           .add(BlockTypes.CRIMSON_DOOR, BlockTypes.WARPED_DOOR)
           .add(BlockTypes.IRON_DOOR)
           .build();
-  private static final HashSet<BlockType> TRAPDOORS =
-      builder()
+  private static final HashSet<BlockType> TRAPDOORS = builder()
           .add(
               BlockTypes.ACACIA_TRAPDOOR,
               BlockTypes.BIRCH_TRAPDOOR,
@@ -149,8 +141,7 @@ public class BlockUtil {
           .add(BlockTypes.CRIMSON_TRAPDOOR, BlockTypes.WARPED_TRAPDOOR)
           .add(BlockTypes.IRON_TRAPDOOR)
           .build();
-  private static final HashSet<BlockType> BUTTONS =
-      builder()
+  private static final HashSet<BlockType> BUTTONS = builder()
           .add(
               BlockTypes.ACACIA_BUTTON,
               BlockTypes.BIRCH_BUTTON,
@@ -161,8 +152,7 @@ public class BlockUtil {
           .add(BlockTypes.CRIMSON_BUTTON, BlockTypes.WARPED_BUTTON)
           .add(BlockTypes.POLISHED_BLACKSTONE_BUTTON, BlockTypes.STONE_BUTTON)
           .build();
-  private static final HashSet<BlockType> WALL_SIGNS =
-      builder()
+  private static final HashSet<BlockType> WALL_SIGNS = builder()
           .add(
               BlockTypes.ACACIA_WALL_SIGN,
               BlockTypes.BIRCH_WALL_SIGN,
@@ -172,8 +162,7 @@ public class BlockUtil {
               BlockTypes.SPRUCE_WALL_SIGN)
           .add(BlockTypes.CRIMSON_WALL_SIGN, BlockTypes.WARPED_WALL_SIGN)
           .build();
-  private static final HashSet<BlockType> GLASS_PANES =
-      builder()
+  private static final HashSet<BlockType> GLASS_PANES = builder()
           .add(
               BlockTypes.GLASS_PANE,
               BlockTypes.IRON_BARS,
@@ -194,8 +183,7 @@ public class BlockUtil {
               BlockTypes.WHITE_STAINED_GLASS_PANE,
               BlockTypes.YELLOW_STAINED_GLASS_PANE)
           .build();
-  private static final HashSet<BlockType> WALLS =
-      builder()
+  private static final HashSet<BlockType> WALLS = builder()
           .add(
               BlockTypes.ANDESITE_WALL,
               BlockTypes.DIORITE_WALL,
@@ -215,8 +203,7 @@ public class BlockUtil {
               BlockTypes.RED_SANDSTONE_WALL,
               BlockTypes.SANDSTONE_WALL)
           .build();
-  private static final HashSet<BlockType> STAIRS =
-      builder()
+  private static final HashSet<BlockType> STAIRS = builder()
           .add(
               BlockTypes.ACACIA_STAIRS,
               BlockTypes.BIRCH_STAIRS,
@@ -253,8 +240,7 @@ public class BlockUtil {
               BlockTypes.SMOOTH_RED_SANDSTONE_STAIRS,
               BlockTypes.SMOOTH_SANDSTONE_STAIRS)
           .build();
-  private static final HashSet<BlockType> SHULKERS =
-      builder()
+  private static final HashSet<BlockType> SHULKERS = builder()
           .add(
               BlockTypes.SHULKER_BOX,
               BlockTypes.BLACK_SHULKER_BOX,
@@ -274,8 +260,7 @@ public class BlockUtil {
               BlockTypes.WHITE_SHULKER_BOX,
               BlockTypes.YELLOW_SHULKER_BOX)
           .build();
-  private static final HashSet<BlockType> FLOWER_POTS =
-      builder()
+  private static final HashSet<BlockType> FLOWER_POTS = builder()
           .add(
               BlockTypes.FLOWER_POT,
               BlockTypes.POTTED_BROWN_MUSHROOM,
@@ -308,8 +293,7 @@ public class BlockUtil {
               BlockTypes.POTTED_WARPED_FUNGUS,
               BlockTypes.POTTED_WARPED_ROOTS)
           .build();
-  public static final HashSet<BlockType> CONTAINERS =
-      builder()
+  public static final HashSet<BlockType> CONTAINERS = builder()
           .add(SHULKERS)
           .add(FLOWER_POTS)
           .add(
@@ -325,10 +309,9 @@ public class BlockUtil {
               BlockTypes.BLAST_FURNACE,
               BlockTypes.LECTERN)
           .build();
-  private static final HashSet<BlockType> ANVILS =
-      builder().add(BlockTypes.ANVIL, BlockTypes.CHIPPED_ANVIL, BlockTypes.DAMAGED_ANVIL).build();
-  public static final HashSet<BlockType> INTERACTIVE =
-      builder()
+  private static final HashSet<BlockType> ANVILS = builder()
+          .add(BlockTypes.ANVIL, BlockTypes.CHIPPED_ANVIL, BlockTypes.DAMAGED_ANVIL).build();
+  public static final HashSet<BlockType> INTERACTIVE = builder()
           .add(BUTTONS)
           .add(TRAPDOORS)
           .remove(BlockTypes.IRON_TRAPDOOR)
@@ -366,12 +349,11 @@ public class BlockUtil {
               BlockTypes.COMMAND_BLOCK,
               BlockTypes.SPAWNER)
           .build();
-  private static final HashSet<BlockType> FALLING_BLOCKS =
-      builder().add(ANVILS).add(BlockTypes.SAND, BlockTypes.GRAVEL).build();
-  private static final HashSet<BlockType> LIQUIDS =
-      builder().add(BlockTypes.WATER, BlockTypes.LAVA).build();
-  public static final HashSet<BlockType> MODIFIABLE =
-      builder()
+  private static final HashSet<BlockType> FALLING_BLOCKS = builder()
+          .add(ANVILS).add(BlockTypes.SAND, BlockTypes.GRAVEL).build();
+  private static final HashSet<BlockType> LIQUIDS = builder()
+          .add(BlockTypes.WATER, BlockTypes.LAVA).build();
+  public static final HashSet<BlockType> MODIFIABLE = builder()
           .add(SIGNS)
           .add(BlockTypes.END_PORTAL_FRAME)
           .add(BlockTypes.CAKE)

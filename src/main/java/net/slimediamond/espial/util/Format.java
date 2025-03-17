@@ -235,13 +235,6 @@ public final class Format {
                                 .append(Component.newline())
                                 .append(Component.text("Internal ID: ").color(HOVER_HINT_COLOR))
                                 .append(Component.text(record.getId()).color(HOVER_TEXT_COLOR))
-                                .append(Component.newline())
-                                .append(Component.text("Item in hand: ").color(HOVER_HINT_COLOR))
-                                .append(
-                                    Component.text(record.getAction().getActor().getItem())
-                                        .color(HOVER_TEXT_COLOR))
-                                .append(Component.newline())
-                                .append(Component.text(formattedDate).color(HOVER_TEXT_COLOR))
                                 .build())));
 
             if (record.getAction() instanceof NBTStorable nbt) {

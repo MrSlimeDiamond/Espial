@@ -23,8 +23,7 @@ public class EntityRecordImpl extends EntityRecord {
         }
         if (this.getAction() instanceof HangingDeathAction deathAction) {
             try {
-                Entity entity =
-                        deathAction
+                Entity entity = deathAction
                                 .getServerLocation()
                                 .world()
                                 .createEntity(
