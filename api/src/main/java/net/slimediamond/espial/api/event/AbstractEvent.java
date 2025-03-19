@@ -8,13 +8,13 @@ import net.slimediamond.espial.api.user.EspialActor;
  * @author SlimeDiamond
  */
 public abstract class AbstractEvent {
-  private EspialActor actor;
+    private EspialActor actor;
 
-  public AbstractEvent(EspialActor actor) {
-    this.actor = actor;
-  }
+    public AbstractEvent(EspialActor actor) {
+        this.actor = actor;
+    }
 
-  public EspialActor getActor() {
-    return this.actor;
-  }
+    public EspialActor getActor() {
+        return this.actor;
+    }
 }

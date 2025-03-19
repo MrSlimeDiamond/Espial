@@ -11,45 +11,45 @@ import java.sql.Timestamp;
  * @author SlimeDiamond
  */
 public interface EspialRecord {
-  /**
-   * The ID (primary key value) of the record.
-   *
-   * @return Internal ID
-   */
-  int getId();
+    /**
+     * The ID (primary key value) of the record.
+     *
+     * @return Internal ID
+     */
+    int getId();
 
-  /**
-   * Get the time this action happened
-   *
-   * @return Timestamp
-   */
-  Timestamp getTimestamp();
+    /**
+     * Get the time this action happened
+     *
+     * @return Timestamp
+     */
+    Timestamp getTimestamp();
 
-  /**
-   * Whether the block has been rolled back
-   *
-   * @return Rollback status
-   */
-  boolean isRolledBack();
+    /**
+     * Whether the block has been rolled back
+     *
+     * @return Rollback status
+     */
+    boolean isRolledBack();
 
-  /**
-   * Get the associated action
-   *
-   * @return Action
-   */
-  Action getAction();
+    /**
+     * Get the associated action
+     *
+     * @return Action
+     */
+    Action getAction();
 
-  /**
-   * Roll back this action
-   *
-   * @return Status
-   */
-  TransactionStatus rollback() throws Exception;
+    /**
+     * Roll back this action
+     *
+     * @return Status
+     */
+    TransactionStatus rollback() throws Exception;
 
-  /**
-   * Restore this action
-   *
-   * @return Status
-   */
-  TransactionStatus restore() throws Exception;
+    /**
+     * Restore this action
+     *
+     * @return Status
+     */
+    TransactionStatus restore() throws Exception;
 }

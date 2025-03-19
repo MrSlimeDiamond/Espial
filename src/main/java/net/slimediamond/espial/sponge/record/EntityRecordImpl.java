@@ -23,12 +23,11 @@ public class EntityRecordImpl extends EntityRecord {
         }
         if (this.getAction() instanceof HangingDeathAction deathAction) {
             try {
-                Entity entity =
-                        deathAction
-                                .getServerLocation()
-                                .world()
-                                .createEntity(
-                                        deathAction.getEntityType(), deathAction.getServerLocation().position());
+                Entity entity = deathAction
+                        .getServerLocation()
+                        .world()
+                        .createEntity(
+                                deathAction.getEntityType(), deathAction.getServerLocation().position());
 
                 entity.offer(Keys.DIRECTION, deathAction.getNBT().get().getDirection());
 

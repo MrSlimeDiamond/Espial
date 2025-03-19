@@ -5,7 +5,6 @@ import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import net.slimediamond.espial.util.BlockUtil;
-import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
@@ -16,25 +15,25 @@ import java.util.HashSet;
 
 public class InteractListener {
 
-  @Listener(order = Order.LATE)
-  public void onInteract(InteractBlockEvent.Secondary event) throws Exception {
-    if (!Espial.getInstance().getConfig().get().logInteractions()) {
-      return;
-    }
+    @Listener(order = Order.LATE)
+    public void onInteract(InteractBlockEvent.Secondary event) throws Exception {
+        if (!Espial.getInstance().getConfig().get().logInteractions()) {
+            return;
+        }
 
-    if (event.cause().root() instanceof Player player) {
-      BlockType blockType = event.block().state().type();
-      HashSet<BlockType> blocksToCheck =
-          BlockUtil.builder().add(BlockUtil.CONTAINERS).add(BlockUtil.INTERACTIVE).build();
+        if (event.cause().root() instanceof Player player) {
+            BlockType blockType = event.block().state().type();
+            HashSet<BlockType> blocksToCheck =
+                    BlockUtil.builder().add(BlockUtil.CONTAINERS).add(BlockUtil.INTERACTIVE).build();
 
-      if (blocksToCheck.contains(blockType)) {
-        BlockAction.builder()
-            .event(EventTypes.MODIFY)
-            .snapshot(event.block())
-            .actor(new EspialActorImpl(player))
-            .build()
-            .submit();
-      }
+            if (blocksToCheck.contains(blockType)) {
+                BlockAction.builder()
+                        .event(EventTypes.MODIFY)
+                        .snapshot(event.block())
+                        .actor(new EspialActorImpl(player))
+                        .build()
+                        .submit();
+            }
+        }
     }
-  }
 }

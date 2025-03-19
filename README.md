@@ -71,8 +71,6 @@ Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks
 4. Have a play around! Make sure the plugin works. Break some blocks and try commands like `/es near`, and also `/es help`
 
 ## Development
-Please comply with [Google's Java style guide](https://google.github.io/styleguide/javaguide.html) (might change at some point)
-
 The following tools are required
 * A programming IDE (I recommend: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
 * Java 21

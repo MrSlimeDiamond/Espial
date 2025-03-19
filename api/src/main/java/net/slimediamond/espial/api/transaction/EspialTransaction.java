@@ -12,44 +12,48 @@ import java.util.List;
  * @author SlimeDiamond
  */
 public interface EspialTransaction {
-  /**
-   * The type of transaction this is
-   *
-   * @return Transaction type
-   */
-  QueryType getType();
+    /**
+     * The type of transaction this is
+     *
+     * @return Transaction type
+     */
+    QueryType getType();
 
-  /**
-   * Get the user
-   *
-   * @return User
-   */
-  Object getUser();
+    /**
+     * Get the user
+     *
+     * @return User
+     */
+    Object getUser();
 
-  /**
-   * Get audience
-   *
-   * @return Audience
-   */
-  Audience getAudience();
+    /**
+     * Get audience
+     *
+     * @return Audience
+     */
+    Audience getAudience();
 
-  /**
-   * Return a list of all the IDs that were affected
-   *
-   * @return IDs
-   */
-  List<Integer> getAffectedIds();
+    /**
+     * Return a list of all the IDs that were affected
+     *
+     * @return IDs
+     */
+    List<Integer> getAffectedIds();
 
-  /**
-   * Whether this transaction has been undone
-   *
-   * @return Undone
-   */
-  boolean isUndone();
+    /**
+     * Whether this transaction has been undone
+     *
+     * @return Undone
+     */
+    boolean isUndone();
 
-  /** Undo this transaction */
-  int undo() throws Exception;
+    /**
+     * Undo this transaction
+     */
+    int undo() throws Exception;
 
-  /** Redo this transaction */
-  int redo() throws Exception;
+    /**
+     * Redo this transaction
+     */
+    int redo() throws Exception;
 }
