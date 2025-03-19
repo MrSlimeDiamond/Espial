@@ -20,15 +20,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.transaction.Operations;
+import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.plugin.PluginContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +64,11 @@ public class BlockListeners {
   @IsCancelled(Tristate.FALSE)
   public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
     Living living = event.cause().first(Living.class).orElse(null);
+
+    // Ignore command caused events
+    if (event.cause().containsType(CommandMapping.class)) {
+        return;
+    }
 
     // Only track changes from living entities
     // which can modify blocks
