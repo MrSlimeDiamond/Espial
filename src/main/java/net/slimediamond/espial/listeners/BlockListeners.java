@@ -19,6 +19,7 @@ import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.transaction.Operations;
+import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
@@ -59,6 +60,11 @@ public class BlockListeners {
     @Listener(order = Order.POST)
     @IsCancelled(Tristate.FALSE)
     public void onBlockChange(ChangeBlockEvent.All event) throws Exception {
+        // Don't track events caused from commands
+        if (event.cause().containsType(CommandMapping.class)) {
+            return;
+        }
+
         Living living = event.cause().first(Living.class).orElse(null);
 
         // Only track changes from living entities
