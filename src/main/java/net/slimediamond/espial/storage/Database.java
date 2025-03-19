@@ -92,9 +92,12 @@ public class Database {
         //
         // Drops player_* values, because they took up space
         // and seemed useless.
-        conn.prepareStatement(
-                "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
-                        "SELECT type, time, player_uuid, block_id, world, x, y, z, rolled_back FROM blocklog").execute();
+        try {
+            conn.prepareStatement(
+                    "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
+                            "SELECT type, time, player_uuid, block_id, world, x, y, z, rolled_back FROM blocklog").execute();
+        } catch (SQLException ignored) { // Does not need to be migrated
+        }
 
         // Create the nbt table
         if (connectionString.contains("sqlite")) {
