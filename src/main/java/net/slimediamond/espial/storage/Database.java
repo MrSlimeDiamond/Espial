@@ -89,26 +89,24 @@ public class Database {
 
         conn.prepareStatement(sql).execute();
 
-        // Backwards compatibility
-        // conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN
-        // DEFAULT FALSE").execute();
+    // Backwards compatibility
+    // conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN
+    // DEFAULT FALSE").execute();
 
-        insertAction =
-                conn.prepareStatement(
-                        "INSERT INTO records "
-                                + "(type, "
-                                + "time, "
-                                + "player_uuid, "
-                                + "block_id, "
-                                + "world, "
-                                + "x, y, z, "
-                                + "rolled_back"
-                                + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, 9, FALSE)",
-                        Statement.RETURN_GENERATED_KEYS);
+    insertAction = conn.prepareStatement(
+        "INSERT INTO records "
+            + "(type, "
+            + "time, "
+            + "player_uuid, "
+            + "block_id, "
+            + "world, "
+            + "x, y, z, "
+            + "rolled_back"
+            + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
+        Statement.RETURN_GENERATED_KEYS);
 
         queryId = conn.prepareStatement("SELECT * FROM records WHERE id = ?");
-        getBlockOwner = conn.prepareStatement(
-                "SELECT player_uuid FROM records WHERE world = ? AND x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
+        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM records WHERE world = ? AND x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
         setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
         insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
