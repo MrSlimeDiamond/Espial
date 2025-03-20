@@ -28,7 +28,7 @@ public class InteractListener {
 
             if (blocksToCheck.contains(blockType)) {
                 BlockAction.builder()
-                        .event(EventTypes.MODIFY)
+                        .event(EventTypes.INTERACT)
                         .snapshot(event.block())
                         .actor(new EspialActorImpl(player))
                         .build()
