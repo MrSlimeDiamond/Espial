@@ -64,7 +64,7 @@ public class NearbySignsCommand extends AbstractCommand {
                                         .toList())
                                 .audience(player)
                                 .spread(true)
-                                .build());
+                                .build()).get();
 
                 List<Component> contents = Format.generateLookupContents(signs, true);
 

@@ -21,6 +21,7 @@ import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class EspialServiceImpl implements EspialService {
@@ -55,8 +57,24 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public List<EspialRecord> query(Query query) throws Exception {
-        return Espial.getInstance().getDatabase().query(query);
+    public CompletableFuture<List<EspialRecord>> query(Query query) {
+        CompletableFuture<List<EspialRecord>> future = new CompletableFuture<>();
+
+    Sponge.asyncScheduler().submit(Task.builder()
+                .execute(() -> future.complete(queryStorage(query)))
+                .plugin(Espial.getInstance().getContainer())
+                .build(), "Espial query");
+
+        return future;
+    }
+
+    // Error handling logic for the above method
+    private List<EspialRecord> queryStorage(Query query) {
+        try {
+            return Espial.getInstance().getDatabase().query(query);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -71,7 +89,7 @@ public class EspialServiceImpl implements EspialService {
 
     @Override
     public SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception {
-        List<EspialRecord> actions = this.query(query);
+        List<EspialRecord> actions = this.query(query).get();
 
         StringBuilder argsPreview = new StringBuilder();
 
@@ -101,7 +119,6 @@ public class EspialServiceImpl implements EspialService {
             argsPreview.append(" After: ").append(Format.date(query.getTimestamp()));
         }
 
-        // TODO: Asynchronous processing, and probably some queue
         this.process(actions, query, argsPreview.toString());
 
         return SubmittableResult.of(actions);
@@ -148,6 +165,9 @@ public class EspialServiceImpl implements EspialService {
             List<Integer> success = new ArrayList<>();
             int skipped = 0;
 
+            // TODO: Put each record into a queue, and
+            // loop through that queue asynchronously or something
+            // similar, as not to lag the server with rollbacks/restores.
             for (EspialRecord record : records) {
                 TransactionStatus status;
                 switch (query.getType()) {

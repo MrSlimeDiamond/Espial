@@ -99,7 +99,7 @@ public class BlockRecordImpl extends BlockRecord {
     private List<EspialRecord> getRelevantRecords(BlockAction action, boolean isRolledBack) throws Exception {
         return Espial.getInstance()
                 .getEspialService()
-                .query(Query.builder().min(action.getServerLocation()).build())
+                .query(Query.builder().min(action.getServerLocation()).build()).get()
                 .stream()
                 .filter(a -> a.isRolledBack() == isRolledBack)
                 .toList();
