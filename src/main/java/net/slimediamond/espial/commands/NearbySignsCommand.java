@@ -49,26 +49,22 @@ public class NearbySignsCommand extends AbstractCommand {
                 context.sendMessage(Format.defaults("-r " + range));
             }
 
-            Pair<ServerLocation, ServerLocation> locations =
-                    PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+            Pair<ServerLocation, ServerLocation> locations = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
             try {
-                List<EspialRecord> signs =
-                        Espial.getInstance()
-                                .getEspialService()
-                                .query(
-                                        Query.builder()
-                                                .type(QueryType.LOOKUP)
-                                                .min(locations.getLeft())
-                                                .max(locations.getRight())
-                                                .caller(player)
-                                                .sort(Sort.REVERSE_CHRONOLOGICAL)
-                                                .blocks(
-                                                        BlockUtil.SIGNS.stream()
-                                                                .map(SpongeUtil::getBlockId)
-                                                                .toList())
-                                                .audience(player)
-                                                .spread(true)
-                                                .build());
+                List<EspialRecord> signs = Espial.getInstance()
+                        .getEspialService()
+                        .query(Query.builder()
+                                .type(QueryType.LOOKUP)
+                                .min(locations.getLeft())
+                                .max(locations.getRight())
+                                .caller(player)
+                                .sort(Sort.REVERSE_CHRONOLOGICAL)
+                                .blocks(BlockUtil.SIGNS.stream()
+                                        .map(SpongeUtil::getBlockId)
+                                        .toList())
+                                .audience(player)
+                                .spread(true)
+                                .build());
 
                 List<Component> contents = Format.generateLookupContents(signs, true);
 

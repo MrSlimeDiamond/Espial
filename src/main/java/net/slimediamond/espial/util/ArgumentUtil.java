@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class ArgumentUtil {
 
@@ -19,11 +20,11 @@ public class ArgumentUtil {
         List<UUID> uuids = Collections.emptyList();
         List<BlockState> blocks = Collections.emptyList();
         if (context.hasFlag("player")) {
-            uuids = (List<UUID>) context.all(CommandParameters.LOOKUP_PLAYER).stream().toList();
+            uuids = context.all(CommandParameters.LOOKUP_PLAYER).stream().collect(Collectors.toUnmodifiableList());
         }
 
         if (context.hasFlag("block")) {
-            blocks = (List<BlockState>) context.all(CommandParameters.LOOKUP_BLOCK);
+            blocks = context.all(CommandParameters.LOOKUP_BLOCK).stream().collect(Collectors.toUnmodifiableList());
         }
 
         Timestamp timestamp;
@@ -54,7 +55,6 @@ public class ArgumentUtil {
         if (type != QueryType.LOOKUP) {
             String defaultTime = Espial.getInstance().getConfig().get().getDefaultTime();
             context.sendMessage(Format.defaults("-t " + defaultTime));
-//      return Timestamp.from(Instant.now().minus(3, ChronoUnit.DAYS));
             return Timestamp.from(Instant.ofEpochMilli(DurationParser.parseDurationAndSubtract(defaultTime)));
         } else {
             return Timestamp.from(Instant.ofEpochMilli(0)); // gotta catch 'em all!
