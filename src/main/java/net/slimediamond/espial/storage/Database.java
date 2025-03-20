@@ -2,7 +2,13 @@ package net.slimediamond.espial.storage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.slimediamond.espial.Espial;
-import net.slimediamond.espial.api.action.*;
+import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.ActionType;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.EntityAction;
+import net.slimediamond.espial.api.action.HangingDeathAction;
+import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
+import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.event.EspialPostInsertRecordEvent;
@@ -24,9 +30,21 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.registry.RegistryTypes;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Database {
@@ -57,19 +75,17 @@ public class Database {
             sql = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
         }
 
-        conn.prepareStatement(
-                        sql
-                                + "type TINYINT, "
-                                + "time TIMESTAMP, "
-                                + "player_uuid MEDIUMTEXT, "
-                                + "block_id TINYTEXT, "
-                                + "world TINYTEXT, "
-                                + "x INT, "
-                                + "y INT, "
-                                + "z INT, "
-                                + "rolled_back BOOLEAN NOT NULL DEFAULT FALSE"
-                                + ")")
-                .execute();
+        conn.prepareStatement(sql +
+                "type TINYINT, " +
+                "time TIMESTAMP, " +
+                "player_uuid MEDIUMTEXT, " +
+                "block_id TINYTEXT, " +
+                "world TINYTEXT, " +
+                "x INT, " +
+                "y INT, " +
+                "z INT, " +
+                "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
+                ")").execute();
 
         // Migrate data from blocklog to records
         // Espial v1 --> v2
@@ -142,12 +158,9 @@ public class Database {
         // Block ID
         switch (action) {
             case BlockAction block -> insertAction.setString(4, block.getBlockId());
-            case HangingDeathAction hangingDeathAction ->
-                    insertAction.setString(4, hangingDeathAction.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
-            case ItemFrameRemoveAction itemFrameRemoveAction ->
-                    insertAction.setString(4, itemFrameRemoveAction.getItemType().key(RegistryTypes.ITEM_TYPE).formatted());
-            default ->
-                    throw new SQLException("Block id must be present. This action type is not recognized by the database.");
+            case HangingDeathAction hangingDeathAction -> insertAction.setString(4, hangingDeathAction.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
+            case ItemFrameRemoveAction itemFrameRemoveAction -> insertAction.setString(4, itemFrameRemoveAction.getItemType().key(RegistryTypes.ITEM_TYPE).formatted());
+            default -> throw new SQLException("Block id must be present. This action type is not recognized by the database.");
         }
 
         insertAction.setString(5, action.getWorld()); // World

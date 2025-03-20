@@ -1,7 +1,6 @@
 package net.slimediamond.espial.commands;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
@@ -11,7 +10,11 @@ import net.slimediamond.espial.api.transaction.BasicEspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.commands.subsystem.CommandParameters;
-import net.slimediamond.espial.util.*;
+import net.slimediamond.espial.util.ArgumentUtil;
+import net.slimediamond.espial.util.Format;
+import net.slimediamond.espial.util.PlayerSelectionUtil;
+import net.slimediamond.espial.util.RayTraceUtil;
+import net.slimediamond.espial.util.WorldEditSelectionUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -29,20 +32,22 @@ import java.util.Optional;
 
 public class TransactionCommands {
 
-    private static final Map<Flag, Component> flags = Map.of(
+    private static final Map<Flag, Component> FLAGS = Map.of(
             Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build(),
-            Component.text("The range to query"),
+                Component.text("The range to query"),
             Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build(),
-            Component.text("Use your WorldEdit selection"),
+                Component.text("Use your WorldEdit selection"),
             Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build(),
-            Component.text("Filter by a specific player"),
+                Component.text("Filter by a specific player"),
             Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build(),
-            Component.text("Filter by a specific block"),
+                Component.text("Filter by a specific block"),
             Flag.builder().aliases("time", "after", "t").setParameter(CommandParameters.TIME).build(),
-            Component.text("Set a time to query after"),
-            Flag.builder().aliases("spread", "singe", "s").setParameter(Parameter.bool().key("spread").optional().build()).build(),
-            Component.text("Show individual events")
+                Component.text("Set a time to query after")
     );
+
+    public static final Map<Flag, Component> SPREAD = Map.of(
+            Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("spread").optional().build()).build(),
+            Component.text("Show individual events"));
 
     private TransactionCommands() {
     }
@@ -52,22 +57,20 @@ public class TransactionCommands {
         if (context.cause().root() instanceof Player) {
             player = (Player) context.cause().root();
         } else {
-            return CommandResult.error(
-                    Component.text("This command can only be used by players.").color(NamedTextColor.RED));
+            context.sendMessage(Format.playersOnly());
+            return CommandResult.success();
         }
 
         ArgumentUtil.Requirements args = ArgumentUtil.parse(context, type);
         if (!args.shouldContinue()) return CommandResult.success();
 
-        Query.Builder builder =
-                Query.builder()
-                        .type(type)
-                        .players(args.getUUIDs())
-                        .sort(sort)
-                        .caller(player)
-                        .spread(context.hasFlag("s"))
-                        .audience(player)
-                        .after(args.getTimestamp());
+        Query.Builder builder = Query.builder()
+                .type(type)
+                .players(args.getUUIDs())
+                .sort(sort).caller(player)
+                .spread(context.hasFlag("s"))
+                .audience(player)
+                .after(args.getTimestamp());
 
         if (args.getBlocks() != null) {
             builder.blocks(args.getBlocks());
@@ -75,8 +78,7 @@ public class TransactionCommands {
 
         if (context.hasFlag("worldedit")) { // Range lookup
             try {
-                Optional<Pair<ServerLocation, ServerLocation>> selectionOptional =
-                        WorldEditSelectionUtil.getWorldEditRegion(player);
+                Optional<Pair<ServerLocation, ServerLocation>> selectionOptional = WorldEditSelectionUtil.getWorldEditRegion(player);
 
                 if (selectionOptional.isPresent()) {
                     Pair<ServerLocation, ServerLocation> selection = selectionOptional.get();
@@ -96,8 +98,7 @@ public class TransactionCommands {
             // -r <block range>
             int range = context.requireOne(CommandParameters.LOOKUP_RANGE);
 
-            Pair<ServerLocation, ServerLocation> selection =
-                    PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+            Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
 
             builder.min(selection.getLeft());
             builder.max(selection.getRight());
@@ -131,9 +132,8 @@ public class TransactionCommands {
          * Constructor for a command
          */
         Undo() {
-            super("espial.command.undo", Component.text("Undo your previous " + "transactions"));
+            super("espial.command.undo", Component.text("Undo your previous transactions"));
             addAlias("undo");
-            addFlags(flags);
         }
 
         @Override
@@ -156,9 +156,8 @@ public class TransactionCommands {
 
     public static class Redo extends AbstractCommand {
         Redo() {
-            super("espial.command.redo", Component.text("Redo your previous undone " + "transactions"));
+            super("espial.command.redo", Component.text("Redo your previous undone transactions"));
             addAlias("redo");
-            addFlags(flags);
         }
 
         @Override
@@ -180,9 +179,7 @@ public class TransactionCommands {
 
     public static class RollbackId extends AbstractCommand {
         RollbackId() {
-            super(
-                    "espial.command.rollbackid",
-                    Component.text("Roll back a record using its internal ID"));
+            super("espial.command.rollbackid", Component.text("Roll back a record using its internal ID"));
             addAlias("rollbackid");
             addAlias("rbid");
             addParameter(CommandParameters.GENERIC_ID);
@@ -203,12 +200,7 @@ public class TransactionCommands {
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Format.text(ids.size() + " action(s) have been rolled back."));
 
-                    Espial.getInstance()
-                            .getTransactionManager()
-                            .add(
-                                    context.cause().root(),
-                                    new BasicEspialTransaction(
-                                            QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
+                    Espial.getInstance().getTransactionManager().add(context.cause().root(), new BasicEspialTransaction(QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
                 } else if (status == TransactionStatus.ALREADY_DONE) {
                     context.sendMessage(Format.error("That action has already been rolled back."));
                 } else if (status == TransactionStatus.UNSUPPORTED) {
@@ -224,9 +216,7 @@ public class TransactionCommands {
 
     public static class RestoreId extends AbstractCommand {
         RestoreId() {
-            super(
-                    "espial.command.restoreid",
-                    Component.text("Restore a record using its internal ID"));
+            super("espial.command.restoreid", Component.text("Restore a record using its internal ID"));
             addAlias("restoreid");
             addAlias("rsid");
             addParameter(CommandParameters.GENERIC_ID);
@@ -247,12 +237,7 @@ public class TransactionCommands {
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Format.text(ids.size() + " action(s) have been restored."));
 
-                    Espial.getInstance()
-                            .getTransactionManager()
-                            .add(
-                                    context.cause().root(),
-                                    new BasicEspialTransaction(
-                                            QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
+                    Espial.getInstance().getTransactionManager().add(context.cause().root(), new BasicEspialTransaction(QueryType.RESTORE, context.cause().root(), context.cause().audience(), ids));
                 } else if (status == TransactionStatus.ALREADY_DONE) {
                     context.sendMessage(Format.error("That action has already been restored."));
                 } else if (status == TransactionStatus.UNSUPPORTED) {
@@ -269,10 +254,11 @@ public class TransactionCommands {
 
     public static class Lookup extends AbstractCommand {
         Lookup() {
-            super("espial.command.lookup", Component.text("Send a lookup query to " + "view logs"));
+            super("espial.command.lookup", Component.text("Send a lookup query to view logs"));
             addAlias("lookup");
             addAlias("l");
-            addFlags(flags);
+            addFlags(FLAGS);
+            addFlags(SPREAD);
         }
 
         @Override
@@ -283,12 +269,10 @@ public class TransactionCommands {
 
     public static class Rollback extends AbstractCommand {
         Rollback() {
-            super(
-                    "espial.command.rollback",
-                    Component.text("Send a rollback " + "request to bring blocks back in time"));
+            super("espial.command.rollback", Component.text("Send a rollback request to bring blocks back in time"));
             addAlias("rollback");
             addAlias("rb");
-            addFlags(flags);
+            addFlags(FLAGS);
         }
 
         @Override
@@ -299,13 +283,10 @@ public class TransactionCommands {
 
     public static class Restore extends AbstractCommand {
         Restore() {
-            super(
-                    "espial.command.restore",
-                    Component.text("Send a restore request to restore undone " +
-                            "changes"));
+            super("espial.command.restore", Component.text("Send a restore request to restore undone changes"));
             addAlias("restore");
             addAlias("rs");
-            addFlags(flags);
+            addFlags(FLAGS);
         }
 
         @Override
@@ -318,12 +299,12 @@ public class TransactionCommands {
         Near() {
             super("espial.command.lookup", Component.text("Lookup blocks nearby"));
             addAlias("near");
-            addFlags(flags);
+            addFlags(FLAGS);
+            addFlags(SPREAD);
         }
 
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            // TODO: Make this better, probably make a requirements class or something
             if (context.subject() instanceof Player player) {
                 int range = Espial.getInstance().getConfig().get().getDefaultLookupRange();
                 if (context.hasFlag("r")) {
@@ -332,25 +313,13 @@ public class TransactionCommands {
                     player.sendMessage(Format.defaults("-r " + range));
                 }
 
-                Pair<ServerLocation, ServerLocation> selection =
-                        PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
+                Pair<ServerLocation, ServerLocation> selection = PlayerSelectionUtil.getCuboidAroundPlayer(player, range);
 
-                ArgumentUtil.Requirements requirements =
-                        ArgumentUtil.parse(context, QueryType.LOOKUP);
+                ArgumentUtil.Requirements requirements = ArgumentUtil.parse(context, QueryType.LOOKUP);
 
                 if (!requirements.shouldContinue()) return CommandResult.success();
 
-                Query.Builder builder =
-                        Query.builder()
-                                .min(selection.getLeft())
-                                .max(selection.getRight())
-                                .players(requirements.getUUIDs())
-                                .spread(context.hasFlag("s"))
-                                .after(requirements.getTimestamp())
-                                .audience(context.cause().audience())
-                                .caller(player)
-                                .sort(Sort.REVERSE_CHRONOLOGICAL)
-                                .type(QueryType.LOOKUP);
+                Query.Builder builder = Query.builder().min(selection.getLeft()).max(selection.getRight()).players(requirements.getUUIDs()).spread(context.hasFlag("s")).after(requirements.getTimestamp()).audience(context.cause().audience()).caller(player).sort(Sort.REVERSE_CHRONOLOGICAL).type(QueryType.LOOKUP);
 
                 if (requirements.getBlocks() != null) {
                     builder.blocks(requirements.getBlocks());

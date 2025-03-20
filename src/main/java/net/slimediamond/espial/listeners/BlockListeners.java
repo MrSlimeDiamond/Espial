@@ -94,103 +94,100 @@ public class BlockListeners {
             }
         }
 
-        event.transactions()
-                .forEach(transaction -> {
-                    try {
-                        EventType type = EventTypes.fromSponge(transaction.operation());
-                        BlockSnapshot snapshot;
+        event.transactions().forEach(transaction -> {
+            try {
+                EventType type = EventTypes.fromSponge(transaction.operation());
+                BlockSnapshot snapshot;
 
-                        // If something other than air, specify what this action
-                        // is to be rolled back to.
-                        String rollbackTo = null;
+                // If something other than air, specify what this action
+                // is to be rolled back to.
+                String rollbackTo = null;
 
-                        // someone placed something, so the block will be the *after*
-                        if (transaction.operation().equals(Operations.PLACE.get())) {
-                            snapshot = transaction.finalReplacement();
+                // someone placed something, so the block will be the *after*
+                if (transaction.operation().equals(Operations.PLACE.get())) {
+                    snapshot = transaction.finalReplacement();
 
-                            BlockType before = transaction.original().state().type();
-                            if (!BlockUtil.AIR.contains(before)) {
-                                rollbackTo = SpongeUtil.getBlockId(before);
-                            }
-                        } else {
-                            // something was broken, so get what it was *before*
-                            snapshot = transaction.original();
-                        }
-
-                        // Only log modifications that are actually useful
-                        if (transaction.operation().equals(Operations.MODIFY.get())
-                                && !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
-                            return;
-                        }
-
-                        JsonNBTData jsonNBTData = new JsonNBTData();
-
-                        if (rollbackTo != null) {
-                            jsonNBTData.setRollbackBlock(rollbackTo);
-                        }
-
-                        if (BlockUtil.SIGNS.contains(snapshot.state().type())) {
-                            snapshot.createArchetype()
-                                    .ifPresent(blockEntity -> {
-                                        List<Component> frontComponents = null;
-                                        List<Component> backComponents = null;
-
-                                        if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
-                                            frontComponents = blockEntity
-                                                    .get(Keys.SIGN_FRONT_TEXT)
-                                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                                    .orElseGet(ArrayList::new);
-                                        }
-
-                                        if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
-                                            backComponents = blockEntity
-                                                    .get(Keys.SIGN_BACK_TEXT)
-                                                    .map(text -> new ArrayList<>(text.lines().get()))
-                                                    .orElseGet(ArrayList::new);
-                                        }
-
-                                        List<String> frontText = null;
-                                        List<String> backText = null;
-
-                                        if (frontComponents != null) {
-                                            frontText = frontComponents.stream()
-                                                    .map(component ->
-                                                            GsonComponentSerializer.gson().serialize(component))
-                                                    .toList();
-                                        }
-
-                                        if (backComponents != null) {
-                                            backText = backComponents.stream()
-                                                    .map(component ->
-                                                            GsonComponentSerializer.gson().serialize(component))
-                                                    .toList();
-                                        }
-
-                                        if (frontComponents != null && backComponents != null) {
-                                            jsonNBTData.setSignData(new JsonSignData(frontText, backText));
-                                        }
-                                    });
-                        }
-
-                        EspialActor actor = new EspialActorImpl(living);
-
-                        BlockAction.Builder builder =
-                                BlockAction.builder()
-                                        .event(type)
-                                        .actor(actor)
-                                        .event(EventTypes.fromSponge(transaction.operation()))
-                                        .snapshot(snapshot);
-
-                        // only submit nbt data if it will be useful
-                        if (NBTApplier.update(jsonNBTData, snapshot.state()) || rollbackTo != null) {
-                            builder.withNBTData(jsonNBTData);
-                        }
-
-                        builder.build().submit();
-
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                    BlockType before = transaction.original().state().type();
+                    if (!BlockUtil.AIR.contains(before)) {
+                        rollbackTo = SpongeUtil.getBlockId(before);
                     }
-                });
+                } else {
+                    // something was broken, so get what it was *before*
+                    snapshot = transaction.original();
+                }
+
+                // Only log modifications that are actually useful
+                if (transaction.operation().equals(Operations.MODIFY.get())
+                        && !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
+                    return;
+                }
+
+                JsonNBTData jsonNBTData = new JsonNBTData();
+
+                if (rollbackTo != null) {
+                    jsonNBTData.setRollbackBlock(rollbackTo);
+                }
+
+                if (BlockUtil.SIGNS.contains(snapshot.state().type())) {
+                    snapshot.createArchetype().ifPresent(blockEntity -> {
+                        List<Component> frontComponents = null;
+                        List<Component> backComponents = null;
+
+                        if (blockEntity.supports(Keys.SIGN_FRONT_TEXT)) {
+                            frontComponents = blockEntity
+                                    .get(Keys.SIGN_FRONT_TEXT)
+                                    .map(text -> new ArrayList<>(text.lines().get()))
+                                    .orElseGet(ArrayList::new);
+                        }
+
+                        if (blockEntity.supports(Keys.SIGN_BACK_TEXT)) {
+                            backComponents = blockEntity
+                                    .get(Keys.SIGN_BACK_TEXT)
+                                    .map(text -> new ArrayList<>(text.lines().get()))
+                                    .orElseGet(ArrayList::new);
+                        }
+
+                        List<String> frontText = null;
+                        List<String> backText = null;
+
+                        if (frontComponents != null) {
+                            frontText = frontComponents.stream()
+                                    .map(component ->
+                                            GsonComponentSerializer.gson().serialize(component))
+                                    .toList();
+                        }
+
+                        if (backComponents != null) {
+                            backText = backComponents.stream()
+                                    .map(component ->
+                                            GsonComponentSerializer.gson().serialize(component))
+                                    .toList();
+                        }
+
+                        if (frontComponents != null && backComponents != null) {
+                            jsonNBTData.setSignData(new JsonSignData(frontText, backText));
+                        }
+                    });
+                }
+
+                EspialActor actor = new EspialActorImpl(living);
+
+                BlockAction.Builder builder = BlockAction.builder()
+                        .event(type)
+                        .actor(actor)
+                        .event(EventTypes.fromSponge(transaction.operation()))
+                        .snapshot(snapshot);
+
+                // only submit nbt data if it will be useful
+                if (NBTApplier.update(jsonNBTData, snapshot.state()) || rollbackTo != null) {
+                    builder.withNBTData(jsonNBTData);
+                }
+
+                builder.build().submit();
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

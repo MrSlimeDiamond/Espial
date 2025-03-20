@@ -7,46 +7,61 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.slimediamond.espial.api.action.*;
+import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.BlockAction;
+import net.slimediamond.espial.api.action.HangingDeathAction;
+import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
+import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.record.EspialRecord;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public final class Format {
-    // TODO: Configurable values
     public static final boolean SHOW_DATE_IN_LOOKUP = false;
-    public static final NamedTextColor THEME_COLOR = NamedTextColor.GREEN;
-    public static final NamedTextColor TEXT_COLOR = NamedTextColor.WHITE;
-    public static final NamedTextColor TITLE_COLOR = NamedTextColor.GOLD;
-    public static final NamedTextColor NAME_COLOR = NamedTextColor.WHITE;
-    public static final NamedTextColor STACK_COLOR = NamedTextColor.WHITE;
-    public static final NamedTextColor INFO_COLOR = NamedTextColor.WHITE;
-    public static final NamedTextColor PADDING_COLOR = NamedTextColor.GRAY;
-    public static final NamedTextColor DATE_COLOR = NamedTextColor.DARK_GRAY;
-    public static final NamedTextColor ITEM_COLOR = NamedTextColor.GREEN;
-    public static final NamedTextColor SPREAD_ITEM_COLOR = NamedTextColor.WHITE;
-    public static final NamedTextColor ACTION_COLOR = THEME_COLOR;
-    public static final NamedTextColor HINT_COLOR = NamedTextColor.BLUE;
-    public static final NamedTextColor HOVER_HINT_COLOR = HINT_COLOR;
-    public static final NamedTextColor HOVER_TEXT_COLOR = NamedTextColor.GRAY;
-    public static final NamedTextColor ERROR_COLOR = NamedTextColor.RED;
-    public static final NamedTextColor COMMAND_HINT_COLOR = NamedTextColor.AQUA;
+
+    public static final TextColor THEME_COLOR = TextColor.color(79, 235, 52);
+    public static final TextColor TEXT_COLOR = NamedTextColor.WHITE;
+    public static final TextColor INFO_COLOR = NamedTextColor.WHITE;
+    public static final TextColor PADDING_COLOR = NamedTextColor.GRAY;
+    public static final TextColor ERROR_COLOR = NamedTextColor.RED;
+    public static final TextColor HINT_COLOR = TextColor.color(49, 175, 212);
+    public static final TextColor COMMAND_HINT_COLOR = NamedTextColor.AQUA;
+
+    public static final TextColor TITLE_COLOR = NamedTextColor.GOLD;
+    public static final TextColor NAME_COLOR = INFO_COLOR;
+    public static final TextColor STACK_COLOR = INFO_COLOR;
+    public static final TextColor DATE_COLOR = NamedTextColor.DARK_GRAY;
+    public static final TextColor ITEM_COLOR = THEME_COLOR;
+    public static final TextColor SPREAD_ITEM_COLOR = INFO_COLOR;
+    public static final TextColor ACTION_COLOR = THEME_COLOR;
+    public static final TextColor HOVER_HINT_COLOR = HINT_COLOR;
+    public static final TextColor HOVER_TEXT_COLOR = NamedTextColor.GRAY;
+
     public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
-    public static Component prefix = Component.text("Espial › ").color(THEME_COLOR);
+    public static final Component PREFIX = Component.text("Espial › ").color(THEME_COLOR);
 
     /* No initialization */
     private Format() {
     }
 
     public static Component component(Component component) {
-        return prefix.append(component);
+        return PREFIX.append(component);
     }
 
     public static Component component(TextComponent.Builder builder) {
@@ -54,7 +69,7 @@ public final class Format {
     }
 
     public static Component text(String text) {
-        return prefix.append(Component.text(text).color(TEXT_COLOR));
+        return PREFIX.append(Component.text(text).color(TEXT_COLOR));
     }
 
     public static Component error(String text) {
@@ -74,7 +89,7 @@ public final class Format {
     }
 
     public static Component title(String text) {
-        return Component.text().append(prefix).append(Component.text(text).color(TITLE_COLOR)).build();
+        return Component.text().append(PREFIX).append(Component.text(text).color(TITLE_COLOR)).build();
     }
 
     public static Component commandHint(String command) {
@@ -93,6 +108,22 @@ public final class Format {
         return component.clickEvent(ClickEvent.runCommand(command));
     }
 
+    public static Component chip(@NonNull Component text) {
+        return chip(text, null);
+    }
+
+    public static Component chip(@NonNull Component text, @Nullable Component hover) {
+        TextComponent.Builder builder = Component.text()
+                .append(Component.text("[", PADDING_COLOR))
+                .append(text)
+                .append(Component.text("]", PADDING_COLOR));
+        if (hover != null) {
+            builder.hoverEvent(HoverEvent.showText(hover));
+        }
+        return builder.build();
+    }
+
+    @Deprecated
     public static Component chip(String text, NamedTextColor color) {
         return Component.text()
                 .append(Component.text("[").color(PADDING_COLOR))
@@ -212,17 +243,13 @@ public final class Format {
                         .append(Component.space())
                         .append(getItemDisplayName(record).color(SPREAD_ITEM_COLOR))
                         .clickEvent(ClickEvent.runCommand("/espial inspect " + record.getId()))
-                        .hoverEvent(
-                                HoverEvent.showText(
-                                        component(
-                                                Component.text()
-                                                        .append(Component.newline())
-                                                        .append(
-                                                                Component.text("Click to teleport!").color(HOVER_HINT_COLOR))
-                                                        .append(Component.newline())
-                                                        .append(Component.text("Internal ID: ").color(HOVER_HINT_COLOR))
-                                                        .append(Component.text(record.getId()).color(HOVER_TEXT_COLOR))
-                                                        .build())));
+                        .hoverEvent(HoverEvent.showText(component(Component.text()
+                                .append(Component.newline())
+                                .append(Component.text("Click to teleport!").color(HOVER_HINT_COLOR))
+                                .append(Component.newline())
+                                .append(Component.text("Internal ID: ").color(HOVER_HINT_COLOR))
+                                .append(Component.text(record.getId()).color(HOVER_TEXT_COLOR))
+                                .build())));
 
                 if (record.getAction() instanceof NBTStorable nbt) {
                     nbt.getNBT().flatMap(NBTDataParser::parseNBT)
@@ -269,8 +296,7 @@ public final class Format {
                 TextComponent.Builder builder = Component.text()
                         .append(key.name())
                         .append(Component.space())
-                        .append(
-                                makeHoverableAction(entry.getKey().eventType(), true).color(ACTION_COLOR))
+                        .append(makeHoverableAction(entry.getKey().eventType(), true).color(ACTION_COLOR))
                         .append(Component.space())
                         .append(Component.text((count > 1 ? count + "x " : "")).color(STACK_COLOR))
                         .append(entry.getKey().block().color(ITEM_COLOR));

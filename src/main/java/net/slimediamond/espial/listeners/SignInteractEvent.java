@@ -29,23 +29,19 @@ public class SignInteractEvent {
             List<String> backSerialized;
 
             if (event.isFrontSide()) {
-                frontSerialized =
-                        newText.stream()
-                                .map(component -> GsonComponentSerializer.gson().serialize(component))
-                                .toList();
-                backSerialized =
-                        currentBack.stream()
-                                .map(component -> GsonComponentSerializer.gson().serialize(component))
-                                .toList();
+                frontSerialized = newText.stream()
+                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .toList();
+                backSerialized = currentBack.stream()
+                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .toList();
             } else {
-                frontSerialized =
-                        currentFront.stream()
-                                .map(component -> GsonComponentSerializer.gson().serialize(component))
-                                .toList();
-                backSerialized =
-                        newText.stream()
-                                .map(component -> GsonComponentSerializer.gson().serialize(component))
-                                .toList();
+                frontSerialized = currentFront.stream()
+                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .toList();
+                backSerialized = newText.stream()
+                        .map(component -> GsonComponentSerializer.gson().serialize(component))
+                        .toList();
             }
 
             JsonNBTData nbtData = new JsonNBTData();

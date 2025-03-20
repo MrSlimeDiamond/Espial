@@ -31,8 +31,10 @@ public class NBTApplier {
 
         if (blockState.supports(Keys.IS_WATERLOGGED)) {
             blockState.get(Keys.IS_WATERLOGGED).ifPresent(waterlogged -> {
-                modified.set(true);
-                nbtData.setWaterlogged(waterlogged);
+                if (waterlogged) {
+                    modified.set(true);
+                    nbtData.setWaterlogged(true);
+                }
             });
         }
 

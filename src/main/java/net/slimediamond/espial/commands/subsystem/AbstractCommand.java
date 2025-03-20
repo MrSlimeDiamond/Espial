@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.util.Format;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -16,7 +15,12 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.service.pagination.PaginationList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractCommand implements CommandExecutor {
 
@@ -113,7 +117,7 @@ public abstract class AbstractCommand implements CommandExecutor {
     }
 
     private Component formatHeader() {
-        Component header = Component.text("Description: ")
+        Component header = Component.text("Desc: ")
                 .color(NamedTextColor.AQUA)
                 .append(description.color(NamedTextColor.YELLOW));
 
@@ -138,19 +142,15 @@ public abstract class AbstractCommand implements CommandExecutor {
         boolean isValueFlag = flag.associatedParameter().map(p -> !p.isOptional()).orElse(false);
         NamedTextColor color = isValueFlag ? NamedTextColor.GREEN : NamedTextColor.GOLD;
 
-        return Component.text()
-                .append(Component.text("[").color(NamedTextColor.DARK_GRAY))
-                .append(Component.text(flag.aliases().stream()
+        return Format.chip(Component.text(flag.aliases().stream()
                                 .min(Comparator.comparingInt(String::length))
                                 .orElseThrow(() -> new RuntimeException("Flag has no shortest alias")))
-                        .color(color))
-                .append(Component.text("]").color(NamedTextColor.DARK_GRAY))
-                .decorate(TextDecoration.ITALIC)
-                .hoverEvent(Component.text("Flag" + (isValueFlag ? " - Requires Value" : ""))
+                        .color(color),
+                Component.text("Flag" + (isValueFlag ? " - Requires Value" : ""))
                         .color(color)
                         .append(Component.newline())
-                        .append(entry.getValue().color(NamedTextColor.WHITE)))
-                .build();
+                        .append(entry.getValue())
+        );
     }
 
     private List<Component> formatCommandList(CommandCause cause) {
@@ -163,12 +163,10 @@ public abstract class AbstractCommand implements CommandExecutor {
 
     private Component formatCommand(AbstractCommand child) {
         return Component.text()
-                .append(Component.text(child.aliases.get(0))
-                        .color(NamedTextColor.GREEN)
-                        .hoverEvent(HoverEvent.showText(
-                                Component.text("Aliases: ")
-                                        .append(Component.text(String.join(", ", child.getAliases()))
-                                                .color(NamedTextColor.GRAY)))))
+                .append(Component.text(child.aliases.getFirst()).color(NamedTextColor.GREEN)
+                        .hoverEvent(HoverEvent.showText(Component.text("Aliases: ")
+                                .append(Component.text(String.join(", ", child.getAliases()))
+                                        .color(NamedTextColor.GRAY)))))
                 .clickEvent(SpongeComponents.executeCallback(child::sendHelpCommand))
                 .append(Component.text(" - ").color(NamedTextColor.GRAY))
                 .append(child.description.color(NamedTextColor.WHITE))
@@ -181,12 +179,11 @@ public abstract class AbstractCommand implements CommandExecutor {
             if (aliases.isEmpty()) {
                 throw new RuntimeException("Cannot build a command with no aliases");
             }
-            Command.Parameterized.Builder builder =
-                    Command.builder()
-                            .executor(this)
-                            .permission(permission)
-                            .addFlags(flags.keySet())
-                            .addParameters(parameters);
+            Command.Parameterized.Builder builder = Command.builder()
+                    .executor(this)
+                    .permission(permission)
+                    .addFlags(flags.keySet())
+                    .addParameters(parameters);
 
             if (!children.isEmpty()) {
                 children.forEach(child -> builder.addChild(child.build(), child.aliases));

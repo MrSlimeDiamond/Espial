@@ -22,8 +22,7 @@ public class SignUtil {
                 if (nbtData.getSignData() != null) {
                     List<Component> components = new ArrayList<>();
 
-                    nbtData
-                            .getSignData()
+                    nbtData.getSignData()
                             .getFrontText()
                             .forEach(line -> components.add(GsonComponentSerializer.gson().deserialize(line)));
 

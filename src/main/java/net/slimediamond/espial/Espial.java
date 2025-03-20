@@ -11,7 +11,11 @@ import net.slimediamond.espial.commands.IsThisBlockMineCommand;
 import net.slimediamond.espial.commands.NearbySignsCommand;
 import net.slimediamond.espial.commands.WhoPlacedThisCommand;
 import net.slimediamond.espial.commands.subsystem.AbstractCommand;
-import net.slimediamond.espial.listeners.*;
+import net.slimediamond.espial.listeners.BlockListeners;
+import net.slimediamond.espial.listeners.EntityListeners;
+import net.slimediamond.espial.listeners.InteractListener;
+import net.slimediamond.espial.listeners.PlayerLeaveListener;
+import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.storage.Database;
 import net.slimediamond.espial.util.Format;
@@ -35,7 +39,11 @@ import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,11 +64,10 @@ public class Espial {
     private Database database;
 
     @Inject
-    Espial(
-            final PluginContainer container,
-            final Logger logger,
-            final @DefaultConfig(sharedRoot = true) ConfigurationReference<CommentedConfigurationNode>
-                    reference) {
+    Espial(final PluginContainer container,
+           final Logger logger,
+           @DefaultConfig(sharedRoot = true)
+           final ConfigurationReference<CommentedConfigurationNode> reference) {
         instance = this;
 
         this.container = container;
@@ -86,14 +93,14 @@ public class Espial {
 
         Component message = Format.component(Component.text()
                 .append(Component.text("Interactive mode is enabled. Disable it with ")
-                        .color(NamedTextColor.WHITE)
-                        .append(Component.text("/es i").color(NamedTextColor.YELLOW))
-                        .append(Component.text(".").color(NamedTextColor.WHITE))));
+                        .color(NamedTextColor.WHITE))
+                .append(Component.text("/es i").color(NamedTextColor.YELLOW))
+                .append(Component.text(".").color(NamedTextColor.WHITE)));
 
-        Task task = Task.builder().execute(() ->
-                        inspectingPlayers.forEach(uuid -> Sponge.server()
-                                .player(uuid)
-                                .ifPresent(player -> player.sendActionBar(message))))
+        Task task = Task.builder()
+                .execute(() -> inspectingPlayers.forEach(uuid -> Sponge.server()
+                        .player(uuid)
+                        .ifPresent(player -> player.sendActionBar(message))))
                 .plugin(container)
                 .interval(1, TimeUnit.SECONDS)
                 .build();
