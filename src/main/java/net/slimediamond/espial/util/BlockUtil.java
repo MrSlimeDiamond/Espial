@@ -324,10 +324,8 @@ public class BlockUtil {
             .remove(BlockTypes.IRON_TRAPDOOR)
             .add(DOORS)
             .remove(BlockTypes.IRON_DOOR)
-            .add(FENCES)
             .add(FENCE_GATES)
             .add(ANVILS)
-            .add(SIGNS)
             .add(
                     BlockTypes.ENDER_CHEST,
                     BlockTypes.ENCHANTING_TABLE,
