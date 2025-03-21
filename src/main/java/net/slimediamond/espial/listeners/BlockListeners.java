@@ -104,7 +104,8 @@ public class BlockListeners {
                 String rollbackTo = null;
 
                 // someone placed something, so the block will be the *after*
-                if (transaction.operation().equals(Operations.PLACE.get())) {
+                if (transaction.operation().equals(Operations.PLACE.get())
+                        || transaction.operation().equals(Operations.GROWTH.get())) {
                     snapshot = transaction.finalReplacement();
 
                     BlockType before = transaction.original().state().type();

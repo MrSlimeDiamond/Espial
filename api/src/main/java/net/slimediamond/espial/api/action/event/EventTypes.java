@@ -41,7 +41,7 @@ public class EventTypes {
                     .build();
     public static final EventType GROWTH =
             EventType.builder()
-                    .name("growth")
+                    .name("Growth")
                     .verb("grew")
                     .description("Grow a block")
                     .action(ActionType.BLOCK)
