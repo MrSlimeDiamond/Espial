@@ -244,11 +244,13 @@ public final class Format {
                         .append(getItemDisplayName(record).color(SPREAD_ITEM_COLOR))
                         .clickEvent(ClickEvent.runCommand("/espial inspect " + record.getId()))
                         .hoverEvent(HoverEvent.showText(component(Component.text()
-                                .append(Component.newline())
+                                .appendNewline()
                                 .append(Component.text("Click to teleport!").color(HOVER_HINT_COLOR))
-                                .append(Component.newline())
+                                .appendNewline()
                                 .append(Component.text("Internal ID: ").color(HOVER_HINT_COLOR))
                                 .append(Component.text(record.getId()).color(HOVER_TEXT_COLOR))
+                                .appendNewline()
+                                .append(Component.text(formattedDate).color(HOVER_TEXT_COLOR))
                                 .build())));
 
                 if (record.getAction() instanceof NBTStorable nbt) {
