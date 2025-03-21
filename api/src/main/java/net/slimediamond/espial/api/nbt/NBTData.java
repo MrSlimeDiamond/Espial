@@ -1,5 +1,6 @@
 package net.slimediamond.espial.api.nbt;
 
+import org.spongepowered.api.data.type.PortionType;
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
 
@@ -52,6 +53,14 @@ public interface NBTData {
      * @return Block axis
      */
     Axis getAxis();
+
+    /**
+     * Get which half of the block was changed.
+     * Null if not applicable.
+     *
+     * @return Block half
+     */
+    PortionType getHalf();
 
     /**
      * Whether the block is waterlogged

@@ -52,6 +52,13 @@ public class NBTApplier {
             });
         }
 
+        if (blockState.supports(Keys.PORTION_TYPE)) {
+            blockState.get(Keys.PORTION_TYPE).ifPresent(half -> {
+                modified.set(true);
+                nbtData.setHalf(half);
+            });
+        }
+
         return modified.get();
     }
 

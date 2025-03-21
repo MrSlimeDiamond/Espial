@@ -13,6 +13,7 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.data.BlockStateKeys;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
@@ -64,6 +65,9 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
                 }
                 if (nbtData.getGrowthStage() != null) {
                     blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
+                }
+                if (nbtData.getHalf() != null) {
+                    blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
                 }
             });
         } catch (Exception e) {

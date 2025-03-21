@@ -6,8 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.SignData;
+import net.slimediamond.espial.api.nbt.json.deserializer.PortionTypeDeserializer;
+import org.spongepowered.api.data.type.PortionType;
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
 
@@ -28,7 +31,11 @@ public class JsonNBTData implements NBTData {
     private String rollbackBlock;
 
     @JsonProperty("signData")
-    private JsonSignData signData = null; // We can't do Optionals for JSON
+    private JsonSignData signData;
+
+    @JsonProperty("half")
+    @JsonDeserialize(using = PortionTypeDeserializer.class)
+    private PortionType half;
 
     @JsonProperty("waterlogged")
     private boolean waterlogged;
@@ -43,12 +50,14 @@ public class JsonNBTData implements NBTData {
             @JsonProperty("growth_stage") Integer growthStage,
             @JsonProperty("rollback_block") String rollbackBlock,
             @JsonProperty("signData") JsonSignData signData,
+            @JsonProperty("half") PortionType half,
             @JsonProperty("waterlogged") boolean waterlogged) {
         this.direction = direction;
         this.axis = axis;
         this.growthStage = growthStage;
         this.rollbackBlock = rollbackBlock;
         this.signData = signData;
+        this.half = half;
         this.waterlogged = waterlogged;
     }
 
@@ -107,6 +116,15 @@ public class JsonNBTData implements NBTData {
     @Override
     public Axis getAxis() {
         return this.axis;
+    }
+
+    @Override
+    public PortionType getHalf() {
+        return half;
+    }
+
+    public void setHalf(PortionType half) {
+        this.half = half;
     }
 
     public void setAxis(Axis axis) {

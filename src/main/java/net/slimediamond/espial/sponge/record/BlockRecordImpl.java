@@ -13,8 +13,11 @@ import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.SignUtil;
 import net.slimediamond.espial.util.SpongeUtil;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.world.BlockChangeFlags;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -28,12 +31,11 @@ public class BlockRecordImpl extends BlockRecord {
         EventType eventType = action.getEventType();
 
         if (eventType.equals(EventTypes.BREAK)) {
-            action.getServerLocation().setBlock(action.getState());
+            TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
             doSignRollback(action);
-            return TransactionStatus.SUCCESS;
+            return status;
         } else if (eventType.equals(EventTypes.PLACE)) {
-            action.getServerLocation().setBlock(getRollbackBlockType(action).defaultState());
-            return TransactionStatus.SUCCESS;
+            return setBlock(action.getServerLocation(), getRollbackBlockType(action).defaultState());
         } else if (eventType.equals(EventTypes.MODIFY)) {
             return rollbackModification(action);
         }
@@ -45,12 +47,11 @@ public class BlockRecordImpl extends BlockRecord {
         EventType eventType = action.getEventType();
 
         if (eventType.equals(EventTypes.PLACE)) {
-            action.getServerLocation().setBlock(action.getState());
+            TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
             doSignRollback(action);
-            return TransactionStatus.SUCCESS;
+            return status;
         } else if (eventType.equals(EventTypes.BREAK)) {
-            action.getServerLocation().setBlock(BlockTypes.AIR.get().defaultState());
-            return TransactionStatus.SUCCESS;
+            return setBlock(action.getServerLocation(), BlockTypes.AIR.get().defaultState());
         } else if (eventType.equals(EventTypes.MODIFY)) {
             return restoreModification(action);
         }
@@ -131,5 +132,13 @@ public class BlockRecordImpl extends BlockRecord {
             Espial.getInstance().getDatabase().setRolledBack(getId(), false);
         }
         return status;
+    }
+
+    private TransactionStatus setBlock(ServerLocation location, BlockState block) {
+        if (block.snapshotFor(location).restore(true, BlockChangeFlags.NONE)) {
+            return TransactionStatus.SUCCESS;
+        } else {
+            return TransactionStatus.FAILURE;
+        }
     }
 }
