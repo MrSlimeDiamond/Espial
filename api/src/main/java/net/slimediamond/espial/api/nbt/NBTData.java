@@ -67,5 +67,5 @@ public interface NBTData {
      *
      * @return Whether the block is waterlogged
      */
-    boolean isWaterlogged();
+    Boolean isWaterlogged();
 }

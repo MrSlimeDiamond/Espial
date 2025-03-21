@@ -38,7 +38,7 @@ public class JsonNBTData implements NBTData {
     private PortionType half;
 
     @JsonProperty("waterlogged")
-    private boolean waterlogged;
+    private Boolean waterlogged;
 
     public JsonNBTData() {
     }
@@ -51,7 +51,7 @@ public class JsonNBTData implements NBTData {
             @JsonProperty("rollback_block") String rollbackBlock,
             @JsonProperty("signData") JsonSignData signData,
             @JsonProperty("half") PortionType half,
-            @JsonProperty("waterlogged") boolean waterlogged) {
+            @JsonProperty("waterlogged") Boolean waterlogged) {
         this.direction = direction;
         this.axis = axis;
         this.growthStage = growthStage;
@@ -132,7 +132,7 @@ public class JsonNBTData implements NBTData {
     }
 
     @Override
-    public boolean isWaterlogged() {
+    public Boolean isWaterlogged() {
         return this.waterlogged;
     }
 
