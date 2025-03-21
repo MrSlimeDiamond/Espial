@@ -1,7 +1,9 @@
 package net.slimediamond.espial.sponge;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
@@ -21,6 +23,7 @@ import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
@@ -30,14 +33,17 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class EspialServiceImpl implements EspialService {
-    private TransactionManager transactionManager;
-    private EventManager eventManager;
+    private final TransactionManager transactionManager;
+    private final EventManager eventManager;
 
     public EspialServiceImpl() {
         this.transactionManager = new TransactionManagerImpl();
@@ -55,8 +61,24 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public List<EspialRecord> query(Query query) throws Exception {
-        return Espial.getInstance().getDatabase().query(query);
+    public CompletableFuture<List<EspialRecord>> query(Query query) {
+        CompletableFuture<List<EspialRecord>> future = new CompletableFuture<>();
+
+        Sponge.asyncScheduler().submit(Task.builder()
+                .execute(() -> future.complete(queryStorage(query)))
+                .plugin(Espial.getInstance().getContainer())
+                .build(), "Espial query");
+
+        return future;
+    }
+
+    // Error handling logic for the above method
+    private List<EspialRecord> queryStorage(Query query) {
+        try {
+            return Espial.getInstance().getDatabase().query(query);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -70,41 +92,147 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public SubmittableResult<List<EspialRecord>> submitQuery(Query query) throws Exception {
-        List<EspialRecord> actions = this.query(query);
+    public SubmittableResult<List<EspialRecord>> submitQuery(Query query) {
+        AtomicReference<List<EspialRecord>> results = new AtomicReference<>();
+        this.query(query).thenAccept(records -> {
+            results.set(records);
 
-        StringBuilder argsPreview = new StringBuilder();
+            StringBuilder argsPreview = new StringBuilder();
 
-        if (query.getPlayerUUIDs() != null && !query.getPlayerUUIDs().isEmpty()) {
-            List<String> players = new ArrayList<>();
-            for (UUID uuid : query.getPlayerUUIDs()) {
-                players.add(Sponge.server().userManager().load(uuid).get().get().name());
+            try {
+                if (query.getPlayerUUIDs() != null && !query.getPlayerUUIDs().isEmpty()) {
+                    List<String> players = new ArrayList<>();
+                    for (UUID uuid : query.getPlayerUUIDs()) {
+                        players.add(Sponge.server().userManager().load(uuid).get().get().name());
+                    }
+                    argsPreview.append(" Players: ").append("[").append(String.join(", ", players)).append("]");
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                // Give some indication
+                argsPreview.append(" Player: (error processing)");
+                e.printStackTrace();
             }
-            argsPreview
-                    .append(" Players: ")
-                    .append("[" + String.join(", ", players) + "]");
-        }
 
-        if (query.getBlockIds() != null && !query.getBlockIds().isEmpty()) {
-            List<String> blocks = new ArrayList<>();
-            for (String block : query.getBlockIds()) {
-                blocks.add(block.split(":")[1]);
+            if (query.getBlockIds() != null && !query.getBlockIds().isEmpty()) {
+                List<String> blocks = new ArrayList<>();
+                for (String block : query.getBlockIds()) {
+                    blocks.add(block.split(":")[1]);
+                }
+                argsPreview.append(" Blocks: ").append("[").append(String.join(", ", blocks)).append("]");
             }
-            argsPreview
-                    .append(" Blocks: ")
-                    .append("[" + String.join(", ", blocks) + "]");
-        }
 
-        if (!Objects.equals(query.getTimestamp(), Timestamp.from(Instant.ofEpochMilli(0)))
-                && query.getTimestamp() != null) {
-            if (!argsPreview.isEmpty()) argsPreview.append(" ");
-            argsPreview.append(" After: ").append(Format.date(query.getTimestamp()));
-        }
+            if (query.getTimestamp() != null && !query.getTimestamp().equals(Timestamp.from(Instant.EPOCH))) {
+                argsPreview.append(" After: ").append(Format.date(query.getTimestamp()));
+            }
 
-        // TODO: Asynchronous processing, and probably some queue
-        this.process(actions, query, argsPreview.toString());
+            if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
+                final String msg;
+                if (query.getType().equals(QueryType.ROLLBACK)) {
+                    msg = "rolled back";
+                } else {
+                    msg = "restored";
+                }
 
-        return SubmittableResult.of(actions);
+                Sponge.asyncScheduler().submit(Task.builder().execute(() -> {
+                    List<Integer> success = new ArrayList<>();
+                    List<TransactionStatus> skipped = new ArrayList<>();
+
+                    List<CompletableFuture<EspialRecord>> futures = records.stream().map(record -> {
+                        CompletableFuture<EspialRecord> future = new CompletableFuture<>();
+                        Sponge.server().scheduler().submit(Task.builder().execute(() -> {
+                            try {
+                                TransactionStatus status;
+                                switch (query.getType()) {
+                                    case ROLLBACK -> status = record.rollback();
+                                    case RESTORE -> status = record.restore();
+                                    default -> status = TransactionStatus.UNSUPPORTED;
+                                }
+
+                                if (status == TransactionStatus.SUCCESS) {
+                                    success.add(record.getId());
+                                } else {
+                                    skipped.add(status);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                query.getAudience().sendMessage(Format.error("Exception when processing ID: " + record.getId()));
+                            } finally {
+                                future.complete(record);
+                            }
+                        }).plugin(Espial.getInstance().getContainer()).build(), "Espial processing: " + record.getId());
+                        return future;
+                    }).toList();
+
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                    TextComponent.Builder builder = Component.text();
+
+                    if (!success.isEmpty()) {
+                        builder.append(Component.text(success.size()))
+                                .append(Component.text(" action(s) were "))
+                                .append(Component.text(msg)).color(NamedTextColor.WHITE);
+
+                        // Commit a transaction but only if we will use it later
+                        // for example: lookups won't be added here, but rollbacks will
+                        if (query.getType().isReversible()) {
+                            EspialTransaction transaction = new EspialTransactionImpl(success, query);
+                            Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
+                        }
+
+                    } else {
+                        builder.append(Component.text("Nothing was " + msg).color(NamedTextColor.WHITE));
+                    }
+
+                    if (!skipped.isEmpty()) {
+                        Component skipText = Component.text(skipped.size() + " skipped")
+                                .hoverEvent(HoverEvent.showText(Component.join(
+                                        JoinConfiguration.separator(Component.text(", ")),
+                                        skipped.stream().collect(
+                                                Collectors.groupingBy(status -> status,
+                                                                Collectors.counting()))
+                                                .entrySet().stream()
+                                                .map(entry -> Component.text(
+                                                                entry.getValue() + " " +
+                                                                        entry.getKey().name().toLowerCase()
+                                                                                .replace("_", " ")))
+                                                .toList()
+                                ).color(NamedTextColor.GRAY)))
+                                .color(NamedTextColor.WHITE);
+                        builder.append(Component.text(", with ").color(NamedTextColor.WHITE));
+                        builder.append(skipText);
+                    }
+
+                    builder.append(Component.text(".").color(NamedTextColor.WHITE));
+
+                    query.getAudience().sendMessage(Format.component(builder.build()));
+                }).plugin(Espial.getInstance().getContainer()).build());
+            } else if (query.getType() == QueryType.LOOKUP) {
+                List<Component> contents = Format.generateLookupContents(records, query.isSpread());
+
+                if (contents.isEmpty()) {
+                    query.getAudience().sendMessage(Format.error("No data was found."));
+
+                    return;
+                }
+
+                PaginationList.Builder builder = PaginationList.builder()
+                        .title(Format.title("Lookup results"))
+                        .padding(Format.PADDING);
+
+                if (!argsPreview.isEmpty()) {
+                    builder.header(Format.truncate(Component.text("Parameters:")
+                            .color(Format.HINT_COLOR)
+                            .append(Component.text(argsPreview.toString()).color(NamedTextColor.GRAY))));
+                }
+                builder.contents(contents).sendTo(query.getAudience());
+
+            } else {
+                // Some other query type that we don't currently support
+                query.getAudience().sendMessage(Format.error("This query type is not supported."));
+            }
+        });
+
+        return SubmittableResult.of(results.get());
     }
 
     @Override
@@ -135,82 +263,7 @@ public class EspialServiceImpl implements EspialService {
         }
     }
 
-    private void process(List<EspialRecord> records, Query query, String argsPreview)
-            throws Exception {
-        if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
-            String msg = "processed";
+    private void process(List<EspialRecord> records, Query query, String argsPreview) throws Exception {
 
-            switch (query.getType()) {
-                case ROLLBACK -> msg = "rolled back";
-                case RESTORE -> msg = "restored";
-            }
-
-            List<Integer> success = new ArrayList<>();
-            int skipped = 0;
-
-            for (EspialRecord record : records) {
-                TransactionStatus status;
-                switch (query.getType()) {
-                    case ROLLBACK -> status = record.rollback();
-                    case RESTORE -> status = record.restore();
-                    default -> status = TransactionStatus.UNSUPPORTED;
-                }
-
-                if (status == TransactionStatus.SUCCESS) {
-                    success.add(record.getId());
-                } else {
-                    skipped++;
-                }
-            }
-
-            TextComponent.Builder builder = Component.text();
-
-            if (!success.isEmpty()) {
-                builder.append(Component.text(success.size()))
-                       .append(Component.text(" action(s) were "))
-                       .append(Component.text(msg)).color(NamedTextColor.WHITE);
-
-                // Commit a transaction but only if we will use it later
-                // for example: lookups won't be added here, but rollbacks will
-                if (query.getType().isReversible()) {
-                    EspialTransaction transaction = new EspialTransactionImpl(success, query);
-                    Espial.getInstance().getTransactionManager().add(transaction.getUser(), transaction);
-                }
-
-            } else {
-                builder.append(Component.text("Nothing was " + msg).color(NamedTextColor.WHITE));
-            }
-
-            if (skipped != 0) {
-                builder.append(Component.text(", with " + skipped + " skipped").color(NamedTextColor.WHITE));
-            }
-
-            builder.append(Component.text(".").color(NamedTextColor.WHITE));
-
-            query.getAudience().sendMessage(Format.component(builder.build()));
-        } else if (query.getType() == QueryType.LOOKUP) {
-            List<Component> contents = Format.generateLookupContents(records, query.isSpread());
-
-            if (contents.isEmpty()) {
-                query.getAudience().sendMessage(Format.error("No data was found."));
-
-                return;
-            }
-
-            PaginationList.Builder builder = PaginationList.builder()
-                    .title(Format.title("Lookup results"))
-                    .padding(Format.PADDING);
-
-            if (!argsPreview.isEmpty()) {
-                builder.header(Format.truncate(Component.text("Parameters:")
-                        .color(Format.HINT_COLOR)
-                        .append(Component.text(argsPreview).color(NamedTextColor.GRAY))));
-            }
-            builder.contents(contents).sendTo(query.getAudience());
-
-        } else {
-            // Some other query type that we don't currently support
-            query.getAudience().sendMessage(Format.error("This query type is not supported."));
-        }
     }
 }

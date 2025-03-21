@@ -1,12 +1,18 @@
 package net.slimediamond.espial.sponge.transaction;
 
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.TransactionManager;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.scheduler.Task;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TransactionManagerImpl implements TransactionManager {
     private final Map<Object, Deque<EspialTransaction>> undos = new HashMap<>();
@@ -25,7 +31,7 @@ public class TransactionManagerImpl implements TransactionManager {
     }
 
     @Override
-    public int undo(Object key) throws Exception {
+    public CompletableFuture<Integer> undo(Object key) {
         Deque<EspialTransaction> undo = undos.getOrDefault(key, new ArrayDeque<>());
         Deque<EspialTransaction> redo = redos.computeIfAbsent(key, k -> new ArrayDeque<>());
 
@@ -33,14 +39,14 @@ public class TransactionManagerImpl implements TransactionManager {
             EspialTransaction transaction = undo.pop();
             redo.push(transaction);
 
-            return transaction.undo();
+            return process(transaction, true);
         }
 
-        return 0;
+        return CompletableFuture.completedFuture(0);
     }
 
     @Override
-    public int redo(Object key) throws Exception {
+    public CompletableFuture<Integer> redo(Object key) {
         Deque<EspialTransaction> redo = redos.getOrDefault(key, new ArrayDeque<>());
         Deque<EspialTransaction> undo = undos.computeIfAbsent(key, k -> new ArrayDeque<>());
 
@@ -48,9 +54,27 @@ public class TransactionManagerImpl implements TransactionManager {
             EspialTransaction transaction = redo.pop();
             undo.push(transaction);
 
-            return transaction.redo();
+            return process(transaction, false);
         }
 
-        return 0;
+        return CompletableFuture.completedFuture(0);
+    }
+
+    private CompletableFuture<Integer> process(EspialTransaction transaction, boolean undo) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+        Sponge.server().scheduler().submit(Task.builder().execute(() -> {
+            try {
+                int modifications;
+                if (undo) {
+                    modifications = transaction.undo();
+                } else {
+                    modifications = transaction.redo();
+                }
+                future.complete(modifications);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).plugin(Espial.getInstance().getContainer()).build());
+        return future;
     }
 }

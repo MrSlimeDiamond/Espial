@@ -1,5 +1,7 @@
 package net.slimediamond.espial.api.transaction;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Manages {@link EspialTransaction}s.
  *
@@ -26,13 +28,15 @@ public interface TransactionManager {
      * Undo latest transaction of a user
      *
      * @param key The identifier (user)
+     * @return Amount of actions undone
      */
-    int undo(Object key) throws Exception;
+    CompletableFuture<Integer> undo(Object key);
 
     /**
      * Redo the latest undone transaction of a user
      *
      * @param key The identifier (user)
+     * @return Amount of actions redone
      */
-    int redo(Object key) throws Exception;
+    CompletableFuture<Integer> redo(Object key);
 }

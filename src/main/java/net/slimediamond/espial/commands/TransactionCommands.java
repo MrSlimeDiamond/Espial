@@ -128,9 +128,6 @@ public class TransactionCommands {
     }
 
     public static class Undo extends AbstractCommand {
-        /**
-         * Constructor for a command
-         */
         Undo() {
             super("espial.command.undo", Component.text("Undo your previous transactions"));
             addAlias("undo");
@@ -138,17 +135,13 @@ public class TransactionCommands {
 
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            try {
-                int actions = Espial.getInstance().getTransactionManager().undo(context.cause().root());
+            Espial.getInstance().getTransactionManager().undo(context.cause().root()).thenAccept(actions -> {
                 if (actions == 0) {
                     context.sendMessage(Format.text("Nothing was undone."));
                 } else {
                     context.sendMessage(Format.text(actions + " action(s) have been undone."));
                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            });
 
             return CommandResult.success();
         }
@@ -162,16 +155,13 @@ public class TransactionCommands {
 
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            try {
-                int actions = Espial.getInstance().getTransactionManager().redo(context.cause().root());
+            Espial.getInstance().getTransactionManager().redo(context.cause().root()).thenAccept(actions -> {
                 if (actions == 0) {
                     context.sendMessage(Format.text("Nothing was redone."));
                 } else {
                     context.sendMessage(Format.text(actions + " action(s) have been redone."));
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            });
 
             return CommandResult.success();
         }

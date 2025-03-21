@@ -11,6 +11,7 @@ import org.spongepowered.api.entity.living.player.User;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -34,11 +35,12 @@ public interface EspialService {
     EventManager getEventManager();
 
     /**
-     * Query a block
+     * Query a block asynchronously
      *
      * @param query Query
+     * @return List of {@link EspialRecord}s relevant to the query
      */
-    List<EspialRecord> query(Query query) throws Exception;
+    CompletableFuture<List<EspialRecord>> query(Query query) throws Exception;
 
     /**
      * Query an ID
