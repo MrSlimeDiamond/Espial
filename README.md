@@ -49,9 +49,10 @@ Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks
     * Permission: espial.command.myblock
     * Check if a block was placed by you
     * Can also be used as a base command (**/isthisblockmine**)
-* **/whoplacedthis**
-  * Permission: espial.command.whoplacedthis
-  * Show the player who placed a block and nothing more.
+  * **whoplacedthis**
+    * Permission: espial.command.whoplacedthis
+    * Show the player who placed a block and nothing more.
+    * Can also be used as a base command (**/whoplacedthis**)
 
 ## Query command flags
 | Aliases                            | Description                                 |
@@ -78,19 +79,18 @@ The following tools are required
 * [Git](https://git-scm.com/)
 
 ### Compiling
-| Directory   | Description                     |
-|-------------|---------------------------------|
-| src/        | Common source code              |
-| api/        | API source code                 |
-| sponge/api* | SpongeAPI version specific code |
+| Directory   | Description                 |
+|-------------|-----------------------------|
+| src/        | Common source code (Sponge) |
+| api/        | API source code             |
 
 #### General compile
 Use `gradle build` and find the jars in `build/libs` (not in the submodules)
 
-| Pattern                            | Description                  |
-|------------------------------------|------------------------------|
-| `build/libs/espial-api-*`          | API jar files                |
-| `build/libs/espial-*-sponge-*.jar` | SpongeAPI jar files          |
+| Pattern                   | Description                  |
+|---------------------------|------------------------------|
+| `build/libs/espial-api-*` | API jar files                |
+| `build/libs/espial-*.jar` | SpongeAPI jar files          |
 
 Other jar files are not relevant.
 
@@ -113,8 +113,8 @@ repositories {
 ```
 
 ## Contact
-* Discord: @slimediamond
-* Telegram: @MrSlimeDiamond
-* IRC channel: #slimediamond (irc.esper.net)
+* Discord: `@slimediamond`
+* Telegram: `@MrSlimeDiamond`
+* IRC channel: `#slimediamond` (irc.esper.net)
 
 Thank you for using Espial! Please report issues
