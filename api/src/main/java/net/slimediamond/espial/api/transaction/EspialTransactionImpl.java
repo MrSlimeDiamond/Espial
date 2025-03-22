@@ -7,6 +7,7 @@ import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,8 +36,8 @@ public class EspialTransactionImpl implements EspialTransaction {
         return process(ids, type, false);
     }
 
-    private static int process(List<Integer> ids, QueryType type,
-                               boolean isUndo) throws Exception {
+    private static int process(List<Integer> ids, QueryType type, boolean isUndo) throws Exception {
+        Collections.reverse(ids);
         for (int id : ids) {
             Optional<EspialRecord> record = EspialProviders.getEspialService().queryId(id);
             if (record.isPresent() && record.get() instanceof BlockRecord) {
