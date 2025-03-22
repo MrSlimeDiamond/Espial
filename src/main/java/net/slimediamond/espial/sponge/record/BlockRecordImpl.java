@@ -16,6 +16,7 @@ import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -34,7 +35,12 @@ public class BlockRecordImpl extends BlockRecord {
             TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
             doSignRollback(action);
             return status;
-        } else if (eventType.equals(EventTypes.PLACE)) {
+        } else if (eventType.equals(EventTypes.PLACE) || eventType.equals(EventTypes.GROWTH)) {
+            if (eventType.equals(EventTypes.GROWTH)) {
+                if (action.getState().supports(Keys.GROWTH_STAGE)) {
+                    return TransactionStatus.UNSUPPORTED;
+                }
+            }
             return setBlock(action.getServerLocation(), getRollbackBlockType(action).defaultState());
         } else if (eventType.equals(EventTypes.MODIFY)) {
             return rollbackModification(action);
@@ -46,7 +52,12 @@ public class BlockRecordImpl extends BlockRecord {
     private TransactionStatus doRestore(BlockAction action) throws Exception {
         EventType eventType = action.getEventType();
 
-        if (eventType.equals(EventTypes.PLACE)) {
+        if (eventType.equals(EventTypes.PLACE) || eventType.equals(EventTypes.GROWTH)) {
+            if (eventType.equals(EventTypes.GROWTH)) {
+                if (action.getState().supports(Keys.GROWTH_STAGE)) {
+                    return TransactionStatus.UNSUPPORTED;
+                }
+            }
             TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
             doSignRollback(action);
             return status;
