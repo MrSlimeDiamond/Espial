@@ -146,10 +146,14 @@ public class BlockRecordImpl extends BlockRecord {
     }
 
     private TransactionStatus setBlock(ServerLocation location, BlockState block) {
-        if (block.snapshotFor(location).restore(true, BlockChangeFlags.NONE)) {
-            return TransactionStatus.SUCCESS;
-        } else {
-            return TransactionStatus.FAILURE;
-        }
+        location.setBlock(block, BlockChangeFlags.NONE.withNotifyClients(true));
+        return TransactionStatus.SUCCESS;
+        
+        // doesn't work on signs for some reason
+//        if (block.snapshotFor(location).restore(true, BlockChangeFlags.NONE)) {
+//            return TransactionStatus.SUCCESS;
+//        } else {
+//            return TransactionStatus.FAILURE;
+//        }
     }
 }
