@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.event.EventManager;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
@@ -32,12 +33,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -109,7 +110,7 @@ public class EspialServiceImpl implements EspialService {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 // Give some indication
-                argsPreview.append(" Player: (error processing)");
+                argsPreview.append(" Players: (error!)");
                 e.printStackTrace();
             }
 
@@ -133,37 +134,33 @@ public class EspialServiceImpl implements EspialService {
                     msg = "restored";
                 }
 
-                Sponge.asyncScheduler().submit(Task.builder().execute(() -> {
+                // Execute on Sponge's scheduler so that it executes
+                // when ready.
+                Sponge.server().scheduler().submit(Task.builder().execute(() -> {
                     List<Integer> success = new ArrayList<>();
                     List<TransactionStatus> skipped = new ArrayList<>();
 
-                    List<CompletableFuture<EspialRecord>> futures = records.stream().map(record -> {
-                        CompletableFuture<EspialRecord> future = new CompletableFuture<>();
-                        Sponge.server().scheduler().submit(Task.builder().execute(() -> {
-                            try {
-                                TransactionStatus status;
-                                switch (query.getType()) {
-                                    case ROLLBACK -> status = record.rollback();
-                                    case RESTORE -> status = record.restore();
-                                    default -> status = TransactionStatus.UNSUPPORTED;
-                                }
 
-                                if (status == TransactionStatus.SUCCESS) {
-                                    success.add(record.getId());
-                                } else {
-                                    skipped.add(status);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                query.getAudience().sendMessage(Format.error("Exception when processing ID: " + record.getId()));
-                            } finally {
-                                future.complete(record);
+                    records.forEach(record -> {
+                        try {
+                            TransactionStatus status;
+                            switch (query.getType()) {
+                                case ROLLBACK -> status = record.rollback();
+                                case RESTORE -> status = record.restore();
+                                default -> status = TransactionStatus.UNSUPPORTED;
                             }
-                        }).plugin(Espial.getInstance().getContainer()).build(), "Espial processing: " + record.getId());
-                        return future;
-                    }).toList();
 
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+                            if (status == TransactionStatus.SUCCESS) {
+                                success.add(record.getId());
+                            } else {
+                                skipped.add(status);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            query.getAudience().sendMessage(Format.error(
+                                    "Exception when processing ID: " + record.getId()));
+                        }
+                    });
 
                     TextComponent.Builder builder = Component.text();
 
@@ -188,13 +185,13 @@ public class EspialServiceImpl implements EspialService {
                                 .hoverEvent(HoverEvent.showText(Component.join(
                                         JoinConfiguration.separator(Component.text(", ")),
                                         skipped.stream().collect(
-                                                Collectors.groupingBy(status -> status,
+                                                        Collectors.groupingBy(status -> status,
                                                                 Collectors.counting()))
                                                 .entrySet().stream()
                                                 .map(entry -> Component.text(
-                                                                entry.getValue() + " " +
-                                                                        entry.getKey().name().toLowerCase()
-                                                                                .replace("_", " ")))
+                                                        entry.getValue() + " " +
+                                                                entry.getKey().name().toLowerCase()
+                                                                        .replace("_", " ")))
                                                 .toList()
                                 ).color(NamedTextColor.GRAY)))
                                 .color(NamedTextColor.WHITE);
@@ -205,7 +202,8 @@ public class EspialServiceImpl implements EspialService {
                     builder.append(Component.text(".").color(NamedTextColor.WHITE));
 
                     query.getAudience().sendMessage(Format.component(builder.build()));
-                }).plugin(Espial.getInstance().getContainer()).build());
+                }).plugin(Espial.getInstance().getContainer()).build(), "Espial processing records.");
+
             } else if (query.getType() == QueryType.LOOKUP) {
                 List<Component> contents = Format.generateLookupContents(records, query.isSpread());
 
@@ -230,6 +228,15 @@ public class EspialServiceImpl implements EspialService {
                 // Some other query type that we don't currently support
                 query.getAudience().sendMessage(Format.error("This query type is not supported."));
             }
+
+            Format.sendDebug(query.getAudience(), Format.debug(Component.text("Sort: " + query.getSort().toString(), NamedTextColor.GRAY)));
+            Format.sendDebug(query.getAudience(),
+                    Format.debug(Component.text("IDs: [hover to show]").color(NamedTextColor.GRAY)
+                            .hoverEvent(HoverEvent.showText(Component.join(
+                                    JoinConfiguration.separator(
+                                            Component.text(", ").color(NamedTextColor.GRAY)),
+                                    records.stream().map(EspialRecord::getId).map(Component::text)
+                                            .toList())))));
         });
 
         return SubmittableResult.of(results.get());

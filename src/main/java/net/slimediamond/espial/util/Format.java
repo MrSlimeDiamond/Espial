@@ -1,5 +1,6 @@
 package net.slimediamond.espial.util;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
@@ -9,6 +10,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.HangingDeathAction;
@@ -38,6 +40,7 @@ public final class Format {
     public static final TextColor THEME_COLOR = TextColor.color(79, 235, 52);
     public static final TextColor TEXT_COLOR = NamedTextColor.WHITE;
     public static final TextColor INFO_COLOR = NamedTextColor.WHITE;
+    public static final TextColor DEBUG_COLOR = TextColor.color(255, 243, 0);
     public static final TextColor PADDING_COLOR = NamedTextColor.GRAY;
     public static final TextColor ERROR_COLOR = NamedTextColor.RED;
     public static final TextColor HINT_COLOR = TextColor.color(49, 175, 212);
@@ -55,6 +58,7 @@ public final class Format {
 
     public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
     public static final Component PREFIX = Component.text("Espial › ").color(THEME_COLOR);
+    public static final Component DEBUG_PREFIX = PREFIX.append(Component.text("Debug › ")).color(DEBUG_COLOR);
 
     /* No initialization */
     private Format() {
@@ -74,6 +78,20 @@ public final class Format {
 
     public static Component error(String text) {
         return component(Component.text(text).color(ERROR_COLOR));
+    }
+
+    public static Component debug(String text) {
+        return debug(Component.text(text).color(NamedTextColor.WHITE));
+    }
+
+    public static Component debug(Component component) {
+        return DEBUG_PREFIX.append(component);
+    }
+
+    public static void sendDebug(Audience audience, Component component) {
+        if (Espial.getInstance().getConfig().get().isDebugModeEnabled()) {
+            audience.sendMessage(component);
+        }
     }
 
     public static Component noBlockFound() {
@@ -315,20 +333,17 @@ public final class Format {
     public static Component makeHoverableAction(EventType eventType, boolean useVerb) {
         String text = useVerb ? eventType.getVerb() : eventType.getName();
         return Component.text(text)
-                .hoverEvent(
-                        HoverEvent.showText(
-                                component(
-                                        Component.text()
-                                                .append(Component.text("Event").color(TITLE_COLOR))
-                                                .append(Component.newline())
-                                                .append(Component.text("ID: ").color(HOVER_HINT_COLOR))
-                                                .append(Component.text(eventType.getId()).color(HOVER_TEXT_COLOR))
-                                                .append(Component.newline())
-                                                .append(Component.text("Name: ").color(HOVER_HINT_COLOR))
-                                                .append(Component.text(eventType.getName()).color(HOVER_TEXT_COLOR))
-                                                .append(Component.newline())
-                                                .append(Component.text("Description: ").color(HOVER_HINT_COLOR))
-                                                .append(Component.text(eventType.getDescription()).color(HOVER_TEXT_COLOR)))));
+                .hoverEvent(HoverEvent.showText(component(Component.text()
+                        .append(Component.text("Event").color(TITLE_COLOR))
+                        .append(Component.newline())
+                        .append(Component.text("ID: ").color(HOVER_HINT_COLOR))
+                        .append(Component.text(eventType.getId()).color(HOVER_TEXT_COLOR))
+                        .append(Component.newline())
+                        .append(Component.text("Name: ").color(HOVER_HINT_COLOR))
+                        .append(Component.text(eventType.getName()).color(HOVER_TEXT_COLOR))
+                        .append(Component.newline())
+                        .append(Component.text("Description: ").color(HOVER_HINT_COLOR))
+                        .append(Component.text(eventType.getDescription()).color(HOVER_TEXT_COLOR)))));
     }
 
     public static Component getItemDisplayName(EspialRecord record) {

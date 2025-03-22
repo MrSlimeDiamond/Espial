@@ -13,6 +13,8 @@ public class EspialConfiguration {
     private int defaultLookupRange = 5;
     @Setting
     private String defaultTime = "3d";
+    @Setting
+    private boolean debug = false;
 
     public String jdbc() {
         return this.jdbc;
@@ -28,5 +30,9 @@ public class EspialConfiguration {
 
     public String getDefaultTime() {
         return defaultTime;
+    }
+
+    public boolean isDebugModeEnabled() {
+        return debug;
     }
 }

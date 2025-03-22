@@ -26,24 +26,32 @@ import org.spongepowered.api.world.LocatableBlock;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class TransactionCommands {
 
-    private static final Map<Flag, Component> FLAGS = Map.of(
-            Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build(),
-                Component.text("The range to query"),
-            Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build(),
-                Component.text("Use your WorldEdit selection"),
-            Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build(),
-                Component.text("Filter by a specific player"),
-            Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build(),
-                Component.text("Filter by a specific block"),
-            Flag.builder().aliases("time", "after", "t").setParameter(CommandParameters.TIME).build(),
-                Component.text("Set a time to query after")
-    );
+    private static final Map<Flag, Component> FLAGS = new HashMap<>();
+
+    static {
+        FLAGS.put(Flag.builder().aliases("range", "r").setParameter(CommandParameters.LOOKUP_RANGE).build(),
+                Component.text("The range to query"));
+        FLAGS.put(Flag.builder().aliases("worldedit", "we", "w").setParameter(Parameter.bool().key("use worldedit").optional().build()).build(),
+                Component.text("Use your WorldEdit selection"));
+        FLAGS.put(Flag.builder().aliases("player", "p").setParameter(CommandParameters.LOOKUP_PLAYER).build(),
+                Component.text("Filter by a specific player"));
+        FLAGS.put(Flag.builder().aliases("block", "b").setParameter(CommandParameters.LOOKUP_BLOCK).build(),
+                Component.text("Filter by a specific block"));
+        FLAGS.put(Flag.builder().aliases("time", "after", "t").setParameter(CommandParameters.TIME).build(),
+                Component.text("Set a time to query after"));
+
+        if (Espial.getInstance().getConfig().get().isDebugModeEnabled()) {
+            FLAGS.put(Flag.builder().aliases("sort").setParameter(CommandParameters.SORT).build(),
+                    Component.text("Sort in a specific order. Could break things (use in debugging only.)"));
+        }
+    }
 
     public static final Map<Flag, Component> SPREAD = Map.of(
             Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("spread").optional().build()).build(),
@@ -59,6 +67,10 @@ public class TransactionCommands {
         } else {
             context.sendMessage(Format.playersOnly());
             return CommandResult.success();
+        }
+
+        if (context.hasFlag("sort")) {
+            sort = context.requireOne(CommandParameters.SORT);
         }
 
         ArgumentUtil.Requirements args = ArgumentUtil.parse(context, type);
@@ -267,7 +279,7 @@ public class TransactionCommands {
 
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            return TransactionCommands.execute(context, QueryType.ROLLBACK, Sort.REVERSE_CHRONOLOGICAL);
+            return TransactionCommands.execute(context, QueryType.ROLLBACK, Sort.ID_DESCENDING);
         }
     }
 
@@ -281,7 +293,7 @@ public class TransactionCommands {
 
         @Override
         public CommandResult execute(CommandContext context) throws CommandException {
-            return TransactionCommands.execute(context, QueryType.RESTORE, Sort.CHRONOLOGICAL);
+            return TransactionCommands.execute(context, QueryType.RESTORE, Sort.ID_ASCENDING);
         }
     }
 
@@ -309,7 +321,16 @@ public class TransactionCommands {
 
                 if (!requirements.shouldContinue()) return CommandResult.success();
 
-                Query.Builder builder = Query.builder().min(selection.getLeft()).max(selection.getRight()).players(requirements.getUUIDs()).spread(context.hasFlag("s")).after(requirements.getTimestamp()).audience(context.cause().audience()).caller(player).sort(Sort.REVERSE_CHRONOLOGICAL).type(QueryType.LOOKUP);
+                Query.Builder builder = Query.builder()
+                        .min(selection.getLeft())
+                        .max(selection.getRight())
+                        .players(requirements.getUUIDs())
+                        .spread(context.hasFlag("s"))
+                        .after(requirements.getTimestamp())
+                        .audience(context.cause().audience())
+                        .caller(player)
+                        .sort(Sort.REVERSE_CHRONOLOGICAL)
+                        .type(QueryType.LOOKUP);
 
                 if (requirements.getBlocks() != null) {
                     builder.blocks(requirements.getBlocks());
