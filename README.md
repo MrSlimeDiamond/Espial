@@ -57,8 +57,8 @@ Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks
 ## Query command flags
 | Aliases                            | Description                                 |
 |------------------------------------|---------------------------------------------|
-| *[--worldedit \| -w]*              | Use a WorldEdit range                       |
-| *[--range \| -r \<range\>]*        | Lookup a cuboid range                       |
+| *[--worldedit \| -w]*              | Use your WorldEdit selection                |
+| *[--range \| -r \<range\>]*        | Lookup a cuboid around you                  |
 | *[--player \| -p \<player name\>]* | Only look at actions from a specific player |
 | *[--block \| -b \<block id\>]*     | Only look at a specific block type          |
 
@@ -75,7 +75,7 @@ Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks
 The following tools are required
 * A programming IDE (I recommend: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
 * Java 21
-* Gradle (though a wrapper is included: `./gradlew` on \*nix and `.\gradlew.exe` on Windows)
+* Gradle (though a wrapper is included: `./gradlew` on \*nix and `.\gradlew.bat` on Windows)
 * [Git](https://git-scm.com/)
 
 ### Compiling
