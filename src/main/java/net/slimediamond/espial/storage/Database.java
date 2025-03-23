@@ -56,26 +56,32 @@ public class Database {
     private PreparedStatement setRolledBack;
     private PreparedStatement insertNBTdata;
     private PreparedStatement getNBTdata;
+    private PreparedStatement dropOldTable;
+
+    private boolean hasLegacyTable;
 
     public void open(String connectionString) throws SQLException {
         Espial.getInstance().getLogger().info("Opening database...");
         conn = DriverManager.getConnection(connectionString);
 
-        String sql;
+        String creation;
+        String legacyCheck;
 
         // Databases need to be made differently on different databases.
         if (connectionString.contains("sqlite")) {
             Espial.getInstance().getLogger().info("Detected database type: sqlite");
-            sql = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+            creation = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+            legacyCheck = "SELECT name FROM sqlite_master WHERE type='table' AND name='blocklog'";
         } else {
             // Probably MySQL/MariaDB or whatever. use a different statement
 
             Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
 
-            sql = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
+            creation = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
+            legacyCheck = "SHOW TABLES LIKE 'blocklog'";
         }
 
-        conn.prepareStatement(sql +
+        conn.prepareStatement(creation +
                 "type TINYINT, " +
                 "time TIMESTAMP, " +
                 "player_uuid MEDIUMTEXT, " +
@@ -87,26 +93,30 @@ public class Database {
                 "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
                 ")").execute();
 
+        hasLegacyTable = conn.prepareStatement(legacyCheck).executeQuery().next();
+
         // Migrate data from blocklog to records
         // Espial v1 --> v2
         //
         // Drops player_* values, because they took up space
         // and seemed useless.
-        try {
-            conn.prepareStatement(
-                    "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
-                            "SELECT type, time, player_uuid, block_id, world, x, y, z, rolled_back FROM blocklog").execute();
-        } catch (SQLException ignored) { // Does not need to be migrated
+        if (hasLegacyTable) {
+            try {
+                conn.prepareStatement(
+                        "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
+                                "SELECT type, time, player_uuid, block_id, world, x, y, z, rolled_back FROM blocklog").execute();
+            } catch (SQLException ignored) { // Does not need to be migrated
+            }
         }
 
         // Create the nbt table
         if (connectionString.contains("sqlite")) {
-            sql = "CREATE TABLE IF NOT EXISTS nbt (id INTEGER PRIMARY KEY, data TEXT)";
+            creation = "CREATE TABLE IF NOT EXISTS nbt (id INTEGER PRIMARY KEY, data TEXT)";
         } else {
-            sql = "CREATE TABLE IF NOT EXISTS nbt (id INT PRIMARY KEY, data TEXT)";
+            creation = "CREATE TABLE IF NOT EXISTS nbt (id INT PRIMARY KEY, data TEXT)";
         }
 
-        conn.prepareStatement(sql).execute();
+        conn.prepareStatement(creation).execute();
 
     // Backwards compatibility
     // conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN
@@ -129,6 +139,7 @@ public class Database {
         setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
         insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
+        dropOldTable = conn.prepareStatement("DROP TABLE blocklog");
 
         Espial.getInstance().getLogger().info("Database loaded.");
     }
@@ -445,5 +456,14 @@ public class Database {
         }
 
         return Optional.empty();
+    }
+
+    public void dropOldTable() throws SQLException {
+        hasLegacyTable = false;
+        dropOldTable.execute();
+    }
+
+    public boolean hasLegacyTable() {
+        return hasLegacyTable;
     }
 }

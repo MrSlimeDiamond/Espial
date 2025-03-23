@@ -14,7 +14,7 @@ import net.slimediamond.espial.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.listeners.BlockListeners;
 import net.slimediamond.espial.listeners.EntityListeners;
 import net.slimediamond.espial.listeners.InteractListener;
-import net.slimediamond.espial.listeners.PlayerLeaveListener;
+import net.slimediamond.espial.listeners.PlayerListeners;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
 import net.slimediamond.espial.storage.Database;
@@ -112,7 +112,7 @@ public class Espial {
     public void onServerStarting(final StartingEngineEvent<Server> event) {
         Sponge.eventManager().registerListeners(container, new BlockListeners());
         Sponge.eventManager().registerListeners(container, new InteractListener());
-        Sponge.eventManager().registerListeners(container, new PlayerLeaveListener());
+        Sponge.eventManager().registerListeners(container, new PlayerListeners());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());
         Sponge.eventManager().registerListeners(container, new EntityListeners());
     }
