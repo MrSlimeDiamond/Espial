@@ -8,6 +8,7 @@ import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.nbt.json.JsonSignData;
 import net.slimediamond.espial.api.user.EspialActor;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
+import net.slimediamond.espial.util.NBTApplier;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Listener;
@@ -46,6 +47,7 @@ public class SignInteractEvent {
 
             JsonNBTData nbtData = new JsonNBTData();
             nbtData.setSignData(new JsonSignData(frontSerialized, backSerialized));
+            NBTApplier.update(nbtData, event.sign().block());
 
             EspialActor actor = new EspialActorImpl(source);
 
