@@ -1,7 +1,6 @@
 package net.slimediamond.espial.api.record;
 
 import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
 
 import java.sql.Timestamp;
 
@@ -37,10 +36,4 @@ public abstract class AbstractRecord implements EspialRecord {
     public Action getAction() {
         return action;
     }
-
-    @Override
-    public abstract TransactionStatus rollback() throws Exception;
-
-    @Override
-    public abstract TransactionStatus restore() throws Exception;
 }

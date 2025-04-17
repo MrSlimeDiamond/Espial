@@ -18,7 +18,21 @@ public class EntityRecordImpl extends EntityRecord {
 
     @Override
     public TransactionStatus rollback() throws Exception {
-        if (isRolledBack()) {
+        return rollback(false);
+    }
+
+    @Override
+    public TransactionStatus restore() throws Exception {
+        if (!isRolledBack()) {
+            return TransactionStatus.ALREADY_DONE;
+        }
+
+        return TransactionStatus.UNSUPPORTED;
+    }
+
+    @Override
+    public TransactionStatus rollback(boolean force) throws Exception {
+        if (isRolledBack() && !force) {
             return TransactionStatus.ALREADY_DONE;
         }
         if (this.getAction() instanceof HangingDeathAction deathAction) {
@@ -45,21 +59,7 @@ public class EntityRecordImpl extends EntityRecord {
     }
 
     @Override
-    public TransactionStatus restore() throws Exception {
-        if (!isRolledBack()) {
-            return TransactionStatus.ALREADY_DONE;
-        }
-
-        // TODO
-        //        if (this.action instanceof HangingDeathAction deathAction) {
-        //
-        // deathAction.getServerLocation().setBlock(BlockState.builder().blockType(BlockTypes.AIR).build());
-        //
-        //            Espial.getInstance().getDatabase().setRolledBack(getId(), false);
-        //
-        //            return TransactionStatus.SUCCESS;
-        //        }
-
+    public TransactionStatus restore(boolean force) throws Exception {
         return TransactionStatus.UNSUPPORTED;
     }
 }

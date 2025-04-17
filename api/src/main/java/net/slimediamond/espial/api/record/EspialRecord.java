@@ -42,14 +42,31 @@ public interface EspialRecord {
     /**
      * Roll back this action
      *
-     * @return Status
+     * @return Status of the rollback
      */
     TransactionStatus rollback() throws Exception;
 
     /**
      * Restore this action
      *
-     * @return Status
+     * @return Status of the restore
      */
     TransactionStatus restore() throws Exception;
+
+    /**
+     * Rollback this action
+     *
+     * @param force Whether to roll back regardless of whether it's already been rolled back
+     * @return Status of the rollback
+     */
+    TransactionStatus rollback(boolean force) throws Exception;
+
+    /**
+     * Rollback this action
+     *
+     * @param force Whether to restore regardless of whether it's already been restored
+     * @return Status of the restore
+     */
+    TransactionStatus restore(boolean force) throws Exception;
+
 }

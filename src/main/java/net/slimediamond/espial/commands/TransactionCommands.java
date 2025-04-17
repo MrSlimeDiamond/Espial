@@ -53,6 +53,11 @@ public class TransactionCommands {
         }
     }
 
+    private static final Map<Flag, Component> FORCE = Map.of(
+            Flag.builder().aliases("force").setParameter(Parameter.bool().key("force").optional().build()).build(),
+            Component.text("Force a rollback/restore, even if changes have already been rolled back")
+    );
+
     public static final Map<Flag, Component> SPREAD = Map.of(
             Flag.builder().aliases("spread", "single", "s").setParameter(Parameter.bool().key("spread").optional().build()).build(),
             Component.text("Show individual events"));
@@ -76,13 +81,16 @@ public class TransactionCommands {
         ArgumentUtil.Requirements args = ArgumentUtil.parse(context, type);
         if (!args.shouldContinue()) return CommandResult.success();
 
+        boolean force = context.hasFlag("force");
+
         Query.Builder builder = Query.builder()
                 .type(type)
                 .players(args.getUUIDs())
                 .sort(sort).caller(player)
                 .spread(context.hasFlag("s"))
                 .audience(player)
-                .after(args.getTimestamp());
+                .after(args.getTimestamp())
+                .force(force);
 
         if (args.getBlocks() != null) {
             builder.blocks(args.getBlocks());
@@ -186,6 +194,7 @@ public class TransactionCommands {
             addAlias("rbid");
             addParameter(CommandParameters.GENERIC_ID);
             showInHelp(false);
+            addFlags(FORCE);
         }
 
         @Override
@@ -197,7 +206,9 @@ public class TransactionCommands {
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
 
-                TransactionStatus status = record.rollback();
+                boolean force = context.hasFlag("force");
+
+                TransactionStatus status = record.rollback(force);
 
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Format.text(ids.size() + " action(s) have been rolled back."));
@@ -223,6 +234,7 @@ public class TransactionCommands {
             addAlias("rsid");
             addParameter(CommandParameters.GENERIC_ID);
             showInHelp(false);
+            addFlags(FORCE);
         }
 
         @Override
@@ -234,7 +246,9 @@ public class TransactionCommands {
                 List<Integer> ids = new ArrayList<>();
                 ids.add(id);
 
-                TransactionStatus status = record.restore();
+                boolean force = context.hasFlag("force");
+
+                TransactionStatus status = record.restore(force);
 
                 if (status == TransactionStatus.SUCCESS) {
                     context.sendMessage(Format.text(ids.size() + " action(s) have been restored."));
@@ -275,6 +289,7 @@ public class TransactionCommands {
             addAlias("rollback");
             addAlias("rb");
             addFlags(FLAGS);
+            addFlags(FORCE);
         }
 
         @Override
@@ -289,6 +304,7 @@ public class TransactionCommands {
             addAlias("restore");
             addAlias("rs");
             addFlags(FLAGS);
+            addFlags(FORCE);
         }
 
         @Override

@@ -119,7 +119,17 @@ public class BlockRecordImpl extends BlockRecord {
 
     @Override
     public TransactionStatus rollback() throws Exception {
-        if (isRolledBack()) {
+        return rollback(false);
+    }
+
+    @Override
+    public TransactionStatus restore() throws Exception {
+        return restore(false);
+    }
+
+    @Override
+    public TransactionStatus rollback(boolean force) throws Exception {
+        if (isRolledBack() && !force) {
             return TransactionStatus.ALREADY_DONE;
         }
 
@@ -132,8 +142,8 @@ public class BlockRecordImpl extends BlockRecord {
     }
 
     @Override
-    public TransactionStatus restore() throws Exception {
-        if (!isRolledBack()) {
+    public TransactionStatus restore(boolean force) throws Exception {
+        if (!isRolledBack() && !force) {
             return TransactionStatus.ALREADY_DONE;
         }
 

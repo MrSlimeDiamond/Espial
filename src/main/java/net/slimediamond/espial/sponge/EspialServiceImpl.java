@@ -8,7 +8,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.event.EventManager;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
@@ -30,13 +29,9 @@ import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -106,8 +101,7 @@ public class EspialServiceImpl implements EspialService {
                     msg = "restored";
                 }
 
-                // Execute on Sponge's scheduler so that it executes
-                // when ready.
+                // Execute on Sponge's scheduler so that it executes when ready.
                 Sponge.server().scheduler().submit(Task.builder().execute(() -> {
                     List<Integer> success = new ArrayList<>();
                     List<TransactionStatus> skipped = new ArrayList<>();
@@ -117,8 +111,8 @@ public class EspialServiceImpl implements EspialService {
                         try {
                             TransactionStatus status;
                             switch (query.getType()) {
-                                case ROLLBACK -> status = record.rollback();
-                                case RESTORE -> status = record.restore();
+                                case ROLLBACK -> status = record.rollback(query.isForced());
+                                case RESTORE -> status = record.restore(query.isForced());
                                 default -> status = TransactionStatus.UNSUPPORTED;
                             }
 

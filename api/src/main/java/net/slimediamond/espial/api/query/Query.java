@@ -96,6 +96,13 @@ public interface Query extends Submittable<List<EspialRecord>> {
      */
     boolean isSpread();
 
+    /**
+     * Whether to rollback/restore regardless of whether it's already done
+     *
+     * @return Force
+     */
+    boolean isForced();
+
     class Builder {
         boolean spread;
         private QueryType type;
@@ -107,6 +114,7 @@ public interface Query extends Submittable<List<EspialRecord>> {
         private Sort sort;
         private Object user;
         private Audience audience;
+        private boolean force;
 
         public Builder type(QueryType type) {
             this.type = type;
@@ -177,6 +185,11 @@ public interface Query extends Submittable<List<EspialRecord>> {
             return this;
         }
 
+        public Builder force(boolean force) {
+            this.force = force;
+            return this;
+        }
+
         public Query build() {
             return new Query() {
                 @Override
@@ -232,6 +245,11 @@ public interface Query extends Submittable<List<EspialRecord>> {
                 @Override
                 public boolean isSpread() {
                     return spread;
+                }
+
+                @Override
+                public boolean isForced() {
+                    return force;
                 }
             };
         }
