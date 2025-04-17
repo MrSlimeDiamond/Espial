@@ -98,34 +98,6 @@ public class EspialServiceImpl implements EspialService {
         this.query(query).thenAccept(records -> {
             results.set(records);
 
-            StringBuilder argsPreview = new StringBuilder();
-
-            try {
-                if (query.getPlayerUUIDs() != null && !query.getPlayerUUIDs().isEmpty()) {
-                    List<String> players = new ArrayList<>();
-                    for (UUID uuid : query.getPlayerUUIDs()) {
-                        players.add(Sponge.server().userManager().load(uuid).get().get().name());
-                    }
-                    argsPreview.append(" Players: ").append("[").append(String.join(", ", players)).append("]");
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                // Give some indication
-                argsPreview.append(" Players: (error!)");
-                e.printStackTrace();
-            }
-
-            if (query.getBlockIds() != null && !query.getBlockIds().isEmpty()) {
-                List<String> blocks = new ArrayList<>();
-                for (String block : query.getBlockIds()) {
-                    blocks.add(block.split(":")[1]);
-                }
-                argsPreview.append(" Blocks: ").append("[").append(String.join(", ", blocks)).append("]");
-            }
-
-            if (query.getTimestamp() != null && !query.getTimestamp().equals(Timestamp.from(Instant.EPOCH))) {
-                argsPreview.append(" After: ").append(Format.date(query.getTimestamp()));
-            }
-
             if (query.getType() == QueryType.ROLLBACK || query.getType() == QueryType.RESTORE) {
                 final String msg;
                 if (query.getType().equals(QueryType.ROLLBACK)) {
@@ -217,11 +189,6 @@ public class EspialServiceImpl implements EspialService {
                         .title(Format.title("Lookup results"))
                         .padding(Format.PADDING);
 
-                if (!argsPreview.isEmpty()) {
-                    builder.header(Format.truncate(Component.text("Parameters:")
-                            .color(Format.HINT_COLOR)
-                            .append(Component.text(argsPreview.toString()).color(NamedTextColor.GRAY))));
-                }
                 builder.contents(contents).sendTo(query.getAudience());
 
             } else {
@@ -268,9 +235,5 @@ public class EspialServiceImpl implements EspialService {
         } else {
             return userOptional;
         }
-    }
-
-    private void process(List<EspialRecord> records, Query query, String argsPreview) throws Exception {
-
     }
 }
