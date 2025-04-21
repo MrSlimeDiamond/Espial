@@ -1,6 +1,7 @@
 package net.slimediamond.espial.api.nbt.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.SignData;
 import net.slimediamond.espial.api.nbt.json.deserializer.PortionTypeDeserializer;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.type.PortionType;
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
@@ -26,6 +28,9 @@ public class JsonNBTData implements NBTData {
 
     @JsonProperty("growth_stage")
     private Integer growthStage;
+
+    @JsonProperty("restore_block")
+    private String restoreBlock;
 
     @JsonProperty("rollback_block")
     private String rollbackBlock;
@@ -49,6 +54,7 @@ public class JsonNBTData implements NBTData {
             @JsonProperty("axis") Axis axis,
             @JsonProperty("growth_stage") Integer growthStage,
             @JsonProperty("rollback_block") String rollbackBlock,
+            @JsonProperty("restore_block") String restoreBlock,
             @JsonProperty("signData") JsonSignData signData,
             @JsonProperty("half") PortionType half,
             @JsonProperty("waterlogged") Boolean waterlogged) {
@@ -56,6 +62,7 @@ public class JsonNBTData implements NBTData {
         this.axis = axis;
         this.growthStage = growthStage;
         this.rollbackBlock = rollbackBlock;
+        this.restoreBlock = restoreBlock;
         this.signData = signData;
         this.half = half;
         this.waterlogged = waterlogged;
@@ -103,14 +110,33 @@ public class JsonNBTData implements NBTData {
         this.growthStage = growthStage;
     }
 
+    @JsonIgnore
     @Nullable
     @Override
-    public String getRollbackBlock() {
-        return rollbackBlock;
+    public BlockState getRollbackBlock() {
+        if (rollbackBlock == null) {
+            return null;
+        }
+        return BlockState.builder().fromString(rollbackBlock).build();
     }
 
     public void setRollbackBlock(String rollbackBlock) {
         this.rollbackBlock = rollbackBlock;
+    }
+
+    @JsonIgnore
+    @Nullable
+    @Override
+    public BlockState getRestoreBlock() {
+        if (restoreBlock == null) {
+            return null;
+        }
+        return BlockState.builder().fromString(restoreBlock).build();
+    }
+
+
+    public void setRestoreBlock(String restoreBlock) {
+        this.restoreBlock = restoreBlock;
     }
 
     @Override

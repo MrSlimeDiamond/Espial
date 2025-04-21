@@ -47,7 +47,7 @@ public class SignInteractEvent {
 
             JsonNBTData nbtData = new JsonNBTData();
             nbtData.setSignData(new JsonSignData(frontSerialized, backSerialized));
-            NBTApplier.update(nbtData, event.sign().block());
+            // NBTApplier.update(nbtData, event.sign().block());
 
             EspialActor actor = new EspialActorImpl(source);
 
