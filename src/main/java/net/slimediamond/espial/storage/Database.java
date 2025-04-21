@@ -200,7 +200,6 @@ public class Database {
 
             if (action instanceof NBTStorable nbtStorable) {
                 if (nbtStorable.getNBT().isPresent()) {
-                    System.out.println(JsonNBTData.serialize(nbtStorable.getNBT().get()));
                     this.setNBTdata(id, JsonNBTData.serialize(nbtStorable.getNBT().get()));
                 }
             }
