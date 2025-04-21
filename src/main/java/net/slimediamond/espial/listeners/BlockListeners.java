@@ -183,13 +183,6 @@ public class BlockListeners {
                         .event(EventTypes.fromSponge(transaction.operation()))
                         .snapshot(target);
 
-                /* old stuffs
-
-                // only submit nbt data if it will be useful
-                if (NBTApplier.update(jsonNBTData, snapshot.state()) || rollbackTo != null) {
-                    builder.withNBTData(jsonNBTData);
-                }
-                 */
                 if (rollbackTo != null || restoreTo != null) {
                     builder.withNBTData(jsonNBTData);
                 }
