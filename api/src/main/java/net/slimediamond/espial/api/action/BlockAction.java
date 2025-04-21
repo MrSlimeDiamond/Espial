@@ -92,7 +92,10 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
     }
 
     default BlockState getRestoreBlock() {
-        return this.getNBT().map(NBTData::getRestoreBlock).orElse(BlockTypes.AIR.get().defaultState());
+        BlockState defaultBlockState = (getEventType() == EventTypes.BREAK)
+                ? BlockTypes.AIR.get().defaultState()
+                : getBlockType().defaultState();
+        return this.getNBT().map(NBTData::getRestoreBlock).orElse(defaultBlockState);
     }
 
     class Builder {
