@@ -58,6 +58,8 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
         this.getNBT().ifPresentOrElse(nbtData -> {
             if (nbtData.getRollbackBlock() != null) {
                 blockState.set(nbtData.getRollbackBlock());
+            } else {
+                blockState.set(getBlockType().defaultState());
             }
 
             // legacy stuff now, maybe make a migration thing for this?
