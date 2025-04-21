@@ -55,31 +55,31 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
 
     default BlockState getRollbackBlock() {
         AtomicReference<BlockState> blockState = new AtomicReference<>();
-        this.getNBT().ifPresent(nbtData -> {
+        this.getNBT().ifPresentOrElse(nbtData -> {
             if (nbtData.getRollbackBlock() != null) {
                 blockState.set(nbtData.getRollbackBlock());
+            }
 
-                // legacy stuff now, maybe make a migration thing for this?
-                if (nbtData.getDirection() != null) {
-                    blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
-                }
+            // legacy stuff now, maybe make a migration thing for this?
+            if (nbtData.getDirection() != null) {
+                blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+            }
 
-                if (nbtData.getAxis() != null) {
-                    blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
-                }
+            if (nbtData.getAxis() != null) {
+                blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+            }
 
-                if (nbtData.getGrowthStage() != null) {
-                    blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
-                }
+            if (nbtData.getGrowthStage() != null) {
+                blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
+            }
 
-                if (nbtData.getHalf() != null) {
-                    blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
-                }
-            } else {
-                // no rollback block. Now it depends on which event it is.
-                if (getEventType().equals(EventTypes.BREAK)) {
-                    blockState.set(getBlockType().defaultState());
-                }
+            if (nbtData.getHalf() != null) {
+                blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
+            }
+        }, () -> {
+            // otherwise simply return the block type if it's a break event
+            if (getEventType().equals(EventTypes.BREAK)) {
+                blockState.set(getBlockType().defaultState());
             }
         });
 
