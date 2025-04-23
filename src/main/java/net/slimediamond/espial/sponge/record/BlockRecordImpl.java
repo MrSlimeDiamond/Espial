@@ -2,6 +2,7 @@ package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
@@ -51,7 +52,10 @@ public class BlockRecordImpl extends BlockRecord {
     private BlockState getRollbackBlock(BlockAction action) {
         if (action.getRollbackBlock() != null) {
             return action.getRollbackBlock();
+        } else if (action.getEventType().equals(EventTypes.PLACE)) {
+            return BlockTypes.AIR.get().defaultState();
         } else {
+            // for breakage grief
             return action.getBlockType().defaultState();
         }
     }
@@ -83,6 +87,8 @@ public class BlockRecordImpl extends BlockRecord {
     private BlockState getRestoreBlock(BlockAction action) {
         if (action.getRestoreBlock() != null) {
             return action.getRestoreBlock();
+        } else if (action.getEventType().equals(EventTypes.BREAK)) {
+            return BlockTypes.AIR.get().defaultState();
         } else {
             return action.getBlockType().defaultState();
         }

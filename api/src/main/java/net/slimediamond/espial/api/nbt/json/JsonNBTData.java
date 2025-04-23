@@ -117,6 +117,7 @@ public class JsonNBTData implements NBTData {
         if (rollbackBlock == null) {
             return null;
         }
+        System.out.println(rollbackBlock);
         return BlockState.builder().fromString(rollbackBlock).build();
     }
 

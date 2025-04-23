@@ -58,39 +58,38 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
         this.getNBT().ifPresentOrElse(nbtData -> {
             if (nbtData.getRollbackBlock() != null) {
                 blockState.set(nbtData.getRollbackBlock());
-            } else {
+            } else if (nbtData.getRestoreBlock() == null) {
+                // no rollback OR restore block, so it's an older record
                 blockState.set(getBlockType().defaultState());
-            }
 
-            // legacy stuff now, maybe make a migration thing for this?
-            if (nbtData.getDirection() != null) {
-                blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
-            }
+                // legacy stuff now, maybe make a migration thing for this?
+                if (nbtData.getDirection() != null) {
+                    blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
+                }
 
-            if (nbtData.getAxis() != null) {
-                blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
-            }
+                if (nbtData.getAxis() != null) {
+                    blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
+                }
 
-            if (nbtData.getGrowthStage() != null) {
-                blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
-            }
+                if (nbtData.getGrowthStage() != null) {
+                    blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
+                }
 
-            if (nbtData.getHalf() != null) {
-                blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
+                if (nbtData.getHalf() != null) {
+                    blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
+                }
             }
         }, () -> {
             // otherwise simply return the block type if it's a break event
             if (getEventType().equals(EventTypes.BREAK)) {
                 blockState.set(getBlockType().defaultState());
+            } else {
+                blockState.set(BlockTypes.AIR.get().defaultState());
             }
         });
 
-        BlockState result = blockState.get();
-        if (result == null) {
-            result = BlockTypes.AIR.get().defaultState();
-        }
-
-        return result;
+        // *should* never be null
+        return blockState.get();
     }
 
     default BlockState getRestoreBlock() {
