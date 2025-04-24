@@ -29,7 +29,8 @@ public class EntityListeners {
                     hangingDirection = hanging.hangingDirection().get();
                 }
 
-                NBTData nbtData = new JsonNBTData(hangingDirection, null, null, null, null, null, null);
+                // lol?
+                NBTData nbtData = new JsonNBTData(hangingDirection, null, null, null, null, null, null, null);
 
                 HangingDeathAction.Builder builder = HangingDeathAction.builder()
                         .entity(hanging.type())

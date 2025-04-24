@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.action;
 
 import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.action.event.EventType;
+import net.slimediamond.espial.api.action.event.EventTypes;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.submittable.Submittable;
@@ -13,7 +14,6 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.data.BlockStateKeys;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
@@ -53,27 +53,50 @@ public interface BlockAction extends Action, NBTStorable, Submittable<BlockRecor
                 getBlockId().split(String.valueOf(ResourceKey.DEFAULT_SEPARATOR))[1]));
     }
 
-    default BlockState getState() {
-        AtomicReference<BlockState> blockState = new AtomicReference<>(getBlockType().defaultState());
-        try {
-            this.getNBT().ifPresent(nbtData -> {
+    default BlockState getRollbackBlock() {
+        AtomicReference<BlockState> blockState = new AtomicReference<>();
+        this.getNBT().ifPresentOrElse(nbtData -> {
+            if (nbtData.getRollbackBlock() != null) {
+                blockState.set(nbtData.getRollbackBlock());
+            } else if (nbtData.getRestoreBlock() == null) {
+                // no rollback OR restore block, so it's an older record
+                blockState.set(getBlockType().defaultState());
+
+                // legacy stuff now, maybe make a migration thing for this?
                 if (nbtData.getDirection() != null) {
                     blockState.set(blockState.get().with(Keys.DIRECTION, nbtData.getDirection()).get());
                 }
+
                 if (nbtData.getAxis() != null) {
                     blockState.set(blockState.get().with(Keys.AXIS, nbtData.getAxis()).get());
                 }
+
                 if (nbtData.getGrowthStage() != null) {
                     blockState.set(blockState.get().with(Keys.GROWTH_STAGE, nbtData.getGrowthStage()).get());
                 }
+
                 if (nbtData.getHalf() != null) {
                     blockState.set(blockState.get().with(Keys.PORTION_TYPE, nbtData.getHalf()).get());
                 }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+            }
+        }, () -> {
+            // otherwise simply return the block type if it's a break event
+            if (getEventType().equals(EventTypes.BREAK)) {
+                blockState.set(getBlockType().defaultState());
+            } else {
+                blockState.set(BlockTypes.AIR.get().defaultState());
+            }
+        });
+
+        // *should* never be null
         return blockState.get();
+    }
+
+    default BlockState getRestoreBlock() {
+        BlockState defaultBlockState = (getEventType() == EventTypes.BREAK)
+                ? BlockTypes.AIR.get().defaultState()
+                : getBlockType().defaultState();
+        return this.getNBT().map(NBTData::getRestoreBlock).orElse(defaultBlockState);
     }
 
     class Builder {

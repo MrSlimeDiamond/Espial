@@ -1,5 +1,6 @@
 package net.slimediamond.espial.api.nbt;
 
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.type.PortionType;
 import org.spongepowered.api.util.Axis;
 import org.spongepowered.api.util.Direction;
@@ -26,6 +27,8 @@ public interface NBTData {
      *
      * @return Block direction
      */
+    @Nullable
+    @Deprecated(since = "2.0")
     Direction getDirection();
 
     /**
@@ -34,24 +37,35 @@ public interface NBTData {
      * @return Growth stage
      */
     @Nullable
+    @Deprecated(since = "2.0")
     Integer getGrowthStage();
 
     /**
-     * Get the block which we should rollback to,
-     * in instances that a place action wasn't
-     * modifying air. Will be null if it's air or
-     * if it's anything but a place action.
+     * Get the block which we should roll back to. This may
+     * be null in cases where it is the default block
+     * state of the associated {@link net.slimediamond.espial.api.action.BlockAction}
      *
      * @return Block to rollback to
      */
     @Nullable
-    String getRollbackBlock();
+    BlockState getRollbackBlock();
+
+    /**
+     * Get the block which we should restore to. This may
+     * be null in cases where it is air.
+     *
+     * @return Block to restore to
+     */
+    @Nullable
+    BlockState getRestoreBlock();
 
     /**
      * Get a block's axis (x, y, or z)
      *
      * @return Block axis
      */
+    @Nullable
+    @Deprecated(since = "2.0")
     Axis getAxis();
 
     /**
@@ -60,12 +74,17 @@ public interface NBTData {
      *
      * @return Block half
      */
+    @Nullable
+    @Deprecated(since = "2.0")
     PortionType getHalf();
+
 
     /**
      * Whether the block is waterlogged
      *
      * @return Whether the block is waterlogged
      */
+    @Nullable
+    @Deprecated(since = "2.0")
     Boolean isWaterlogged();
 }

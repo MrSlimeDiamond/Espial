@@ -1,5 +1,6 @@
 package net.slimediamond.espial.listeners;
 
+import com.sk89q.worldedit.world.block.BlockTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.Espial;
@@ -14,10 +15,9 @@ import net.slimediamond.espial.api.query.Sort;
 import net.slimediamond.espial.api.user.EspialActor;
 import net.slimediamond.espial.sponge.user.EspialActorImpl;
 import net.slimediamond.espial.util.BlockUtil;
-import net.slimediamond.espial.util.NBTApplier;
 import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.Keys;
@@ -97,29 +97,29 @@ public class BlockListeners {
         event.transactions().forEach(transaction -> {
             try {
                 EventType type = EventTypes.fromSponge(transaction.operation());
-                BlockSnapshot snapshot;
+                BlockSnapshot target;
 
-                // If something other than air, specify what this action
-                // is to be rolled back to.
-                String rollbackTo = null;
+                String rollbackTo = getBlockStateString(transaction.original().state());
+                String restoreTo = getBlockStateString(transaction.finalReplacement().state());
 
                 // someone placed something, so the block will be the *after*
                 if (transaction.operation().equals(Operations.PLACE.get())
                         || transaction.operation().equals(Operations.GROWTH.get())) {
-                    snapshot = transaction.finalReplacement();
+                    target = transaction.finalReplacement();
 
-                    BlockType before = transaction.original().state().type();
-                    if (!BlockUtil.AIR.contains(before)) {
-                        rollbackTo = SpongeUtil.getBlockId(before);
+                    // Sometimes placement can be funny!
+                    BlockState original = transaction.original().state();
+                    if (!BlockUtil.AIR.contains(original.type())) {
+                        rollbackTo = original.asString();
                     }
                 } else {
                     // something was broken, so get what it was *before*
-                    snapshot = transaction.original();
+                    target = transaction.original();
                 }
 
                 // Only log modifications that are actually useful
                 if (transaction.operation().equals(Operations.MODIFY.get())
-                        && !BlockUtil.MODIFIABLE.contains(snapshot.state().type())) {
+                        && !BlockUtil.MODIFIABLE.contains(target.state().type())) {
                     return;
                 }
 
@@ -129,8 +129,12 @@ public class BlockListeners {
                     jsonNBTData.setRollbackBlock(rollbackTo);
                 }
 
-                if (BlockUtil.SIGNS.contains(snapshot.state().type())) {
-                    snapshot.createArchetype().ifPresent(blockEntity -> {
+                if (restoreTo != null) {
+                    jsonNBTData.setRestoreBlock(restoreTo);
+                }
+
+                if (BlockUtil.SIGNS.contains(target.state().type())) {
+                    target.createArchetype().ifPresent(blockEntity -> {
                         List<Component> frontComponents = null;
                         List<Component> backComponents = null;
 
@@ -177,10 +181,9 @@ public class BlockListeners {
                         .event(type)
                         .actor(actor)
                         .event(EventTypes.fromSponge(transaction.operation()))
-                        .snapshot(snapshot);
+                        .snapshot(target);
 
-                // only submit nbt data if it will be useful
-                if (NBTApplier.update(jsonNBTData, snapshot.state()) || rollbackTo != null) {
+                if (rollbackTo != null || restoreTo != null) {
                     builder.withNBTData(jsonNBTData);
                 }
 
@@ -190,5 +193,17 @@ public class BlockListeners {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private String getBlockStateString(BlockState state) {
+        if (!BlockUtil.AIR.contains(state.type())) {
+            String maybe = state.asString();
+
+            // don't store extra crap data
+            if (!(maybe.equals(SpongeUtil.getBlockId(state.type())))) {
+                return maybe;
+            }
+        }
+        return null;
     }
 }

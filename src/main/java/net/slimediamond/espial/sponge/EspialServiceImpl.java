@@ -124,7 +124,8 @@ public class EspialServiceImpl implements EspialService {
                         } catch (Exception e) {
                             e.printStackTrace();
                             query.getAudience().sendMessage(Format.error(
-                                    "Exception when processing ID: " + record.getId()));
+                                    "Exception when processing ID: " + record.getId())
+                                    .hoverEvent(HoverEvent.showText(Component.text(e.getMessage()))));
                         }
                     });
 

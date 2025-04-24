@@ -2,19 +2,17 @@ package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.action.ActionType;
 import net.slimediamond.espial.api.action.BlockAction;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
-import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
 import net.slimediamond.espial.util.BlockUtil;
 import net.slimediamond.espial.util.SignUtil;
-import net.slimediamond.espial.util.SpongeUtil;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.world.BlockChangeFlags;
@@ -31,17 +29,19 @@ public class BlockRecordImpl extends BlockRecord {
     private TransactionStatus doRollback(BlockAction action) throws Exception {
         EventType eventType = action.getEventType();
 
+        BlockState rollbackBlock = getRollbackBlock(action);
+
         if (eventType.equals(EventTypes.BREAK)) {
-            TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
+            TransactionStatus status = setBlock(action.getServerLocation(), rollbackBlock);
             doSignRollback(action);
             return status;
         } else if (eventType.equals(EventTypes.PLACE) || eventType.equals(EventTypes.GROWTH)) {
             if (eventType.equals(EventTypes.GROWTH)) {
-                if (action.getState().supports(Keys.GROWTH_STAGE)) {
+                if (rollbackBlock.supports(Keys.GROWTH_STAGE)) {
                     return TransactionStatus.UNSUPPORTED;
                 }
             }
-            return setBlock(action.getServerLocation(), getRollbackBlockType(action).defaultState());
+            return setBlock(action.getServerLocation(), rollbackBlock);
         } else if (eventType.equals(EventTypes.MODIFY)) {
             return rollbackModification(action);
         }
@@ -49,16 +49,30 @@ public class BlockRecordImpl extends BlockRecord {
         return TransactionStatus.UNSUPPORTED;
     }
 
+    private BlockState getRollbackBlock(BlockAction action) {
+        if (action.getRollbackBlock() != null) {
+            return action.getRollbackBlock();
+        } else if (action.getEventType().equals(EventTypes.PLACE)) {
+            return BlockTypes.AIR.get().defaultState();
+        } else {
+            // for breakage grief
+            return action.getBlockType().defaultState();
+        }
+    }
+
     private TransactionStatus doRestore(BlockAction action) throws Exception {
         EventType eventType = action.getEventType();
 
+        BlockState restoreBlock = getRestoreBlock(action);
+
         if (eventType.equals(EventTypes.PLACE) || eventType.equals(EventTypes.GROWTH)) {
             if (eventType.equals(EventTypes.GROWTH)) {
-                if (action.getState().supports(Keys.GROWTH_STAGE)) {
+                // Easily fixable I think?
+                if (restoreBlock.supports(Keys.GROWTH_STAGE)) {
                     return TransactionStatus.UNSUPPORTED;
                 }
             }
-            TransactionStatus status = setBlock(action.getServerLocation(), action.getState());
+            TransactionStatus status = setBlock(action.getServerLocation(), restoreBlock);
             doSignRollback(action);
             return status;
         } else if (eventType.equals(EventTypes.BREAK)) {
@@ -70,9 +84,19 @@ public class BlockRecordImpl extends BlockRecord {
         return TransactionStatus.UNSUPPORTED;
     }
 
+    private BlockState getRestoreBlock(BlockAction action) {
+        if (action.getRestoreBlock() != null) {
+            return action.getRestoreBlock();
+        } else if (action.getEventType().equals(EventTypes.BREAK)) {
+            return BlockTypes.AIR.get().defaultState();
+        } else {
+            return action.getBlockType().defaultState();
+        }
+    }
+
     private TransactionStatus rollbackModification(BlockAction action) throws Exception {
         if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-            action.getServerLocation().setBlock(action.getState());
+            action.getServerLocation().setBlock(action.getRollbackBlock());
             List<EspialRecord> records = getRelevantRecords(action, false);
             if (records.size() >= 2) {
                 SignUtil.setSignData((BlockAction) records.get(1).getAction());
@@ -84,7 +108,7 @@ public class BlockRecordImpl extends BlockRecord {
 
     private TransactionStatus restoreModification(BlockAction action) throws Exception {
         if (BlockUtil.SIGNS.contains(action.getBlockType())) {
-            action.getServerLocation().setBlock(action.getState());
+            action.getServerLocation().setBlock(action.getRollbackBlock());
             List<EspialRecord> records = getRelevantRecords(action, true);
             if (records.size() >= 2) {
                 SignUtil.setSignData((BlockAction) records.get(1).getAction());
@@ -98,14 +122,6 @@ public class BlockRecordImpl extends BlockRecord {
         if (BlockUtil.SIGNS.contains(action.getBlockType())) {
             SignUtil.setSignData(action);
         }
-    }
-
-    private BlockType getRollbackBlockType(BlockAction action) {
-        return action
-                .getNBT()
-                .map(NBTData::getRollbackBlock)
-                .map(key -> (BlockType) BlockTypes.registry().value(SpongeUtil.getResourceKey(key)))
-                .orElse(BlockTypes.AIR.get());
     }
 
     private List<EspialRecord> getRelevantRecords(BlockAction action, boolean isRolledBack) throws Exception {
