@@ -1,7 +1,7 @@
 plugins {
     id("java")
     `maven-publish`
-    signing
+//    signing
 }
 
 group = "net.slimediamond"
@@ -85,7 +85,7 @@ publishing {
     }
 }
 
-signing {
-    useGpgCmd()
-    sign(publishing.publications["maven"])
-}
+//signing {
+//    useGpgCmd()
+//    sign(publishing.publications["maven"])
+//}

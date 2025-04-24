@@ -1,7 +1,6 @@
 package net.slimediamond.espial.api;
 
 import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.event.EventManager;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
@@ -26,13 +25,6 @@ public interface EspialService {
      * @return Transaction manager
      */
     TransactionManager getTransactionManager();
-
-    /**
-     * Get the event manager
-     *
-     * @return Event manager
-     */
-    EventManager getEventManager();
 
     /**
      * Query a block asynchronously

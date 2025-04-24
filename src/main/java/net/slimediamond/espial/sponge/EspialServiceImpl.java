@@ -8,7 +8,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.event.EventManager;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -17,7 +16,6 @@ import net.slimediamond.espial.api.transaction.EspialTransaction;
 import net.slimediamond.espial.api.transaction.EspialTransactionImpl;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.api.transaction.TransactionStatus;
-import net.slimediamond.espial.sponge.event.EventManagerImpl;
 import net.slimediamond.espial.sponge.transaction.TransactionManagerImpl;
 import net.slimediamond.espial.util.Format;
 import net.slimediamond.espial.util.SpongeUtil;
@@ -39,21 +37,14 @@ import java.util.stream.Collectors;
 
 public class EspialServiceImpl implements EspialService {
     private final TransactionManager transactionManager;
-    private final EventManager eventManager;
 
     public EspialServiceImpl() {
         this.transactionManager = new TransactionManagerImpl();
-        this.eventManager = new EventManagerImpl();
     }
 
     @Override
     public TransactionManager getTransactionManager() {
         return transactionManager;
-    }
-
-    @Override
-    public EventManager getEventManager() {
-        return eventManager;
     }
 
     @Override

@@ -11,8 +11,8 @@ import net.slimediamond.espial.api.action.ItemFrameRemoveAction;
 import net.slimediamond.espial.api.action.NBTStorable;
 import net.slimediamond.espial.api.action.event.EventType;
 import net.slimediamond.espial.api.action.event.EventTypes;
-import net.slimediamond.espial.api.event.EspialPostInsertRecordEvent;
-import net.slimediamond.espial.api.event.EspialPreInsertActionEvent;
+import net.slimediamond.espial.api.event.PostInsertRecordEvent;
+import net.slimediamond.espial.api.event.PreInsertActionEvent;
 import net.slimediamond.espial.api.nbt.NBTData;
 import net.slimediamond.espial.api.nbt.json.JsonNBTData;
 import net.slimediamond.espial.api.query.Query;
@@ -26,6 +26,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Cause;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.registry.RegistryTypes;
@@ -153,15 +154,8 @@ public class Database {
      * @throws JsonProcessingException If JSON errors.
      */
     public Optional<EspialRecord> submit(Action action) throws Exception {
-        EspialPreInsertActionEvent event = new EspialPreInsertActionEvent(action.getActor(), action);
-        Espial.getInstance()
-                .getEspialService()
-                .getEventManager()
-                .callAll(event);
-
-        if (event.isCancelled()) {
-            return Optional.empty();
-        }
+        Cause cause = Cause.builder().append(action.getActor()).build();
+        Sponge.eventManager().post(new PreInsertActionEvent(action.getActor(), cause, action));
 
         Timestamp timestamp = Timestamp.from(Instant.now());
 
@@ -211,10 +205,7 @@ public class Database {
                 default -> throw new SQLException("Invalid action type submitted to the database.");
             };
 
-            Espial.getInstance()
-                    .getEspialService()
-                    .getEventManager()
-                    .callAll(new EspialPostInsertRecordEvent(actor, record));
+            Sponge.eventManager().post(new PostInsertRecordEvent(actor, cause, record));
 
             return Optional.of(record);
         } else {
