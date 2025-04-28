@@ -38,7 +38,7 @@ public class PlayerListeners {
                         .append(Component.text("Click ").color(NamedTextColor.RED))
                         .append(Format.chip(
                                 Component.text("HERE").color(NamedTextColor.DARK_RED),
-                                Component.text("Drop the 'blocklog' table")))
+                                Component.text("Drop the 'blocklog' table"))
                         .clickEvent(SpongeComponents.executeCallback(cause -> {
                             if (!Espial.getInstance().getDatabase().hasLegacyTable()) {
                                 cause.sendMessage(Format.error("The database does not contain the legacy table."));
@@ -53,7 +53,7 @@ public class PlayerListeners {
                                 cause.sendMessage(Format.error("Caught a SQLException when dropping the legacy table."));
                             }
 
-                        }))
+                        })))
                         .append(Component.text(" to erase the old table!")
                                 .color(NamedTextColor.RED))
                 );
