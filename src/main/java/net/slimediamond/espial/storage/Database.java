@@ -102,6 +102,8 @@ public class Database {
         // Drops player_* values, because they took up space
         // and seemed useless.
         if (hasLegacyTable) {
+            dropOldTable = conn.prepareStatement("DROP TABLE blocklog");
+
             try {
                 conn.prepareStatement(
                         "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
@@ -140,7 +142,6 @@ public class Database {
         setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
         insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
         getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
-        dropOldTable = conn.prepareStatement("DROP TABLE blocklog");
 
         Espial.getInstance().getLogger().info("Database loaded.");
     }
@@ -449,11 +450,26 @@ public class Database {
         return Optional.empty();
     }
 
-    public void dropOldTable() throws SQLException {
+    /**
+     * Drops the legacy <code>blocklog</code> database table.
+     *
+     * @return True if the table was dropped, false if it does not exist
+     * @throws SQLException If the database errors
+     */
+    public boolean dropOldTable() throws SQLException {
+        if (!hasLegacyTable || dropOldTable == null) {
+            return false;
+        }
         hasLegacyTable = false;
         dropOldTable.execute();
+        return true;
     }
 
+    /**
+     * Gets whether the database currently has the legacy table
+     *
+     * @return Legacy table presence
+     */
     public boolean hasLegacyTable() {
         return hasLegacyTable;
     }
