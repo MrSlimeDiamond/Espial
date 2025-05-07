@@ -1,6 +1,7 @@
 package net.slimediamond.espial.api;
 
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.exceptions.RecordSaveException;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.submittable.SubmittableResult;
@@ -77,5 +78,5 @@ public interface EspialService {
      *
      * @param action Action to submit
      */
-    SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception;
+    SubmittableResult<? extends EspialRecord> submitAction(Action action);
 }

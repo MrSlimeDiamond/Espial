@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.EspialService;
 import net.slimediamond.espial.api.action.Action;
+import net.slimediamond.espial.api.exceptions.RecordSaveException;
 import net.slimediamond.espial.api.query.Query;
 import net.slimediamond.espial.api.query.QueryType;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -196,11 +197,8 @@ public class EspialServiceImpl implements EspialService {
     }
 
     @Override
-    public SubmittableResult<? extends EspialRecord> submitAction(Action action) throws Exception {
-        Optional<EspialRecord> result = Espial.getInstance().getDatabase().submit(action);
-        return result
-                .<SubmittableResult<? extends EspialRecord>>map(SubmittableResult::new)
-                .orElse(null);
+    public SubmittableResult<? extends EspialRecord> submitAction(Action action) {
+        return SubmittableResult.of(Espial.getInstance().getRecordingQueue().queue(action).join());
     }
 
     @Override
