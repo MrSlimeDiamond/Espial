@@ -94,7 +94,7 @@ public class Espial {
         EspialProviders.setEspialService(new EspialServiceImpl());
 
         database = new Database();
-        database.open(this.config.get().jdbc());
+        database.open(this.config.get().getConnectionString());
 
         Component message = Format.component(Component.text()
                 .append(Component.text("Interactive mode is enabled. Disable it with ")

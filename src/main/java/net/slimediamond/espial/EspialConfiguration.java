@@ -16,7 +16,7 @@ public class EspialConfiguration {
     @Setting
     private boolean debug = false;
 
-    public String jdbc() {
+    public String getConnectionString() {
         return this.jdbc;
     }
 
