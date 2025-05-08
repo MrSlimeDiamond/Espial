@@ -45,7 +45,6 @@ public final class Format {
     public static final TextColor ERROR_COLOR = NamedTextColor.RED;
     public static final TextColor HINT_COLOR = TextColor.color(49, 175, 212);
     public static final TextColor COMMAND_HINT_COLOR = NamedTextColor.AQUA;
-
     public static final TextColor TITLE_COLOR = NamedTextColor.GOLD;
     public static final TextColor NAME_COLOR = INFO_COLOR;
     public static final TextColor STACK_COLOR = INFO_COLOR;

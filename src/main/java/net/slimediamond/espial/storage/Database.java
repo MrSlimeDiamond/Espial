@@ -56,7 +56,6 @@ public class Database {
     private PreparedStatement getBlockOwner;
     private PreparedStatement setRolledBack;
     private PreparedStatement insertNBTdata;
-    private PreparedStatement getNBTdata;
     private PreparedStatement dropOldTable;
 
     private boolean hasLegacyTable;
@@ -141,7 +140,6 @@ public class Database {
         getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM records WHERE world = ? AND x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
         setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
         insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
-        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
 
         Espial.getInstance().getLogger().info("Database loaded.");
     }
@@ -221,7 +219,7 @@ public class Database {
                         ? Timestamp.from(Instant.ofEpochMilli(0))
                         : query.getTimestamp();
 
-        StringBuilder sql = new StringBuilder("SELECT * FROM records WHERE world" +
+        StringBuilder sql = new StringBuilder("SELECT * FROM records LEFT JOIN nbt ON records.id = nbt.id WHERE world" +
                 " = ? AND time > ?");
 
         if (query.getMax() == null) {
@@ -282,6 +280,7 @@ public class Database {
             statement.setInt(8, z[1]);
 
         }
+
         rs = statement.executeQuery();
 
         while (rs.next()) {
@@ -384,7 +383,7 @@ public class Database {
                         .x(x)
                         .y(y)
                         .z(z)
-                        .withNBTData(getNBTdata(id).orElse(null))
+                        .withNBTData(getNBTdata(rs).orElse(null))
                         .build();
 
                 // Make a new BlockRecord
@@ -401,7 +400,7 @@ public class Database {
                         .x(x)
                         .y(y)
                         .z(z)
-                        .withNBTData(getNBTdata(id).orElse(null))
+                        .withNBTData(getNBTdata(rs).orElse(null))
                         .build();
 
                 return new EntityRecordImpl(id, timestamp, rolledBack, action);
@@ -439,15 +438,14 @@ public class Database {
         insertNBTdata.execute();
     }
 
-    public Optional<NBTData> getNBTdata(int id) throws SQLException, JsonProcessingException {
-        getNBTdata.setInt(1, id);
-        ResultSet rs = getNBTdata.executeQuery();
+    public Optional<NBTData> getNBTdata(ResultSet rs) throws SQLException, JsonProcessingException {
+        String data = rs.getString("data");
 
-        if (rs.next()) {
-            return Optional.of(JsonNBTData.deserialize(rs.getString("data")));
+        if (data == null) {
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        return Optional.of(JsonNBTData.deserialize(data));
     }
 
     /**
