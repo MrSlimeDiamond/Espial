@@ -152,7 +152,7 @@ public class Database {
      * @throws SQLException            If the database errors.
      * @throws JsonProcessingException If JSON errors.
      */
-    public Optional<EspialRecord> submit(Action action) throws SQLException, JsonProcessingException {
+    public Optional<EspialRecord> submit(Action action) throws Exception {
         Cause cause = Cause.builder().append(action.getActor()).build();
         Sponge.eventManager().post(new PreInsertActionEvent(action.getActor(), cause, action));
 

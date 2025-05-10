@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.slimediamond.espial.api.EspialProviders;
 import net.slimediamond.espial.api.EspialService;
-import net.slimediamond.espial.api.exceptions.RecordSaveException;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.commands.BaseCommand;
 import net.slimediamond.espial.commands.IsThisBlockMineCommand;
@@ -18,8 +17,6 @@ import net.slimediamond.espial.listeners.InteractListener;
 import net.slimediamond.espial.listeners.PlayerListeners;
 import net.slimediamond.espial.listeners.SignInteractEvent;
 import net.slimediamond.espial.sponge.EspialServiceImpl;
-import net.slimediamond.espial.sponge.queue.RecordingQueue;
-import net.slimediamond.espial.sponge.queue.RecordingQueueImpl;
 import net.slimediamond.espial.storage.Database;
 import net.slimediamond.espial.util.Format;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +29,6 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
-import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -60,7 +56,6 @@ public class Espial {
     protected static Espial instance;
     private final PluginContainer container;
     private final Logger logger;
-    private final RecordingQueue recordingQueue = new RecordingQueueImpl();
     private final ConfigurationReference<CommentedConfigurationNode> reference;
     private final List<UUID> inspectingPlayers = new ArrayList<>();
     private final Map<Player, ScheduledTask> blockOutlines = new HashMap<>();
@@ -102,7 +97,7 @@ public class Espial {
                 .append(Component.text("/es i").color(NamedTextColor.YELLOW))
                 .append(Component.text(".").color(NamedTextColor.WHITE)));
 
-        Task broadcastTask = Task.builder()
+        Task task = Task.builder()
                 .execute(() -> inspectingPlayers.forEach(uuid -> Sponge.server()
                         .player(uuid)
                         .ifPresent(player -> player.sendActionBar(message))))
@@ -110,22 +105,7 @@ public class Espial {
                 .interval(1, TimeUnit.SECONDS)
                 .build();
 
-        Sponge.asyncScheduler().submit(broadcastTask, "Espial interactive mode broadcast");
-
-        // thread for saving records
-        Task saveTask = Task.builder()
-                .execute(() -> {
-                    try {
-                        getRecordingQueue().save();
-                    } catch (RecordSaveException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .plugin(container)
-                .interval(1, TimeUnit.SECONDS)
-                .build();
-
-        Sponge.asyncScheduler().submit(saveTask, "Espial record saving");
+        Sponge.asyncScheduler().submit(task, "Espial interactive mode broadcast");
     }
 
     @Listener
@@ -135,13 +115,6 @@ public class Espial {
         Sponge.eventManager().registerListeners(container, new PlayerListeners());
         Sponge.eventManager().registerListeners(container, new SignInteractEvent());
         Sponge.eventManager().registerListeners(container, new EntityListeners());
-    }
-
-    @Listener
-    public void onServerStopping(final StoppingEngineEvent<Server> event) throws RecordSaveException {
-        logger.info("Shutting down!");
-        getRecordingQueue().save();
-        logger.info("Records saved");
     }
 
     @Listener
@@ -180,10 +153,6 @@ public class Espial {
 
     public EspialService getEspialService() {
         return EspialProviders.getEspialService();
-    }
-
-    public RecordingQueue getRecordingQueue() {
-        return recordingQueue;
     }
 
     public TransactionManager getTransactionManager() {
