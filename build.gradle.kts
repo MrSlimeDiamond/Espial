@@ -99,6 +99,11 @@ sponge {
         displayName(pluginName)
         entrypoint("net.slimediamond.espial.Espial")
         description(pluginDescription)
+        links {
+            homepage("https://github.com/MrSlimeDiamond/Espial")
+            source("https://github.com/MrSlimeDiamond/Espial")
+            issues("https://github.com/MrSlimeDiamond/Espial/issues")
+        }
         dependency("spongeapi") {
             loadOrder(PluginDependency.LoadOrder.AFTER)
             optional(false)
