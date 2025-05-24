@@ -1,6 +1,8 @@
 package net.slimediamond.espial.storage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import net.slimediamond.espial.Espial;
 import net.slimediamond.espial.api.action.Action;
 import net.slimediamond.espial.api.action.ActionType;
@@ -31,8 +33,8 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.registry.RegistryTypes;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,7 +65,16 @@ public class Database {
 
     public void open(String connectionString) throws SQLException {
         Espial.getInstance().getLogger().info("Opening database...");
-        conn = DriverManager.getConnection(connectionString);
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(connectionString);
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+        DataSource dataSource = new HikariDataSource(config);
+
+        conn = dataSource.getConnection();
 
         String creation;
         String legacyCheck;

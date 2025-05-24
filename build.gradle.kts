@@ -30,11 +30,9 @@ subprojects {
 
 dependencies {
     compileOnly("com.sk89q.worldedit:worldedit-sponge:7.3.12-SNAPSHOT")
-
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
-
     compileOnly("org.spongepowered:spongeapi:${spongeDefault}")
-
+    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
     api(project(":api"))
 }
 
@@ -69,6 +67,7 @@ tasks.shadowJar {
     archiveClassifier.set("")
     mergeServiceFiles()
     relocate("com.fasterxml.jackson", "net.slimediamond.jackson")
+    relocate("org.slf4j", "net.slimediamond.slf4j")
 }
 
 artifacts {
