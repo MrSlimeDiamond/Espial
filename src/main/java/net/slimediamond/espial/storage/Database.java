@@ -71,6 +71,8 @@ public class Database {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setConnectionTestInterval(30000);
+        config.setConnectionTimeout(30000);
 
         DataSource dataSource = new HikariDataSource(config);
 
