@@ -213,9 +213,10 @@ public class EspialServiceImpl implements EspialService {
                     new RuntimeException("getBlockOwner supplied a non-existent world."));
             return ServerLocation.of(serverWorld, x, y, z).createSnapshot().creator().flatMap(uuid -> {
                 try {
-                    return Sponge.server().userManager().load(uuid).get();
+                    return Optional.of(Sponge.server().userManager().loadOrCreate(uuid).get());
                 } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
+                    //throw new RuntimeException(e);
+                    return Optional.empty();
                 }
             });
         } else {

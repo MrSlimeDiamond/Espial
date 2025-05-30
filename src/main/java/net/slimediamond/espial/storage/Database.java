@@ -338,8 +338,8 @@ public class Database {
             String playerUUID = rs.getString("player_uuid");
             try {
                 UUID uuid = UUID.fromString(playerUUID);
-                return Sponge.server().userManager().load(uuid).get();
-            } catch (IllegalArgumentException e) {
+                return Optional.of(Sponge.server().userManager().loadOrCreate(uuid).join());
+            } catch (Exception e) {
                 // likely to be an animal or something
                 // TODO: Make some block owner object, then we can derive a name nicer
                 return Optional.empty();

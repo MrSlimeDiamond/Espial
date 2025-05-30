@@ -222,15 +222,13 @@ public final class Format {
                     .decorate(TextDecoration.ITALIC);
         }
 
-        Optional<User> user;
         try {
-            user = Sponge.server().userManager().load(uuid).get();
+            return Component.text(Sponge.server().userManager().loadOrCreate(uuid).get().name()).color(NAME_COLOR);
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            //throw new RuntimeException(e);
+            return Component.text("Unknown User").color(NAME_COLOR)
+                    .hoverEvent(HoverEvent.showText(Component.text(uuidString)));
         }
-
-        return user.map(value -> Component.text(value.name()).color(NAME_COLOR))
-                .orElseGet(() -> Component.text(uuidString).color(NAME_COLOR));
     }
 
     /**
