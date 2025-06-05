@@ -75,6 +75,8 @@ public class Database {
         config.setIdleTimeout(600000); // 10 minutes
         config.setMaxLifetime(1800000); // 30 minutes
         config.setValidationTimeout(5000); // 5 seconds
+        config.setKeepaliveTime(300000); // 5 mins
+        config.setConnectionTestQuery("SELECT 1");
 
         DataSource dataSource = new HikariDataSource(config);
 
