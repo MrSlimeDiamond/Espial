@@ -51,21 +51,22 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class Database {
-    private Connection conn;
 
-    private PreparedStatement insertAction;
-    private PreparedStatement queryId;
-    private PreparedStatement getBlockOwner;
-    private PreparedStatement setRolledBack;
-    private PreparedStatement insertNBTdata;
-    private PreparedStatement getNBTdata;
+    private DataSource dataSource;
+
     private PreparedStatement dropOldTable;
 
     private boolean hasLegacyTable;
 
+    private Connection getConn() throws SQLException {
+        return dataSource.getConnection();
+    }
+
     public void open(String connectionString) throws SQLException {
         Espial.getInstance().getLogger().info("Opening database...");
 
+        // Unsure if HikariCP is needed after June 6 2025, as it now gets
+        // a new connection every time it needs one. Keeping it regardless
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(connectionString);
         config.addDataSourceProperty("cachePrepStmts", "true");
@@ -78,12 +79,12 @@ public class Database {
         config.setKeepaliveTime(300000); // 5 mins
         config.setConnectionTestQuery("SELECT 1");
 
-        DataSource dataSource = new HikariDataSource(config);
-
-        conn = dataSource.getConnection();
+        dataSource = new HikariDataSource(config);
 
         String creation;
         String legacyCheck;
+
+        Connection conn = getConn();
 
         // Databases need to be made differently on different databases.
         if (connectionString.contains("sqlite")) {
@@ -119,12 +120,13 @@ public class Database {
         // Drops player_* values, because they took up space
         // and seemed useless.
         if (hasLegacyTable) {
-            dropOldTable = conn.prepareStatement("DROP TABLE blocklog");
+            dropOldTable = getConn().prepareStatement("DROP TABLE blocklog");
 
             try {
                 conn.prepareStatement(
                         "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
                                 "SELECT type, time, player_uuid, block_id, world, x, y, z, rolled_back FROM blocklog").execute();
+                Espial.getInstance().getLogger().info("Database migrated");
             } catch (SQLException ignored) { // Does not need to be migrated
             }
         }
@@ -137,28 +139,7 @@ public class Database {
         }
 
         conn.prepareStatement(creation).execute();
-
-    // Backwards compatibility
-    // conn.prepareStatement("ALTER TABLE blocklog ADD COLUMN IF NOT EXISTS rolled_back BOOLEAN
-    // DEFAULT FALSE").execute();
-
-    insertAction = conn.prepareStatement(
-        "INSERT INTO records "
-            + "(type, "
-            + "time, "
-            + "player_uuid, "
-            + "block_id, "
-            + "world, "
-            + "x, y, z, "
-            + "rolled_back"
-            + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
-        Statement.RETURN_GENERATED_KEYS);
-
-        queryId = conn.prepareStatement("SELECT * FROM records WHERE id = ?");
-        getBlockOwner = conn.prepareStatement("SELECT player_uuid FROM records WHERE world = ? AND x = ? AND y = ? AND z = ? AND type = 1 ORDER BY time DESC LIMIT 1");
-        setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
-        insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
-        getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
+        conn.close();
 
         Espial.getInstance().getLogger().info("Database loaded.");
     }
@@ -172,10 +153,23 @@ public class Database {
      * @throws JsonProcessingException If JSON errors.
      */
     public Optional<EspialRecord> submit(Action action) throws Exception {
+        Connection conn = getConn();
         Cause cause = Cause.builder().append(action.getActor()).build();
         Sponge.eventManager().post(new PreInsertActionEvent(action.getActor(), cause, action));
 
         Timestamp timestamp = Timestamp.from(Instant.now());
+
+        PreparedStatement insertAction = conn.prepareStatement(
+                "INSERT INTO records "
+                        + "(type, "
+                        + "time, "
+                        + "player_uuid, "
+                        + "block_id, "
+                        + "world, "
+                        + "x, y, z, "
+                        + "rolled_back"
+                        + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
+                Statement.RETURN_GENERATED_KEYS);
 
         insertAction.setInt(1, action.getEventType().getId()); // Type
         insertAction.setTimestamp(2, timestamp); // Timestamp
@@ -225,16 +219,17 @@ public class Database {
 
             Sponge.eventManager().post(new PostInsertRecordEvent(actor, cause, record));
 
+            conn.close();
             return Optional.of(record);
         } else {
             // Should not happen
+            conn.close();
             return Optional.empty();
         }
     }
 
     public List<EspialRecord> query(Query query) throws Exception {
-        Timestamp timestamp =
-                query.getTimestamp() == null
+        Timestamp timestamp = query.getTimestamp() == null
                         ? Timestamp.from(Instant.ofEpochMilli(0))
                         : query.getTimestamp();
 
@@ -265,6 +260,7 @@ public class Database {
         List<EspialRecord> actions = new ArrayList<>();
         ResultSet rs;
 
+        Connection conn = getConn();
         PreparedStatement statement = conn.prepareStatement(sql.toString());
         statement.setString(1, query.getMin().worldKey().formatted());
         statement.setTimestamp(2, timestamp);
@@ -305,6 +301,8 @@ public class Database {
             actions.add(recordFromResultSet(rs));
         }
 
+        conn.close();
+
         if (query.getSort() == Sort.ID_ASCENDING) {
             actions.sort(Comparator.comparing(EspialRecord::getId));
         } else if (query.getSort() == Sort.ID_DESCENDING) {
@@ -319,17 +317,32 @@ public class Database {
     }
 
     public EspialRecord queryId(int id) throws Exception {
+        Connection conn = getConn();
+        PreparedStatement queryId = conn.prepareStatement("SELECT * FROM records WHERE id = ?");
         queryId.setInt(1, id);
 
         ResultSet rs = queryId.executeQuery();
 
         if (rs.next()) {
-            return this.recordFromResultSet(rs);
+            EspialRecord result = this.recordFromResultSet(rs);
+            conn.close();
+            return result;
         }
+        conn.close();
         return null;
     }
 
     public Optional<User> getBlockOwner(String world, int x, int y, int z) throws SQLException, ExecutionException, InterruptedException {
+        Connection conn = getConn();
+        PreparedStatement getBlockOwner = conn.prepareStatement(
+                "SELECT player_uuid FROM records " +
+                "WHERE world = ? " +
+                "AND x = ? " +
+                "AND y = ? " +
+                "AND z = ? " +
+                "AND type = 1 " +
+                "ORDER BY time DESC LIMIT 1"
+        );
         getBlockOwner.setString(1, world);
         getBlockOwner.setInt(2, x);
         getBlockOwner.setInt(3, y);
@@ -340,14 +353,17 @@ public class Database {
             String playerUUID = rs.getString("player_uuid");
             try {
                 UUID uuid = UUID.fromString(playerUUID);
+                conn.close();
                 return Optional.of(Sponge.server().userManager().loadOrCreate(uuid).join());
             } catch (Exception e) {
                 // likely to be an animal or something
                 // TODO: Make some block owner object, then we can derive a name nicer
+                conn.close();
                 return Optional.empty();
             }
 
         } else {
+            conn.close();
             return Optional.empty();
         }
     }
@@ -445,24 +461,39 @@ public class Database {
     }
 
     public void setRolledBack(int id, boolean status) throws SQLException {
+        Connection conn = getConn();
+        PreparedStatement setRolledBack = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
+
         setRolledBack.setBoolean(1, status);
         setRolledBack.setInt(2, id);
         setRolledBack.execute();
+        conn.close();
     }
 
     public void setNBTdata(int id, String data) throws SQLException {
+        Connection conn = getConn();
+        PreparedStatement insertNBTdata = conn.prepareStatement("INSERT INTO nbt (id, data) VALUES (?, ?)");
+
         insertNBTdata.setInt(1, id);
         insertNBTdata.setString(2, data);
         insertNBTdata.execute();
+        conn.close();
     }
 
     public Optional<NBTData> getNBTdata(int id) throws SQLException, JsonProcessingException {
+        Connection conn = getConn();
+        PreparedStatement getNBTdata = conn.prepareStatement("SELECT data FROM nbt WHERE id = ?");
+
         getNBTdata.setInt(1, id);
         ResultSet rs = getNBTdata.executeQuery();
 
         if (rs.next()) {
-            return Optional.of(JsonNBTData.deserialize(rs.getString("data")));
+            JsonNBTData result = JsonNBTData.deserialize(rs.getString("data"));
+            conn.close();
+            return Optional.of(result);
         }
+
+        conn.close();
 
         return Optional.empty();
     }
