@@ -1,42 +1,41 @@
 package net.slimediamond.espial.api.transaction;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-/**
- * Manages {@link EspialTransaction}s.
- *
- * @author SlimeDiamond
- */
 public interface TransactionManager {
-    /**
-     * Add a transaction to a user
-     *
-     * @param key         The identifier (user)
-     * @param transaction The transaction to add
-     */
-    void add(Object key, EspialTransaction transaction);
 
     /**
-     * Remove a transaction from a user
+     * Submits a transaction to the transaction manager
      *
-     * @param key         The identifier (user)
-     * @param transaction The transaction to remove
+     * @param user The user who created the transaction
+     * @param transaction The transaction
      */
-    void remove(Object key, EspialTransaction transaction);
+    void submit(UUID user, Transaction transaction);
 
     /**
-     * Undo latest transaction of a user
+     * Get a list of transactions that a user has created
      *
-     * @param key The identifier (user)
-     * @return Amount of actions undone
+     * @param user The user
+     * @return A list of transactions
      */
-    CompletableFuture<Integer> undo(Object key);
+    List<Transaction> getTransactions(UUID user);
 
     /**
-     * Redo the latest undone transaction of a user
+     * Undoes a transaction and removes it from the queue
      *
-     * @param key The identifier (user)
-     * @return Amount of actions redone
+     * @param user The user to undo for
+     * @return The undone transaction, if present
      */
-    CompletableFuture<Integer> redo(Object key);
+    Optional<Transaction> undo(UUID user);
+
+    /**
+     * Redoes a transaction and removes it from the queue
+     *
+     * @param user The user to redo for
+     * @return The redone transaction, if present
+     */
+    Optional<Transaction> redo(UUID user);
+
 }

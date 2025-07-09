@@ -1,0 +1,25 @@
+package net.slimediamond.espial.common.permission;
+
+public class Permissions {
+
+    public static final Permission LOOKUP = Permission.of(
+            "espial.command.lookup"
+    );
+
+    public static final Permission ROLLBACK = Permission.of(
+            "espial.command.rollback"
+    );
+
+    public static final Permission RESTORE = Permission.of(
+            "espial.command.restore"
+    );
+
+    public static final Permission UNDO = Permission.of(
+            "espial.command.undo"
+    );
+
+    public static final Permission INTERACTIVE = Permission.of(
+            "espial.command.interactive"
+    );
+
+}

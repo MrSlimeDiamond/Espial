@@ -1,72 +1,112 @@
 package net.slimediamond.espial.api.record;
 
-import net.slimediamond.espial.api.action.Action;
-import net.slimediamond.espial.api.transaction.TransactionStatus;
+import net.slimediamond.espial.api.event.EspialEvent;
+import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.world.server.ServerLocation;
 
-import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * A record from the database.
- *
- * @author SlimeDiamond
+ * A record used for storing data in Espial
  */
 public interface EspialRecord {
+
     /**
-     * The ID (primary key value) of the record.
+     * Get the ID internally identifying this Espial record,
+     * if present. Otherwise {@code -1}
      *
-     * @return Internal ID
+     * @return Record ID
      */
     int getId();
 
     /**
-     * Get the time this action happened
+     * Get the date that this record occurred at
      *
-     * @return Timestamp
+     * @return Record date
      */
-    Timestamp getTimestamp();
+    Date getDate();
 
     /**
-     * Whether the block has been rolled back
+     * Get the user which caused the record to be created,
+     * if present
      *
-     * @return Rollback status
+     * @return Record user
+     */
+    Optional<UUID> getUser();
+
+    /**
+     * Get the location of the record
+     *
+     * @return Record location
+     */
+    ServerLocation getLocation();
+
+    /**
+     * Get the event causing the record
+     *
+     * @return Record event
+     */
+    EspialEvent getEvent();
+
+    /**
+     * Roll back this record
+     */
+    void rollback();
+
+    /**
+     * Restore this record
+     */
+    void restore();
+
+    /**
+     * Get whether the record is rolled back
+     *
+     * @return Whether the record is rolled back
      */
     boolean isRolledBack();
 
-    /**
-     * Get the associated action
-     *
-     * @return Action
-     */
-    Action getAction();
+    interface Builder extends org.spongepowered.api.util.Builder<EspialRecord, Builder> {
 
-    /**
-     * Roll back this action
-     *
-     * @return Status of the rollback
-     */
-    TransactionStatus rollback() throws Exception;
+        /**
+         * Sets the date the action happened at
+         *
+         *<p><strong>This is required</strong></p>
+         *
+         * @param date The date of the event
+         * @return This builder, for chaining
+         */
+        Builder date(@NotNull Date date);
 
-    /**
-     * Restore this action
-     *
-     * @return Status of the restore
-     */
-    TransactionStatus restore() throws Exception;
+        /**
+         * Sets the user which caused the action
+         *
+         * @param user The user cauase of the action
+         * @return This builder, for chaining
+         */
+        Builder user(@NotNull UUID user);
 
-    /**
-     * Rollback this action
-     *
-     * @param force Whether to roll back regardless of whether it's already been rolled back
-     * @return Status of the rollback
-     */
-    TransactionStatus rollback(boolean force) throws Exception;
+        /**
+         * Sets the location the action happened at
+         *
+         *<p><strong>This is required</strong></p>
+         *
+         * @param location The location of the action
+         * @return This builder, for chaining
+         */
+        Builder location(@NotNull ServerLocation location);
 
-    /**
-     * Rollback this action
-     *
-     * @param force Whether to restore regardless of whether it's already been restored
-     * @return Status of the restore
-     */
-    TransactionStatus restore(boolean force) throws Exception;
+        /**
+         * Sets the event associated with the action
+         *
+         *<p><strong>This is required</strong></p>
+         *
+         * @param event The event
+         * @return This builder, for chaining
+         */
+        Builder event(@NotNull EspialEvent event);
+
+    }
 
 }
