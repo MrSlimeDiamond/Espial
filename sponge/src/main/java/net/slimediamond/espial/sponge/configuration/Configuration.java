@@ -12,17 +12,10 @@ public class Configuration {
     private String jdbc = "jdbc:sqlite:espial.db";
 
     @Setting
-    private String recordsTableName = "records";
-
-    @Setting
     private int nearRange = 5;
 
     public String getJdbc() {
         return jdbc;
-    }
-
-    public String getRecordsTableName() {
-        return recordsTableName;
     }
 
     public int getNearRange() {

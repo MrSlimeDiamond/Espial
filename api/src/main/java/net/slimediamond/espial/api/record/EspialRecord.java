@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Date;
@@ -67,6 +68,13 @@ public interface EspialRecord {
      */
     boolean isRolledBack();
 
+    /**
+     * Get extra data stored on the block, if needed
+     *
+     * @return Extra data
+     */
+    Optional<DataContainer> getExtraData();
+
     interface Builder extends org.spongepowered.api.util.Builder<EspialRecord, Builder> {
 
         /**
@@ -106,6 +114,14 @@ public interface EspialRecord {
          * @return This builder, for chaining
          */
         Builder event(@NotNull EspialEvent event);
+
+        /**
+         * Set the extra data on the block record
+         *
+         * @param extraData The extra data to set
+         * @return This builder, for chaining
+         */
+        EspialBlockRecord.Builder extraData(@NotNull DataContainer extraData);
 
     }
 

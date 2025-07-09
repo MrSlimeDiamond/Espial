@@ -6,8 +6,10 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.registry.RegistryTypes;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -27,12 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class EspialDatabase {
 
     private final String connectionString;
-    private final String recordsTableName;
 
-    public EspialDatabase(@NotNull final String connectionString,
-                          @NotNull final String recordsTableName) {
+    public EspialDatabase(@NotNull final String connectionString) {
         this.connectionString = connectionString;
-        this.recordsTableName = recordsTableName;
     }
 
     private Connection getConn() throws SQLException {
@@ -46,24 +45,30 @@ public final class EspialDatabase {
      */
     public void createTables() throws SQLException {
         try (final Connection conn = getConn()) {
-            final String creation;
+            final String recordsCreation;
+            final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
+                    "record_id INT NOT NULL, " +
+                    "data TEXT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE" +
+                    ")";
             final String legacyCheck;
             // Databases need to be made differently on different databases.
-            if (connectionString.contains("sqlite")) {
+            boolean sqlite = connectionString.contains("sqlite");
+            if (sqlite) {
                 Espial.getInstance().getLogger().info("Detected database type: sqlite");
 
-                creation = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 legacyCheck = "SELECT name FROM sqlite_master WHERE type='table' AND name='blocklog'";
             } else {
                 // Probably MySQL/MariaDB or whatever. use a different statement
 
                 Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
 
-                creation = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
+                recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
                 legacyCheck = "SHOW TABLES LIKE 'blocklog'";
             }
 
-            conn.prepareStatement(creation +
+            conn.prepareStatement(recordsCreation +
                     "type TINYINT NOT NULL, " +
                     "time TIMESTAMP NOT NULL, " +
                     "player_uuid MEDIUMTEXT, " +
@@ -75,11 +80,18 @@ public final class EspialDatabase {
                     "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
                     ")").execute();
 
+            conn.prepareStatement(extraCreation).execute();
+
+            if (sqlite) {
+                conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
+            }
+
+            // TODO: Better v1 --> v2r migration
             final boolean hasLegacyTable = conn.prepareStatement(legacyCheck).executeQuery().next();
             if (hasLegacyTable) {
                 try {
                     conn.prepareStatement(
-                            "INSERT INTO records (type, time, player_uuid, block_id, world, x, y, z, rolled_back) " +
+                            "INSERT INTO records (type, time, player_uuid, target, world, x, y, z, rolled_back) " +
                                     "SELECT type, time, player_uuid, target, world, x, y, z, rolled_back FROM blocklog").execute();
                     conn.prepareStatement("DROP TABLE IF EXISTS blocklog").execute(); // remove old table
                     Espial.getInstance().getLogger().info("Database migrated");
@@ -97,9 +109,9 @@ public final class EspialDatabase {
      * @return The ID primary key of the inserted record
      * @throws SQLException
      */
-    public int submit(@NotNull final EspialBlockRecord record) throws SQLException {
+    public int submit(@NotNull final EspialBlockRecord record) throws SQLException, IOException {
         try (final Connection conn = getConn()) {
-            final PreparedStatement ps = conn.prepareStatement("INSERT INTO " + this.recordsTableName
+            final PreparedStatement ps = conn.prepareStatement("INSERT INTO records "
                     + " (type," +
                     "time," +
                     "player_uuid," +
@@ -136,17 +148,26 @@ public final class EspialDatabase {
                 rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
             }
             if (rs.next()) {
-                return rs.getInt(1);
+                final int id = rs.getInt(1);
+                if (record.getExtraData().isPresent()) {
+                    final PreparedStatement insertExtraData = conn.prepareStatement(
+                            "INSERT INTO extra (record_id, data) VALUES (?, ?)"
+                    );
+                    insertExtraData.setInt(1, id);
+                    insertExtraData.setString(2, DataFormats.JSON.get().write(record.getExtraData().get()));
+                    insertExtraData.execute();
+                }
+                return id;
             }
             return -1;
         }
     }
 
     public List<EspialRecord> query(@NotNull final EspialQuery query) throws SQLException {
-        final StringBuilder sql = new StringBuilder("SELECT * FROM " + recordsTableName + " WHERE world" +
-                " = ?");
-
-        sql.append(" AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? and ? ");
+        final StringBuilder sql = new StringBuilder("SELECT records.*, extra.data FROM records " +
+                "LEFT JOIN extra ON records.id = extra.record_id " +
+                "WHERE world = ?" +
+                " AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? and ? ");
 
         query.getAfter().ifPresent(after -> sql.append(" AND time > ?"));
         query.getBefore().ifPresent(before -> sql.append(" AND time < ?"));
@@ -221,7 +242,7 @@ public final class EspialDatabase {
 
     public void setRolledBack(@NotNull final EspialRecord record, final boolean rolledBack) throws SQLException {
         try (final Connection conn = getConn()) {
-            final PreparedStatement ps = conn.prepareStatement("UPDATE " + recordsTableName + " SET rolled_back = ? WHERE id = ?");
+            final PreparedStatement ps = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
 
             ps.setBoolean(1, rolledBack);
             ps.setInt(2, record.getId());

@@ -4,6 +4,7 @@ import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -28,7 +29,7 @@ public class SpongeRecordingQueue extends Thread {
                 // TODO: Send them all to the database immediately
                 Thread.currentThread().interrupt();
                 break;
-            } catch (final SQLException e) {
+            } catch (final SQLException | IOException e) {
                 Espial.getInstance().getLogger().error("Unable to insert EspialRecord", e);
             }
         }

@@ -2,12 +2,17 @@ package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.sponge.Espial;
+import net.slimediamond.espial.sponge.utils.SQLUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -27,9 +32,21 @@ public final class SpongeBlockRecordFactory implements RecordFactory<EspialBlock
         final int z = rs.getInt("z");
         final boolean rolledBack = rs.getBoolean("rolled_back");
 
+        DataContainer extraData = null;
+        final String extraRaw = rs.getString("data");
+        if (extraRaw != null) {
+            try {
+                extraData = DataFormats.JSON.get().read(extraRaw);
+            } catch (IOException e) {
+                // construct the record with no extra data anyway
+                Espial.getInstance().getLogger().error("Unable to read extra data from EspialRecord. " +
+                        "It will be constructed without it", e);
+            }
+        }
+
         final ServerLocation serverLocation = ServerLocation.of(worldKey, Vector3i.from(x, y, z));
 
-        return new SpongeBlockRecord(id, date, user, serverLocation, event, blockState, rolledBack);
+        return new SpongeBlockRecord(id, date, user, serverLocation, event, blockState, rolledBack, extraData);
     }
 
 }

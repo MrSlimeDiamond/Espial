@@ -30,7 +30,6 @@ import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.util.Ticks;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.serialize.SerializationException;
@@ -81,9 +80,9 @@ public class Espial {
         this.recordingQueue.start();
 
         this.logger.info("Starting database");
-        this.database = new EspialDatabase(this.config.getJdbc(), this.config.getRecordsTableName());
+        this.database = new EspialDatabase(this.config.getJdbc());
         this.database.createTables();
-        this.logger.info("Database opened ({})", this.config.getRecordsTableName());
+        this.logger.info("Database opened");
     }
 
     @Listener

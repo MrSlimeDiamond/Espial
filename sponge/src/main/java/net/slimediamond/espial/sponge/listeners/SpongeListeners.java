@@ -4,14 +4,14 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
-import org.spongepowered.api.Server;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
-import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
@@ -73,13 +73,19 @@ public class SpongeListeners {
                 blockSnapshot = transaction.original();
             }
 
-            Espial.getInstance().getEspialService().submit(
-                    EspialBlockRecord.builder()
-                        .blockState(blockSnapshot.state())
-                        .location(blockSnapshot.location().get())
-                        .user(uuid)
-                        .event(espialEvent)
-                        .build());
+            final EspialRecord.Builder builder = EspialBlockRecord.builder()
+                    .blockState(blockSnapshot.state())
+                    .location(blockSnapshot.location().get())
+                    .user(uuid)
+                    .event(espialEvent);
+
+            // handle unsafe data, stuff like signs and banner contents
+            if (blockSnapshot.toContainer().contains(DataQuery.of("UnsafeData"))) {
+                // TODO: Only have "UnsafeData" instead of full block state
+                builder.extraData(blockSnapshot.toContainer());
+            }
+
+            Espial.getInstance().getEspialService().submit(builder.build());
         }
     }
 

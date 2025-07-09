@@ -4,6 +4,8 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
@@ -19,17 +21,20 @@ public abstract class SpongeEspialRecord implements EspialRecord {
     private final UUID user;
     private final ServerLocation location;
     private final EspialEvent event;
+    private final DataContainer extraData;
 
     public SpongeEspialRecord(@NotNull final Date date,
                               @NotNull final UUID user,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
-                              final boolean rolledBack) {
+                              final boolean rolledBack,
+                              @Nullable DataContainer extraData) {
         this.date = date;
         this.user = user;
         this.location = location;
         this.event = event;
         this.rolledBack = rolledBack;
+        this.extraData = extraData;
     }
 
     public SpongeEspialRecord(final int id,
@@ -37,13 +42,15 @@ public abstract class SpongeEspialRecord implements EspialRecord {
                               @NotNull final UUID user,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
-                              final boolean rolledBack) {
+                              final boolean rolledBack,
+                              @Nullable DataContainer extraData) {
         this.id = id;
         this.date = date;
         this.user = user;
         this.location = location;
         this.event = event;
         this.rolledBack = rolledBack;
+        this.extraData = extraData;
     }
 
     @Override
@@ -74,6 +81,11 @@ public abstract class SpongeEspialRecord implements EspialRecord {
     @Override
     public boolean isRolledBack() {
         return rolledBack;
+    }
+
+    @Override
+    public Optional<DataContainer> getExtraData() {
+        return Optional.ofNullable(extraData);
     }
 
     public void setId(final int id) {
