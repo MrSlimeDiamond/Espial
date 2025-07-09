@@ -17,13 +17,14 @@ public class Format {
     public static final TextColor PADDING_COLOR = TextColor.color(224, 186, 215);
     public static final TextColor ERROR_COLOR = NamedTextColor.RED;
     public static final TextColor DETAIL_KEY_COLOR = TextColor.color(49, 175, 212);
-    public static final TextColor DETAIL_VALUE_COLOR = ACCENT_COLOR;
+    public static final TextColor DETAIL_VALUE_COLOR = TEXT_COLOR;
     public static final TextColor COMMAND_HINT_COLOR = TextColor.color(85, 180, 142);
     public static final TextColor TITLE_COLOR = TextColor.color(224, 141, 121);
 
     public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
     public static final Component PREFIX = Component.text("Espial › ").color(THEME_COLOR);
     public static final Component DEBUG_PREFIX = PREFIX.append(Component.text("Debug › ")).color(DEBUG_COLOR);
+    public static final Component NO_RECORDS_FOUND = Format.error("No records were found");
 
     public static Component component(final Component component) {
         return PREFIX.append(component);
@@ -42,7 +43,8 @@ public class Format {
     }
 
     public static Component commandHint(final String command) {
-        return commandHint(command, command, null);
+        return commandHint(command, command,
+                Component.text(command).color(NamedTextColor.GRAY));
     }
 
     public static Component commandHint(final String display, final String command,
@@ -87,7 +89,7 @@ public class Format {
 
     public static Component link(final String display, final String url) {
         return Component.text(display).color(COMMAND_HINT_COLOR)
-                .hoverEvent(HoverEvent.showText(Component.text(url).color(DULL_COLOR)))
+                .hoverEvent(HoverEvent.showText(Component.text(url).color(NamedTextColor.GRAY)))
                 .clickEvent(ClickEvent.openUrl(url));
     }
 

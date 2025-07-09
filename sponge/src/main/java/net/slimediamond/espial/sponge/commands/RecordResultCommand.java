@@ -12,11 +12,13 @@ import net.slimediamond.espial.sponge.query.RangeSelector;
 import net.slimediamond.espial.sponge.query.Selector;
 import net.slimediamond.espial.sponge.query.Vector3iRange;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.time.Instant;
@@ -96,7 +98,7 @@ public abstract class RecordResultCommand extends AbstractCommand {
             }
             final List<EspialRecord> results = stream.collect(Collectors.toList()); // mutable list
             if (results.isEmpty()) {
-                context.sendMessage(Format.error("No records found"));
+                context.sendMessage(Format.NO_RECORDS_FOUND);
             } else {
                 this.apply(context, results);
             }
@@ -108,6 +110,14 @@ public abstract class RecordResultCommand extends AbstractCommand {
 
     protected void addPredicate(@NotNull final Predicate<EspialRecord> predicate) {
         predicates.add(predicate);
+    }
+
+    public void displayRecords(final CommandContext context, final List<EspialRecord> records, final boolean spread) {
+        PaginationList.builder()
+                .title(Format.title("Lookup results"))
+                .contents(RecordFormatter.formatRecords(records, spread))
+                .padding(Format.PADDING)
+                .sendTo(context.cause().audience());
     }
 
 }

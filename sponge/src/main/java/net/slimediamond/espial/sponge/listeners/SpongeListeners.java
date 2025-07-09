@@ -47,7 +47,7 @@ public class SpongeListeners {
                         .build())
                         .thenAccept(records -> {
                             if (records.isEmpty()) {
-                                playerOptional.get().sendMessage(Format.error("No records were found"));
+                                playerOptional.get().sendMessage(Format.NO_RECORDS_FOUND);
                             } else {
                                 PaginationList.builder()
                                         .title(Format.title("Lookup results"))

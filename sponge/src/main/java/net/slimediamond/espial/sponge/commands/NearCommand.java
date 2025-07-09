@@ -28,6 +28,7 @@ public class NearCommand extends AbstractCommand {
                 .orElseThrow(() -> new CommandException(Component.text("You need a location to use this")));
 
         final int range = Espial.getInstance().getConfig().getNearRange();
+        context.sendMessage(Format.defaults("Range: 5 blocks"));
 
         Espial.getInstance().getEspialService().query(EspialQuery.builder()
                 .worldKey(location.worldKey())
@@ -35,13 +36,17 @@ public class NearCommand extends AbstractCommand {
                 .maximum(location.blockPosition().add(range, range, range))
                 .audience(context.cause().audience())
                 .build())
-                .thenAccept(records ->
-                    PaginationList.builder()
-                            .title(Format.title("Nearby results"))
-                            .contents(RecordFormatter.formatRecords(records, false))
-                            .padding(Format.PADDING)
-                            .sendTo(context.cause().audience())
-                );
+                .thenAccept(records -> {
+                    if (records.isEmpty()) {
+                        context.sendMessage(Format.NO_RECORDS_FOUND);
+                    } else {
+                        PaginationList.builder()
+                                .title(Format.title("Nearby results"))
+                                .contents(RecordFormatter.formatRecords(records, false))
+                                .padding(Format.PADDING)
+                                .sendTo(context.cause().audience());
+                    }
+                });
         return CommandResult.success();
     }
 

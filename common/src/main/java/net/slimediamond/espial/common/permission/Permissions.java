@@ -22,4 +22,8 @@ public class Permissions {
             "espial.command.interactive"
     );
 
+    public static final Permission NEARBY_SIGNS = Permission.of(
+            "espial.command.nearbysigns"
+    );
+
 }
