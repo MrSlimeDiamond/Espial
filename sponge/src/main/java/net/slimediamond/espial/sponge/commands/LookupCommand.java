@@ -5,6 +5,7 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.permission.Permissions;
 import org.spongepowered.api.command.parameter.CommandContext;
 
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -19,6 +20,7 @@ public class LookupCommand extends RecordResultCommand {
 
     @Override
     public void apply(final CommandContext context, final List<EspialRecord> records) {
+        records.sort(Comparator.comparingInt(EspialRecord::getId).reversed());
         displayRecords(context, records, false);
     }
 

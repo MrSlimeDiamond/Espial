@@ -7,6 +7,7 @@ import net.slimediamond.espial.common.permission.Permissions;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.registry.RegistryTypes;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class NearbySignsCommand extends RecordResultCommand {
@@ -22,6 +23,7 @@ public class NearbySignsCommand extends RecordResultCommand {
 
     @Override
     public void apply(final CommandContext context, final List<EspialRecord> records) {
+        records.sort(Comparator.comparingInt(EspialRecord::getId).reversed());
         displayRecords(context, records, true);
     }
 

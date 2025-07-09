@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,6 @@ public class RecordFormatter {
     private static final TextColor SPREAD_TARGET_COLOR = Format.THEME_COLOR;
     private static final TextColor GROUPED_TARGET_COLOR = Format.ACCENT_COLOR;
 
-    // TODO: Show rolled back status
     public static List<Component> formatRecords(@NotNull final List<EspialRecord> records, boolean spread) {
         if (spread) {
             return records.stream().map(RecordFormatter::format).toList();
@@ -41,7 +41,8 @@ public class RecordFormatter {
         }
 
         // TODO: Nicer and more chronological order of display, also show dates
-        final List<Map.Entry<StackedRecord, Integer>> sortedEntries = new ArrayList<>(recordCounts.entrySet());
+        // this seems to be in the wrong order? So reverse it
+        final List<Map.Entry<StackedRecord, Integer>> sortedEntries = new ArrayList<>(recordCounts.entrySet()).reversed();
         return sortedEntries.stream()
                 .map(entry -> {
                     final StackedRecord record = entry.getKey();
