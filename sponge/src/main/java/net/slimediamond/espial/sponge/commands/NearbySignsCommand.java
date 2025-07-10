@@ -17,8 +17,9 @@ public class NearbySignsCommand extends RecordResultCommand {
 
         addAlias("nearbysigns");
         addPredicate(record -> record instanceof EspialBlockRecord);
-        addPredicate(record -> ((EspialBlockRecord)record).getBlockState()
-                .type().key(RegistryTypes.BLOCK_TYPE).formatted().contains("sign"));
+        // FIXME
+        //addPredicate(record -> ((EspialBlockRecord)record).getOriginalBlock()
+                //.state().type().key(RegistryTypes.BLOCK_TYPE).formatted().contains("sign"));
     }
 
     @Override

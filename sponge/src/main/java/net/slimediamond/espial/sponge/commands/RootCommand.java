@@ -22,7 +22,7 @@ public class RootCommand extends AbstractCommand {
         addChild(new UndoCommand());
         addChild(new RedoCommand());
         addChild(new InteractiveCommand());
-        addChild(new NearbySignsCommand());
+        //addChild(new NearbySignsCommand());
         addChild(new QueueCommand());
     }
 

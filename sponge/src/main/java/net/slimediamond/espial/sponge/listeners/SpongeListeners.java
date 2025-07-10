@@ -8,12 +8,10 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
-import org.enginehub.piston.CommandMetadata;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
-import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
@@ -41,7 +39,9 @@ public class SpongeListeners {
         }
         final Entity cause = optionalCause.get();
         for (BlockTransaction transaction : event.transactions()) {
-            if (transaction.original().location().isEmpty()) {
+            final BlockSnapshot original = transaction.original();
+            final BlockSnapshot replacement = transaction.finalReplacement();
+            if (original.location().isEmpty() || replacement.location().isEmpty()) {
                 continue; // somehow no location
             }
             final Optional<ServerPlayer> playerOptional = event.cause().first(ServerPlayer.class);
@@ -76,27 +76,14 @@ public class SpongeListeners {
             }
             final EspialEvent espialEvent = eventOptional.get();
 
-            final BlockSnapshot blockSnapshot;
-            if (espialEvent.equals(EspialEvents.PLACE.get())) {
-                // it is the block after
-                blockSnapshot = transaction.finalReplacement();
-            } else {
-                blockSnapshot = transaction.original();
-            }
-
             final EspialRecord.Builder builder = EspialBlockRecord.builder()
-                    .blockState(blockSnapshot.state())
+                    .original(original)
+                    .replacement(replacement)
                     .entityType(cause.type())
-                    .location(blockSnapshot.location().get())
+                    .location(original.location().get())
                     .event(espialEvent);
 
             playerOptional.ifPresent(player -> builder.user(player.uniqueId()));
-
-            // handle unsafe data, stuff like signs and banner contents
-            if (blockSnapshot.toContainer().contains(DataQuery.of("UnsafeData"))) {
-                // TODO: Only have "UnsafeData" instead of full block state
-                builder.extraData(blockSnapshot.toContainer());
-            }
 
             Espial.getInstance().getEspialService().submit(builder.build());
         }

@@ -3,7 +3,6 @@ package net.slimediamond.espial.api.record;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockState;
 
 
 public interface EspialBlockRecord extends EspialRecord {
@@ -13,14 +12,14 @@ public interface EspialBlockRecord extends EspialRecord {
      *
      * @return Block state
      */
-    BlockState getBlockState();
+    BlockSnapshot getOriginalBlock();
 
     /**
      * Get the block snapshot for the record
      *
      * @return Block snapshot
      */
-    BlockSnapshot getBlockSnapshot();
+    BlockSnapshot getReplacementBlock();
 
     static Builder builder() {
         return Sponge.game().builderProvider().provide(Builder.class);
@@ -29,14 +28,24 @@ public interface EspialBlockRecord extends EspialRecord {
     interface Builder extends EspialRecord.Builder {
 
         /**
-         * Set the block state
+         * Set the block snapshot for the original
          *
          * <p><strong>This is required</strong></p>
          *
-         * @param blockState The block state
+         * @param original The block snapshot
          * @return This builder, for chaining
          */
-        Builder blockState(@NotNull BlockState blockState);
+        Builder original(@NotNull BlockSnapshot original);
+
+        /**
+         * Set the block snapshot for the replacement
+         *
+         * <p><strong>This is required</strong></p>
+         *
+         * @param replacement The block snapshot
+         * @return This builder, for chaining
+         */
+        Builder replacement(@NotNull BlockSnapshot replacement);
 
     }
 

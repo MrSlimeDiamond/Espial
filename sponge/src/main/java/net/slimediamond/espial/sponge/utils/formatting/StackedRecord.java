@@ -24,7 +24,7 @@ public class StackedRecord {
         this.event = record.getEvent();
         this.rolledBack = record.isRolledBack();
         if (record instanceof EspialBlockRecord blockRecord) {
-            this.target = blockRecord.getBlockState().type().asComponent();
+            this.target = RecordFormatter.getTarget(blockRecord).state().type().asComponent();
         } else {
             this.target = Component.empty();
         }

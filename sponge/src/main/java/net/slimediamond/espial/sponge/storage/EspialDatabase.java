@@ -2,19 +2,19 @@ package net.slimediamond.espial.sponge.storage;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.api.data.persistence.DataFormats;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,6 +34,7 @@ public final class EspialDatabase {
 
     private final String connectionString;
     private DataSource dataSource;
+    private boolean sqlite;
 
     public EspialDatabase(@NotNull final String connectionString) {
         this.connectionString = connectionString;
@@ -65,62 +66,77 @@ public final class EspialDatabase {
 
         try (final Connection conn = getConn()) {
             final String recordsCreation;
-            final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
+            final String blockStatesCreation;
+            final String entityTypesCreation;
+            final String worldsCreation;
+            final String extraCreation = "CREATE TABLE IF NOT EXISTS block_extra (" +
                     "record_id INT NOT NULL, " +
-                    "data TEXT NOT NULL, " +
+                    "original TEXT, " +
+                    "replacement TEXT, " +
                     "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE" +
                     ")";
-            final String legacyCheck;
+
+            final String blockStateCreation = "CREATE TABLE IF NOT EXISTS block_state (" +
+                    "record_id INT NOT NULL, " +
+                    "original INT NOT NULL, " +
+                    "replacement INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (original) REFERENCES block_states(id), " +
+                    "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
+                    ")";
+
             // Databases need to be made differently on different databases.
-            boolean sqlite = connectionString.contains("sqlite");
+            this.sqlite = connectionString.contains("sqlite");
             if (sqlite) {
                 Espial.getInstance().getLogger().info("Detected database type: sqlite");
 
                 recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                legacyCheck = "SELECT name FROM sqlite_master WHERE type='table' AND name='blocklog'";
+                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
             } else {
                 // Probably MySQL/MariaDB or whatever. use a different statement
 
                 Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
 
                 recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
-                legacyCheck = "SHOW TABLES LIKE 'blocklog'";
+                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
             }
 
             conn.prepareStatement(recordsCreation +
                     "type TINYINT NOT NULL, " +
                     "time TIMESTAMP NOT NULL, " +
-                    "player_uuid MEDIUMTEXT, " +
-                    "entity_type MEDIUMTEXT, " +
+                    "player_uuid CHAR(36), " +
+                    "entity_type INT NOT NULL, " +
                     "target TINYTEXT NOT NULL, " +
-                    "world TINYTEXT NOT NULL, " +
+                    "world INT NOT NULL, " +
                     "x INT NOT NULL, " +
                     "y INT NOT NULL, " +
                     "z INT NOT NULL, " +
-                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE" +
+                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE, " +
+                    "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
+                    "FOREIGN KEY (world) REFERENCES worlds(id)" +
                     ")").execute();
 
+            conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
+            conn.prepareStatement(blockStateCreation).execute();
+            conn.prepareStatement(entityTypesCreation + "resource_key TEXT NOT NULL)").execute();
+            conn.prepareStatement(worldsCreation + "resource_key TEXT NOT NULL)").execute();
             conn.prepareStatement(extraCreation).execute();
 
             if (sqlite) {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
                 // prevent database file locking on sqlite
-                conn.prepareStatement("PRAGMA journal_mode=WAL;").execute();
+                //conn.prepareStatement("PRAGMA journal_mode = WAL").execute();
             }
-
-//            // TODO: Better v1 --> v2r migration
-//            final boolean hasLegacyTable = conn.prepareStatement(legacyCheck).executeQuery().next();
-//            if (hasLegacyTable) {
-//                try {
-//                    conn.prepareStatement(
-//                            "INSERT INTO records (type, time, player_uuid, target, world, x, y, z, rolled_back) " +
-//                                    "SELECT type, time, player_uuid, target, world, x, y, z, rolled_back FROM blocklog").execute();
-//                    conn.prepareStatement("DROP TABLE IF EXISTS blocklog").execute(); // remove old table
-//                    Espial.getInstance().getLogger().info("Database migrated");
-//                } catch (SQLException ignored) {
-//                    // Does not need to be migrated
-//                }
-//            }
         }
     }
 
@@ -155,14 +171,28 @@ public final class EspialDatabase {
             } else {
                 ps.setNull(3, Types.VARCHAR);
             }
-            ps.setString(4, record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
-            ps.setString(5, record.getBlockState().asString());
-            ps.setString(6, record.getLocation().worldKey().formatted());
+
+            final BlockSnapshot target;
+            if (record.getEvent().equals(EspialEvents.PLACE.get())) {
+                target = record.getReplacementBlock();
+            } else {
+                target = record.getOriginalBlock();
+            }
+
+            // this makes stuff slower, but it's much more efficient for storage
+            final int entityTypeId = getOrCreateId(conn, "entity_types", "resource_key",
+                    record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
+            final int worldId = getOrCreateId(conn, "worlds", "resource_key",
+                    record.getLocation().worldKey().formatted());
+
+            ps.setInt(4, entityTypeId);
+            ps.setString(5, target.state().type().key(RegistryTypes.BLOCK_TYPE).formatted());
+            ps.setInt(6, worldId);
             ps.setInt(7, record.getLocation().blockPosition().x());
             ps.setInt(8, record.getLocation().blockPosition().y());
             ps.setInt(9, record.getLocation().blockPosition().z());
 
-            ps.executeUpdate();
+            ps.execute();
 
             ResultSet rs;
             try {
@@ -173,14 +203,23 @@ public final class EspialDatabase {
             }
             if (rs.next()) {
                 final int id = rs.getInt(1);
-                if (record.getExtraData().isPresent()) {
-                    final PreparedStatement insertExtraData = conn.prepareStatement(
-                            "INSERT INTO extra (record_id, data) VALUES (?, ?)"
-                    );
-                    insertExtraData.setInt(1, id);
-                    insertExtraData.setString(2, DataFormats.JSON.get().write(record.getExtraData().get()));
-                    insertExtraData.execute();
-                }
+
+                // insert into block_state
+                final int originalState = getOrCreateId(conn, "block_states", "state",
+                        record.getOriginalBlock().state().asString());
+                final int replacementState = getOrCreateId(conn, "block_states", "state",
+                        record.getReplacementBlock().state().asString());
+
+                final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
+                        "VALUES (?, ?, ?)");
+
+                insertState.setInt(1, id);
+                insertState.setInt(2, originalState);
+                insertState.setInt(3, replacementState);
+                insertState.execute();
+
+                // TODO: Extra data
+
                 return id;
             }
             return -1;
@@ -188,10 +227,27 @@ public final class EspialDatabase {
     }
 
     public List<EspialRecord> query(@NotNull final EspialQuery query) throws SQLException {
-        final StringBuilder sql = new StringBuilder("SELECT records.*, extra.data FROM records " +
-                "LEFT JOIN extra ON records.id = extra.record_id " +
-                "WHERE world = ?" +
-                " AND x BETWEEN ? and ? AND y BETWEEN ? and ? AND z BETWEEN ? and ? ");
+        final StringBuilder sql = new StringBuilder(
+                "SELECT " +
+                        "records.*, " +
+                        "block_extra.original AS extra_original, " +
+                        "block_extra.replacement AS extra_replacement, " +
+                        "original.state AS state_original, " +
+                        "replacement.state AS state_replacement, " +
+                        "worlds.resource_key AS world_key " +
+                        "FROM records " +
+                        "LEFT JOIN block_extra ON records.id = block_extra.record_id " +
+                        "LEFT JOIN block_state ON records.id = block_state.record_id " +
+                        "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
+                        "LEFT JOIN block_states AS original ON bs.original = original.id " +
+                        "LEFT JOIN block_states AS replacement ON bs.replacement = replacement.id " +
+                        "JOIN worlds ON records.world = worlds.id " +
+                        "WHERE worlds.resource_key = ? " +
+                        "AND x BETWEEN ? AND ? " +
+                        "AND y BETWEEN ? AND ? " +
+                        "AND z BETWEEN ? AND ? "
+        );
+
 
         query.getAfter().ifPresent(after -> sql.append(" AND time > ?"));
         query.getBefore().ifPresent(before -> sql.append(" AND time < ?"));
@@ -218,9 +274,9 @@ public final class EspialDatabase {
             // Ranged lookup
 
             // Rearrange from smallest to biggest for things to actually get picked up
-            int[] x = {query.getMinimumPosition().x(), query.getMaximumPosition().x()};
-            int[] y = {query.getMinimumPosition().y(), query.getMaximumPosition().y()};
-            int[] z = {query.getMinimumPosition().z(), query.getMaximumPosition().z()};
+            int[] x = { query.getMinimumPosition().x(), query.getMaximumPosition().x() };
+            int[] y = { query.getMinimumPosition().y(), query.getMaximumPosition().y() };
+            int[] z = { query.getMinimumPosition().z(), query.getMaximumPosition().z() };
 
             // The smallest number would be at the start.
             Arrays.sort(x);
@@ -286,6 +342,29 @@ public final class EspialDatabase {
             ps.setInt(2, record.getId());
             ps.executeUpdate();
         }
+    }
+
+    private int getOrCreateId(final Connection conn, final String table, final String column, final String value) throws SQLException {
+        // Try to find existing
+        final PreparedStatement select = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + column + " = ?");
+        select.setString(1, value);
+        final ResultSet rs = select.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+        // Insert if not exists
+        PreparedStatement insert = conn.prepareStatement("INSERT INTO " + table + " (" + column + ") VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+        insert.setString(1, value);
+        insert.executeUpdate();
+        final ResultSet keys;
+        if (sqlite) {
+            keys = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
+        } else {
+            keys = insert.getGeneratedKeys();
+        }
+        keys.next();
+        return keys.getInt(1);
     }
 
 }

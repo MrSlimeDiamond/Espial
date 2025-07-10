@@ -4,8 +4,7 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -14,19 +13,13 @@ import java.util.UUID;
 
 public class SpongeBlockRecordBuilder implements EspialBlockRecord.Builder {
 
-    private BlockState blockState;
+    private BlockSnapshot original;
+    private BlockSnapshot replacement;
     private Date date = new Date();
     private UUID user;
     private EntityType<?> entityType;
     private ServerLocation location;
     private EspialEvent event;
-    private DataContainer extraData;
-
-    @Override
-    public EspialBlockRecord.Builder blockState(final @NotNull BlockState blockState) {
-        this.blockState = blockState;
-        return this;
-    }
 
     @Override
     public EspialRecord.Builder date(final @NotNull Date date) {
@@ -59,14 +52,20 @@ public class SpongeBlockRecordBuilder implements EspialBlockRecord.Builder {
     }
 
     @Override
-    public EspialBlockRecord.Builder extraData(@NotNull final DataContainer extraData) {
-        this.extraData = extraData;
+    public EspialBlockRecord.Builder original(@NotNull final BlockSnapshot original) {
+        this.original = original;
+        return this;
+    }
+
+    @Override
+    public EspialBlockRecord.Builder replacement(@NotNull final BlockSnapshot replacement) {
+        this.replacement = replacement;
         return this;
     }
 
     @Override
     public @NotNull EspialRecord build() {
-        return new SpongeBlockRecord(-1, date, user, entityType, location, event, blockState, false, extraData);
+        return new SpongeBlockRecord(-1, date, user, entityType, location, event, original, replacement, false);
     }
 
 }

@@ -6,11 +6,13 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Keys;
 
 import java.util.ArrayList;
@@ -19,7 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecordFormatter {
 
@@ -94,13 +95,13 @@ public class RecordFormatter {
         }
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         if (record instanceof EspialBlockRecord blockRecord) {
-            builder.appendSpace().append(blockRecord.getBlockState().type().asComponent().color(SPREAD_TARGET_COLOR));
+            builder.appendSpace().append(getTarget(blockRecord).state().type().asComponent().color(SPREAD_TARGET_COLOR));
 
             final List<Component> extraDisplay = new LinkedList<>();
-            // also append sign data if it exists
-            blockRecord.getBlockSnapshot().get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
+            // also append sign data if it exists (not working)
+            blockRecord.getReplacementBlock().get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
                     extraDisplay.addAll(formatSignLines("Front Line ", signText.lines().get())));
-            blockRecord.getBlockSnapshot().get(Keys.SIGN_BACK_TEXT).ifPresent(signText ->
+            blockRecord.getReplacementBlock().get(Keys.SIGN_BACK_TEXT).ifPresent(signText ->
                     extraDisplay.addAll(formatSignLines("Back Line ", signText.lines().get())));
 
 
@@ -121,6 +122,13 @@ public class RecordFormatter {
             results.add(Format.detail(prefix + i, lines.get(i)));
         }
         return results;
+    }
+
+    public static BlockSnapshot getTarget(final EspialBlockRecord record) {
+        if (record.getEvent().equals(EspialEvents.PLACE.get())) {
+            return record.getReplacementBlock();
+        }
+        return record.getOriginalBlock();
     }
 
 }
