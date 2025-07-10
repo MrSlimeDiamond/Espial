@@ -33,6 +33,9 @@ val pluginDescription: String by project
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("com.zaxxer:HikariCP:6.3.0") {
+        exclude("org.slf4j")
+    }
     compileOnly("org.spongepowered:spongeapi:$spongeDefault")
     compileOnly("org.jetbrains:annotations:26.0.2")
     compileOnly("com.sk89q.worldedit:worldedit-sponge:7.3.12-SNAPSHOT")

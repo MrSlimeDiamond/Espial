@@ -81,7 +81,7 @@ public class Espial {
 
         this.logger.info("Starting database");
         this.database = new EspialDatabase(this.config.getJdbc());
-        this.database.createTables();
+        this.database.open();
         this.logger.info("Database opened");
     }
 

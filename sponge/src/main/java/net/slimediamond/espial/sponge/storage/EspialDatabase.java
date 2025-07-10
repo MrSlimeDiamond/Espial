@@ -1,5 +1,7 @@
 package net.slimediamond.espial.sponge.storage;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -9,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.registry.RegistryTypes;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,21 +33,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class EspialDatabase {
 
     private final String connectionString;
+    private DataSource dataSource;
 
     public EspialDatabase(@NotNull final String connectionString) {
         this.connectionString = connectionString;
     }
 
     private Connection getConn() throws SQLException {
-        return DriverManager.getConnection(connectionString);
+        return dataSource.getConnection();
     }
 
     /**
-     * Create database tables
+     * Opens and sets up the database
      *
      * @throws SQLException
      */
-    public void createTables() throws SQLException {
+    public void open() throws SQLException {
+        final HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(connectionString);
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setMaximumPoolSize(2); // TODO config value?
+        config.setMaximumPoolSize(4); // TODO config value?
+        config.setIdleTimeout(600000); // 10 minutes
+        config.setMaxLifetime(1800000); // 30 minutes
+        config.setValidationTimeout(5000); // 5 seconds
+        config.setKeepaliveTime(300000); // 5 mins
+        config.setConnectionTestQuery("SELECT 1");
+        dataSource = new HikariDataSource(config);
+
         try (final Connection conn = getConn()) {
             final String recordsCreation;
             final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
@@ -86,6 +104,8 @@ public final class EspialDatabase {
 
             if (sqlite) {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
+                // prevent database file locking on sqlite
+                conn.prepareStatement("PRAGMA journal_mode=WAL;").execute();
             }
 
 //            // TODO: Better v1 --> v2r migration
