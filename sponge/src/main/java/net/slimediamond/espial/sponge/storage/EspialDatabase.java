@@ -73,6 +73,7 @@ public final class EspialDatabase {
                     "type TINYINT NOT NULL, " +
                     "time TIMESTAMP NOT NULL, " +
                     "player_uuid MEDIUMTEXT, " +
+                    "entity_type MEDIUMTEXT, " +
                     "target TINYTEXT NOT NULL, " +
                     "world TINYTEXT NOT NULL, " +
                     "x INT NOT NULL, " +
@@ -87,19 +88,19 @@ public final class EspialDatabase {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
             }
 
-            // TODO: Better v1 --> v2r migration
-            final boolean hasLegacyTable = conn.prepareStatement(legacyCheck).executeQuery().next();
-            if (hasLegacyTable) {
-                try {
-                    conn.prepareStatement(
-                            "INSERT INTO records (type, time, player_uuid, target, world, x, y, z, rolled_back) " +
-                                    "SELECT type, time, player_uuid, target, world, x, y, z, rolled_back FROM blocklog").execute();
-                    conn.prepareStatement("DROP TABLE IF EXISTS blocklog").execute(); // remove old table
-                    Espial.getInstance().getLogger().info("Database migrated");
-                } catch (SQLException ignored) {
-                    // Does not need to be migrated
-                }
-            }
+//            // TODO: Better v1 --> v2r migration
+//            final boolean hasLegacyTable = conn.prepareStatement(legacyCheck).executeQuery().next();
+//            if (hasLegacyTable) {
+//                try {
+//                    conn.prepareStatement(
+//                            "INSERT INTO records (type, time, player_uuid, target, world, x, y, z, rolled_back) " +
+//                                    "SELECT type, time, player_uuid, target, world, x, y, z, rolled_back FROM blocklog").execute();
+//                    conn.prepareStatement("DROP TABLE IF EXISTS blocklog").execute(); // remove old table
+//                    Espial.getInstance().getLogger().info("Database migrated");
+//                } catch (SQLException ignored) {
+//                    // Does not need to be migrated
+//                }
+//            }
         }
     }
 
@@ -116,13 +117,14 @@ public final class EspialDatabase {
                     + " (type," +
                     "time," +
                     "player_uuid," +
+                    "entity_type," +
                     "target," +
                     "world," +
                     "x," +
                     "y," +
                     "z," +
                     "rolled_back)" +
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
                     Statement.RETURN_GENERATED_KEYS);
 
             ps.setInt(1, record.getEvent().getId());
@@ -133,11 +135,12 @@ public final class EspialDatabase {
             } else {
                 ps.setNull(3, Types.VARCHAR);
             }
-            ps.setString(4, record.getBlockState().asString());
-            ps.setString(5, record.getLocation().worldKey().formatted());
-            ps.setInt(6, record.getLocation().blockPosition().x());
-            ps.setInt(7, record.getLocation().blockPosition().y());
-            ps.setInt(8, record.getLocation().blockPosition().z());
+            ps.setString(4, record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
+            ps.setString(5, record.getBlockState().asString());
+            ps.setString(6, record.getLocation().worldKey().formatted());
+            ps.setInt(7, record.getLocation().blockPosition().x());
+            ps.setInt(8, record.getLocation().blockPosition().y());
+            ps.setInt(9, record.getLocation().blockPosition().z());
 
             ps.executeUpdate();
 

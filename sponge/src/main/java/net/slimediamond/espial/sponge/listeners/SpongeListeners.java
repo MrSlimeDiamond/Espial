@@ -12,6 +12,8 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.data.persistence.DataQuery;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
@@ -27,36 +29,39 @@ public class SpongeListeners {
 
     @Listener
     public void onBlockChange(final ChangeBlockEvent.All event) {
+        final Optional<Entity> optionalCause = event.cause().first(Entity.class);
+        if (optionalCause.isEmpty()) {
+            return;
+        }
+        final Entity cause = optionalCause.get();
         for (BlockTransaction transaction : event.transactions()) {
             if (transaction.original().location().isEmpty()) {
                 continue; // somehow no location
             }
             final Optional<ServerPlayer> playerOptional = event.cause().first(ServerPlayer.class);
-            if (playerOptional.isEmpty()) {
-                continue;
-            }
-
-            final UUID uuid = playerOptional.get().uniqueId();
-            if (Espial.getInstance().getEspialService().getInspectingUsers().contains(uuid)) {
-                event.setCancelled(true);
-                // lookup at those coordinates
-                final ServerLocation location = transaction.original().location().get();
-                Espial.getInstance().getEspialService().query(EspialQuery.builder()
-                        .location(location)
-                        .audience(playerOptional.get())
-                        .build())
-                        .thenAccept(records -> {
-                            if (records.isEmpty()) {
-                                playerOptional.get().sendMessage(Format.NO_RECORDS_FOUND);
-                            } else {
-                                PaginationList.builder()
-                                        .title(Format.title("Lookup results"))
-                                        .padding(Format.PADDING)
-                                        .contents(RecordFormatter.formatRecords(records, true))
-                                        .sendTo(playerOptional.get());
-                            }
-                        });
-                return;
+            if (playerOptional.isPresent()) {
+                final UUID uuid = playerOptional.get().uniqueId();
+                if (Espial.getInstance().getEspialService().getInspectingUsers().contains(uuid)) {
+                    event.setCancelled(true);
+                    // lookup at those coordinates
+                    final ServerLocation location = transaction.original().location().get();
+                    Espial.getInstance().getEspialService().query(EspialQuery.builder()
+                                    .location(location)
+                                    .audience(playerOptional.get())
+                                    .build())
+                            .thenAccept(records -> {
+                                if (records.isEmpty()) {
+                                    playerOptional.get().sendMessage(Format.NO_RECORDS_FOUND);
+                                } else {
+                                    PaginationList.builder()
+                                            .title(Format.title("Lookup results"))
+                                            .padding(Format.PADDING)
+                                            .contents(RecordFormatter.formatRecords(records, true))
+                                            .sendTo(playerOptional.get());
+                                }
+                            });
+                    return;
+                }
             }
 
             final Optional<EspialEvent> eventOptional = getEspialEvent(transaction.operation());
@@ -75,9 +80,11 @@ public class SpongeListeners {
 
             final EspialRecord.Builder builder = EspialBlockRecord.builder()
                     .blockState(blockSnapshot.state())
+                    .entityType(cause.type())
                     .location(blockSnapshot.location().get())
-                    .user(uuid)
                     .event(espialEvent);
+
+            playerOptional.ifPresent(player -> builder.user(player.uniqueId()));
 
             // handle unsafe data, stuff like signs and banner contents
             if (blockSnapshot.toContainer().contains(DataQuery.of("UnsafeData"))) {

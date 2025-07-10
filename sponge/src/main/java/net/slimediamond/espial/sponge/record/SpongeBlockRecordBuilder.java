@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Date;
@@ -16,6 +17,7 @@ public class SpongeBlockRecordBuilder implements EspialBlockRecord.Builder {
     private BlockState blockState;
     private Date date = new Date();
     private UUID user;
+    private EntityType<?> entityType;
     private ServerLocation location;
     private EspialEvent event;
     private DataContainer extraData;
@@ -39,6 +41,12 @@ public class SpongeBlockRecordBuilder implements EspialBlockRecord.Builder {
     }
 
     @Override
+    public EspialRecord.Builder entityType(@NotNull final EntityType<?> entityType) {
+        this.entityType = entityType;
+        return this;
+    }
+
+    @Override
     public EspialRecord.Builder location(final @NotNull ServerLocation location) {
         this.location = location;
         return this;
@@ -58,7 +66,7 @@ public class SpongeBlockRecordBuilder implements EspialBlockRecord.Builder {
 
     @Override
     public @NotNull EspialRecord build() {
-        return new SpongeBlockRecord(-1, date, user, location, event, blockState, false, extraData);
+        return new SpongeBlockRecord(-1, date, user, entityType, location, event, blockState, false, extraData);
     }
 
 }

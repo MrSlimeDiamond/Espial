@@ -3,6 +3,7 @@ package net.slimediamond.espial.api.record;
 import net.slimediamond.espial.api.event.EspialEvent;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Date;
@@ -36,6 +37,13 @@ public interface EspialRecord {
      * @return Record user
      */
     Optional<UUID> getUser();
+
+    /**
+     * Get the entity type which triggered this
+     *
+     * @return Entity type cause
+     */
+    EntityType<?> getEntityType();
 
     /**
      * Get the location of the record
@@ -94,6 +102,14 @@ public interface EspialRecord {
          * @return This builder, for chaining
          */
         Builder user(@NotNull UUID user);
+
+        /**
+         * Sets the entity type which caused the action
+         *
+         * @param entityType The entity type which caused the action
+         * @return This builder, for chaining
+         */
+        Builder entityType(@NotNull EntityType<?> entityType);
 
         /**
          * Sets the location the action happened at

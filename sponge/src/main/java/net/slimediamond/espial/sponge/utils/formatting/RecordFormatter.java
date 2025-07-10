@@ -51,15 +51,17 @@ public class RecordFormatter {
                     final StackedRecord record = entry.getKey();
                     final int count = entry.getValue();
 
-                    String username = "?";
+                    Component name = Component.text("#")
+                            .append(record.getEntityType().asComponent())
+                            .decorate(TextDecoration.ITALIC);
 
                     if (record.getUser() != null && Sponge.server().userManager().exists(record.getUser())) {
                         // blocking due to .join() doesn't matter here as we should be on another thread regardless
-                        username = Sponge.server().userManager().loadOrCreate(record.getUser()).join().name();
+                        name = Component.text(Sponge.server().userManager().loadOrCreate(record.getUser()).join().name());
                     }
 
                     final TextComponent.Builder builder = Component.text()
-                            .append(Component.text(username).color(NAME_COLOR))
+                            .append(name.color(NAME_COLOR))
                             .appendSpace()
                             .append(record.getEvent().getVerbComponent().color(EVENT_COLOR))
                             .appendSpace()

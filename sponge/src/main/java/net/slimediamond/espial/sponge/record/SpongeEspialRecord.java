@@ -6,6 +6,7 @@ import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.sql.SQLException;
@@ -19,18 +20,21 @@ public abstract class SpongeEspialRecord implements EspialRecord {
     private boolean rolledBack;
     private final Date date;
     private final UUID user;
+    private final EntityType<?> entityType;
     private final ServerLocation location;
     private final EspialEvent event;
     private final DataContainer extraData;
 
     public SpongeEspialRecord(@NotNull final Date date,
-                              @NotNull final UUID user,
+                              @Nullable final UUID user,
+                              @NotNull final EntityType<?> entityType,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
                               final boolean rolledBack,
                               @Nullable DataContainer extraData) {
         this.date = date;
         this.user = user;
+        this.entityType = entityType;
         this.location = location;
         this.event = event;
         this.rolledBack = rolledBack;
@@ -39,7 +43,8 @@ public abstract class SpongeEspialRecord implements EspialRecord {
 
     public SpongeEspialRecord(final int id,
                               @NotNull final Date date,
-                              @NotNull final UUID user,
+                              @Nullable final UUID user,
+                              @NotNull final EntityType<?> entityType,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
                               final boolean rolledBack,
@@ -47,6 +52,7 @@ public abstract class SpongeEspialRecord implements EspialRecord {
         this.id = id;
         this.date = date;
         this.user = user;
+        this.entityType = entityType;
         this.location = location;
         this.event = event;
         this.rolledBack = rolledBack;
@@ -65,7 +71,12 @@ public abstract class SpongeEspialRecord implements EspialRecord {
 
     @Override
     public Optional<UUID> getUser() {
-        return Optional.of(user);
+        return Optional.ofNullable(user);
+    }
+
+    @Override
+    public EntityType<?> getEntityType() {
+        return entityType;
     }
 
     @Override

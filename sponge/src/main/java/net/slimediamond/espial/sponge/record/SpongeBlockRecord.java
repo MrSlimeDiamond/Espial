@@ -3,14 +3,13 @@ package net.slimediamond.espial.sponge.record;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
-import net.slimediamond.espial.sponge.Espial;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.persistence.DataContainer;
-import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -21,10 +20,16 @@ public class SpongeBlockRecord extends SpongeEspialRecord implements EspialBlock
 
     private final BlockState blockState;
 
-    public SpongeBlockRecord(final int id, final Date date, final UUID user, final ServerLocation location,
-                             final EspialEvent event, final BlockState blockState, final boolean rolledBack,
+    public SpongeBlockRecord(final int id,
+                             @NotNull final Date date,
+                             @Nullable final UUID user,
+                             @NotNull final EntityType<?> entityType,
+                             @NotNull final ServerLocation location,
+                             @NotNull final EspialEvent event,
+                             @NotNull final BlockState blockState,
+                             final boolean rolledBack,
                              @Nullable final DataContainer extraData) {
-        super(id, date, user, location, event, rolledBack, extraData);
+        super(id, date, user, entityType, location, event, rolledBack, extraData);
         this.blockState = blockState;
     }
 
@@ -39,28 +44,18 @@ public class SpongeBlockRecord extends SpongeEspialRecord implements EspialBlock
         if (getEvent().equals(EspialEvents.PLACE.get())) {
             getLocation().setBlock(BlockTypes.AIR.get().defaultState());
         } else {
-            getBlockSnapshot().restore(true, BlockChangeFlags.NONE);
+            getBlockSnapshot().restore(true, BlockChangeFlags.ALL);
         }
-//        Sponge.asyncScheduler()
-//                .submit(Task.builder()
-//                        .execute(() -> this.setRolledBack(true))
-//                        .plugin(Espial.getInstance().getContainer())
-//                        .build());
     }
 
     @Override
     public void restore() {
         // TODO: Handle blocks which aren't replaced properly better (rollback/restore blocks)
         if (getEvent().equals(EspialEvents.PLACE.get())) {
-            getBlockSnapshot().restore(true, BlockChangeFlags.NONE);
+            getBlockSnapshot().restore(true, BlockChangeFlags.DEFAULT_PLACEMENT);
         } else {
             getLocation().setBlock(BlockTypes.AIR.get().defaultState());
         }
-//        Sponge.asyncScheduler()
-//                .submit(Task.builder()
-//                        .execute(() -> this.setRolledBack(false))
-//                        .plugin(Espial.getInstance().getContainer())
-//                        .build());
     }
 
     @Override

@@ -5,6 +5,7 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.entity.EntityType;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -12,12 +13,14 @@ import java.util.UUID;
 public class StackedRecord {
 
     private final UUID user;
+    private final EntityType entityType;
     private final EspialEvent event;
     private final Component target;
     private final boolean rolledBack;
 
     public StackedRecord(@NotNull final EspialRecord record) {
         this.user = record.getUser().orElse(null);
+        this.entityType = record.getEntityType();
         this.event = record.getEvent();
         this.rolledBack = record.isRolledBack();
         if (record instanceof EspialBlockRecord blockRecord) {
@@ -29,6 +32,10 @@ public class StackedRecord {
 
     public UUID getUser() {
         return user;
+    }
+
+    public EntityType getEntityType() {
+        return entityType;
     }
 
     public EspialEvent getEvent() {
