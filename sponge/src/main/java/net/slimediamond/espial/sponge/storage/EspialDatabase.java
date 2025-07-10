@@ -10,6 +10,8 @@ import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.data.persistence.DataFormats;
+import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import javax.sql.DataSource;
@@ -218,7 +220,22 @@ public final class EspialDatabase {
                 insertState.setInt(3, replacementState);
                 insertState.execute();
 
-                // TODO: Extra data
+                final DataQuery unsafeData = DataQuery.of("UnsafeData");
+                if (record.getOriginalBlock().toContainer().contains(unsafeData)
+                    || record.getReplacementBlock().toContainer().contains(unsafeData)) {
+                    final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO block_extra (record_id, original, replacement) " +
+                            "VALUES (?, ?, ?)");
+                    insertExtra.setInt(1, id);
+                    if (record.getOriginalBlock().toContainer().contains(unsafeData)) {
+                        insertExtra.setString(2, DataFormats.JSON.get()
+                                .write(record.getOriginalBlock().toContainer()));
+                    }
+                    if (record.getReplacementBlock().toContainer().contains(unsafeData)) {
+                        insertExtra.setString(3, DataFormats.JSON.get()
+                                .write(record.getReplacementBlock().toContainer()));
+                    }
+                    insertExtra.execute();
+                }
 
                 return id;
             }
