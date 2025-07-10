@@ -5,6 +5,7 @@ import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.persistence.DataFormats;
@@ -39,8 +40,20 @@ public final class SpongeBlockRecordFactory implements RecordFactory<EspialBlock
         final int z = rs.getInt("z");
         final boolean rolledBack = rs.getBoolean("rolled_back");
         final ServerLocation location = ServerLocation.of(worldKey, Vector3i.from(x, y, z));
-        BlockSnapshot original = BlockState.fromString(rs.getString("state_original")).snapshotFor(location);
-        BlockSnapshot replacement = BlockState.fromString(rs.getString("state_replacement")).snapshotFor(location);
+        final BlockState originalState = BlockState.fromString(rs.getString("state_original"));
+        final BlockState replacementState = BlockState.fromString(rs.getString("state_replacement"));
+
+        BlockSnapshot original = BlockSnapshot.builder()
+                .blockState(originalState)
+                .world(Sponge.server().worldManager().world(worldKey).orElseThrow().properties())
+                .position(location.blockPosition())
+                .build();
+
+        BlockSnapshot replacement = BlockSnapshot.builder()
+                .blockState(replacementState)
+                .world(Sponge.server().worldManager().world(worldKey).orElseThrow().properties())
+                .position(location.blockPosition())
+                .build();
 
         // see if we have extra_original or extra_replacement, then apply its data.
         // It's not always present for storage space purposes.
