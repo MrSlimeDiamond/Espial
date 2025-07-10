@@ -12,7 +12,7 @@ import net.slimediamond.espial.sponge.configuration.Configuration;
 import net.slimediamond.espial.sponge.event.SpongeEspialEventBuilder;
 import net.slimediamond.espial.sponge.listeners.SpongeListeners;
 import net.slimediamond.espial.sponge.query.SpongeQueryBuilder;
-import net.slimediamond.espial.sponge.queueing.SpongeRecordingQueue;
+import net.slimediamond.espial.sponge.queue.SpongeRecordingQueue;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecordBuilder;
 import net.slimediamond.espial.sponge.registry.EspialRegistryLoader;
 import net.slimediamond.espial.sponge.services.SpongeEspialService;

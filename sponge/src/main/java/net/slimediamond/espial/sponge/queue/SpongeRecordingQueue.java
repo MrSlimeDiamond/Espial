@@ -1,4 +1,4 @@
-package net.slimediamond.espial.sponge.queueing;
+package net.slimediamond.espial.sponge.queue;
 
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
