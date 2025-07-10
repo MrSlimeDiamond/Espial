@@ -20,6 +20,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -237,6 +238,20 @@ public final class EspialDatabase {
                 records = records.stream().filter(record -> query.getEvents().contains(record.getEvent())).toList();
             }
             return records;
+        }
+    }
+
+    public void batchSetRolledBack(@NotNull final List<EspialRecord> records, final boolean rolledBack) throws SQLException {
+        try (final Connection conn = getConn()) {
+            final String placeholders = String.join(", ", Collections.nCopies(records.size(), "?"));
+            final PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE records SET rolled_back = ? WHERE id IN (" + placeholders + ")"
+            );
+            ps.setBoolean(1, rolledBack);
+            for (int i = 2; i < records.size(); i++) {
+                ps.setInt(i, records.get(i).getId());
+            }
+            ps.executeUpdate();
         }
     }
 

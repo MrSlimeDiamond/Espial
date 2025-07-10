@@ -8,19 +8,23 @@ import net.slimediamond.espial.sponge.Espial;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class RollbackTransactionType implements TransactionType {
 
     @Override
-    public boolean canBeUndone() {
-        return true;
-    }
-
-    @Override
     public Transaction apply(final List<EspialRecord> records) {
-        Sponge.server().scheduler().submit(Task.builder()
-                .execute(() -> records.forEach(EspialRecord::rollback))
+        TransactionExecutor.run(records, EspialRecord::rollback);
+
+        Sponge.asyncScheduler().submit(Task.builder()
+                .execute(() -> {
+                    try {
+                        Espial.getInstance().getDatabase().batchSetRolledBack(records, true);
+                    } catch (SQLException e) {
+                        Espial.getInstance().getLogger().error("Unable to batch set rollback on records", e);
+                    }
+                })
                 .plugin(Espial.getInstance().getContainer())
                 .build());
 

@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.record;
 
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 
 
@@ -13,6 +14,13 @@ public interface EspialBlockRecord extends EspialRecord {
      * @return Block state
      */
     BlockState getBlockState();
+
+    /**
+     * Get the block snapshot for the record
+     *
+     * @return Block snapshot
+     */
+    BlockSnapshot getBlockSnapshot();
 
     static Builder builder() {
         return Sponge.game().builderProvider().provide(Builder.class);

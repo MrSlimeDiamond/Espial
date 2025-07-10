@@ -8,19 +8,23 @@ import net.slimediamond.espial.sponge.Espial;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class RestoreTransactionType implements TransactionType {
 
     @Override
-    public boolean canBeUndone() {
-        return true;
-    }
-
-    @Override
     public Transaction apply(final List<EspialRecord> records) {
-        Sponge.server().scheduler().submit(Task.builder()
-                .execute(() -> records.forEach(EspialRecord::restore))
+        TransactionExecutor.run(records, EspialRecord::restore);
+
+        Sponge.asyncScheduler().submit(Task.builder()
+                .execute(() -> {
+                    try {
+                        Espial.getInstance().getDatabase().batchSetRolledBack(records, false);
+                    } catch (SQLException e) {
+                        Espial.getInstance().getLogger().error("Unable to batch set restore on records", e);
+                    }
+                })
                 .plugin(Espial.getInstance().getContainer())
                 .build());
 

@@ -3,11 +3,14 @@ package net.slimediamond.espial.sponge.record;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -38,24 +41,33 @@ public class SpongeBlockRecord extends SpongeEspialRecord implements EspialBlock
         } else {
             getBlockSnapshot().restore(true, BlockChangeFlags.NONE);
         }
-        this.setRolledBack(true);
+//        Sponge.asyncScheduler()
+//                .submit(Task.builder()
+//                        .execute(() -> this.setRolledBack(true))
+//                        .plugin(Espial.getInstance().getContainer())
+//                        .build());
     }
 
     @Override
     public void restore() {
-        // TODO: Handle blocks which aren't replaced properly better
+        // TODO: Handle blocks which aren't replaced properly better (rollback/restore blocks)
         if (getEvent().equals(EspialEvents.PLACE.get())) {
             getBlockSnapshot().restore(true, BlockChangeFlags.NONE);
         } else {
             getLocation().setBlock(BlockTypes.AIR.get().defaultState());
         }
-        this.setRolledBack(false);
+//        Sponge.asyncScheduler()
+//                .submit(Task.builder()
+//                        .execute(() -> this.setRolledBack(false))
+//                        .plugin(Espial.getInstance().getContainer())
+//                        .build());
     }
 
-    private BlockSnapshot getBlockSnapshot() {
+    @Override
+    public BlockSnapshot getBlockSnapshot() {
         BlockSnapshot blockSnapshot = blockState.snapshotFor(getLocation());
         if (getExtraData().isPresent()) {
-            blockSnapshot = blockSnapshot.withRawData(getExtraData().get());
+            blockSnapshot = blockSnapshot.withContainer(getExtraData().get());
         }
         return blockSnapshot;
     }

@@ -80,10 +80,14 @@ public class Format {
     }
 
     public static Component detail(final String key, final String value) {
+        return detail(key, Component.text(value));
+    }
+
+    public static Component detail(final String key, final Component value) {
         return Component.text()
                 .append(Component.text(key).color(DETAIL_KEY_COLOR))
                 .append(Component.text(": ").color(DETAIL_VALUE_COLOR))
-                .append(Component.text(value == null ? "null" : value).color(DETAIL_VALUE_COLOR))
+                .append(value == null ? Component.text("null") : value).color(DETAIL_VALUE_COLOR)
                 .build();
     }
 

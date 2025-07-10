@@ -17,7 +17,7 @@ public class RestoreCommand extends TransactionCommand {
         addAlias("restore");
         addAlias("rs");
 
-        addPredicate(EspialRecord::isRolledBack);
+        //addPredicate(EspialRecord::isRolledBack);
     }
 
     @Override

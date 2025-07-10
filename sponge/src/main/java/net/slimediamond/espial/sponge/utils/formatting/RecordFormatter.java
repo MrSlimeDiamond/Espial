@@ -1,6 +1,7 @@
 package net.slimediamond.espial.sponge.utils.formatting;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
@@ -10,13 +11,15 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.Keys;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecordFormatter {
 
@@ -90,8 +93,32 @@ public class RecordFormatter {
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         if (record instanceof EspialBlockRecord blockRecord) {
             builder.appendSpace().append(blockRecord.getBlockState().type().asComponent().color(SPREAD_TARGET_COLOR));
+
+            final List<Component> extraDisplay = new LinkedList<>();
+            // also append sign data if it exists
+            blockRecord.getBlockSnapshot().get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
+                    extraDisplay.addAll(formatSignLines("Front Line ", signText.lines().get())));
+            blockRecord.getBlockSnapshot().get(Keys.SIGN_BACK_TEXT).ifPresent(signText ->
+                    extraDisplay.addAll(formatSignLines("Back Line ", signText.lines().get())));
+
+
+            if (!extraDisplay.isEmpty()) {
+                builder.append(Format.accent(" (...)")
+                        .hoverEvent(HoverEvent.showText(Component.join(JoinConfiguration.newlines(), extraDisplay))));
+            }
+        }
+        if (record.isRolledBack()) {
+            builder.decorate(TextDecoration.STRIKETHROUGH);
         }
         return builder.build();
+    }
+
+    private static List<Component> formatSignLines(final String prefix, final List<Component> lines) {
+        final List<Component> results = new LinkedList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            results.add(Format.detail(prefix + i, lines.get(i)));
+        }
+        return results;
     }
 
 }
