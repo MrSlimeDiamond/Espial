@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 public interface RecordFactory<T extends EspialRecord> {
 
@@ -17,6 +18,6 @@ public interface RecordFactory<T extends EspialRecord> {
      * @param rs The SQL {@link ResultSet} for creation
      * @return Created record
      */
-    T create(@NonNull EspialEvent event, @NotNull ResultSet rs) throws SQLException;
+    CompletableFuture<T> create(@NonNull EspialEvent event, @NotNull ResultSet rs) throws SQLException;
 
 }
