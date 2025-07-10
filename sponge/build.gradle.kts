@@ -35,6 +35,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     compileOnly("org.spongepowered:spongeapi:$spongeDefault")
     compileOnly("org.jetbrains:annotations:26.0.2")
+    compileOnly("com.sk89q.worldedit:worldedit-sponge:7.3.12-SNAPSHOT")
     api(project(":api"))
     api(project(":common"))
 }

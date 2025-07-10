@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -39,10 +41,15 @@ public class HelpCommand extends AbstractCommand {
             parent.getFlags().forEach((flag, description) -> {
                 final boolean optional = flag.associatedParameter().map(Parameter::isOptional).orElse(false);
 
+                final TextColor color = optional ? NamedTextColor.GOLD : NamedTextColor.AQUA;
+
                 header.append(Format.dull(" ("))
                         .append(Component.text(flag.aliases().stream().min(Comparator.comparingInt(String::length)).orElseThrow())
-                                .color(optional ? Format.TITLE_COLOR : Format.ACCENT_COLOR)
-                                .hoverEvent(HoverEvent.showText(description)))
+                                .color(color)
+                                .hoverEvent(HoverEvent.showText(Component.text()
+                                        .append(Component.text(optional ? "Flag" : "Flag - requires value").color(color))
+                                        .appendNewline()
+                                        .append(description))))
                         .append(Format.dull(")"));
             });
         }

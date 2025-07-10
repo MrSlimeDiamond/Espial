@@ -1,4 +1,4 @@
-package net.slimediamond.espial.sponge.query;
+package net.slimediamond.espial.sponge.query.selector;
 
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;

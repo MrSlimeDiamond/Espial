@@ -1,4 +1,4 @@
-package net.slimediamond.espial.sponge.query;
+package net.slimediamond.espial.sponge.query.selector;
 
 import org.spongepowered.math.vector.Vector3i;
 

@@ -40,5 +40,10 @@ public class Parameters {
     public static final Parameter.Value<EspialEvent> EVENT = Parameter.registryElement(new TypeToken<EspialEvent>() {}, EspialRegistryTypes.EVENT, "espial")
             .key("event")
             .build();
-    
+
+    public static final Parameter.Value<Boolean> WORLDEDIT = Parameter.bool()
+            .key("use worldedit")
+            .optional()
+            .build();
+
 }

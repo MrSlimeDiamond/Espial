@@ -8,13 +8,15 @@ import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import net.slimediamond.espial.sponge.commands.subsystem.Parameters;
-import net.slimediamond.espial.sponge.query.RangeSelector;
-import net.slimediamond.espial.sponge.query.Selector;
-import net.slimediamond.espial.sponge.query.Vector3iRange;
+import net.slimediamond.espial.sponge.query.selector.RangeSelector;
+import net.slimediamond.espial.sponge.query.selector.Selector;
+import net.slimediamond.espial.sponge.query.selector.Vector3iRange;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.query.selector.WorldEditSelector;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -23,6 +25,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -32,17 +35,21 @@ import java.util.stream.Stream;
 
 public abstract class RecordResultCommand extends AbstractCommand {
 
-    private List<Predicate<EspialRecord>> predicates = new LinkedList<>();
+    private final List<Predicate<EspialRecord>> predicates = new LinkedList<>();
 
-    private static final Set<Selector> SELECTORS = Set.of(
-            new RangeSelector()
-    );
+    private static final Set<Selector> selectors = new HashSet<>();
+
+    static {
+        selectors.add(new RangeSelector());
+        Sponge.pluginManager().plugin("worldedit")
+                .ifPresent(worldedit -> selectors.add(new WorldEditSelector()));
+    }
 
     public RecordResultCommand(final @Nullable Permission permission,
                                final @NotNull Component description) {
         super(permission, description);
 
-        SELECTORS.forEach(selector -> addFlag(selector.getFlag(), selector.getDescription()));
+        selectors.forEach(selector -> addFlag(selector.getFlag(), selector.getDescription()));
         addFlag(Flags.BEFORE, Component.text("Query for logs before a certain time"));
         addFlag(Flags.AFTER, Component.text("Query for logs after a specific time"));
         addFlag(Flags.PLAYER, Component.text("Filter for a specific player"));
@@ -55,7 +62,7 @@ public abstract class RecordResultCommand extends AbstractCommand {
         final ServerLocation location = context.cause().location()
                 .orElseThrow(() -> new CommandException(Component.text("You must have a location to use this command")));
         Vector3iRange selection = null;
-        for (final Selector selector : SELECTORS) {
+        for (final Selector selector : selectors) {
             if (context.hasFlag(selector.getFlag())) {
                 if (selection != null) {
                     return CommandResult.error(Format.error("Provide only one selector!"));
