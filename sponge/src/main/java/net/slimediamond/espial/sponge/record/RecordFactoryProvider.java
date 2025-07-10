@@ -26,7 +26,7 @@ public class RecordFactoryProvider {
                 .filter(e -> e.getId() == type)
                 .findFirst().orElseThrow(() ->
                         new IllegalStateException("No Espial event associated with event ID '" + type + "'"));
-        return (T) RECORD_TYPES.get(event).get().create(event, rs).join();
+        return (T) RECORD_TYPES.get(event).get().create(event, rs);
     }
 
 }
