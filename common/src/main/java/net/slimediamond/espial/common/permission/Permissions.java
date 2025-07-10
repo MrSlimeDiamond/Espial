@@ -26,4 +26,12 @@ public class Permissions {
             "espial.command.nearbysigns"
     );
 
+    public static final Permission QUEUE = Permission.of(
+            "espial.command.queue"
+    );
+
+    public static final Permission QUEUE_FLUSH = Permission.of(
+            "espial.command.queue.flush"
+    );
+
 }

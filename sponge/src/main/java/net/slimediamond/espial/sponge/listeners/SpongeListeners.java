@@ -12,6 +12,7 @@ import org.enginehub.piston.CommandMetadata;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
+import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -21,6 +22,7 @@ import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.plugin.PluginContainer;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +31,8 @@ public class SpongeListeners {
 
     @Listener
     public void onBlockChange(final ChangeBlockEvent.All event) {
-        if (event.cause().containsType(CommandMetadata.class)) {
+        if (event.cause().containsType(CommandMapping.class)
+                || event.cause().containsType(PluginContainer.class)) {
             return;
         }
         final Optional<Entity> optionalCause = event.cause().first(Entity.class);

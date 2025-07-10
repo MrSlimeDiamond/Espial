@@ -46,4 +46,9 @@ public class Parameters {
             .optional()
             .build();
 
+    public static final Parameter.Value<Boolean> YES = Parameter.bool()
+            .key("confirm")
+            .optional()
+            .build();
+
 }
