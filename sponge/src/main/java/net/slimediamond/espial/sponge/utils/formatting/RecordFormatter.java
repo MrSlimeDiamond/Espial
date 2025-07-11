@@ -80,7 +80,6 @@ public class RecordFormatter {
 
     public static Component format(@NotNull final EspialRecord record) {
         final TextComponent.Builder builder = Component.text();
-        System.out.println(record.getEntityType());
         Component name = Component.text("#")
                 .append(record.getEntityType().asComponent())
                 .decorate(TextDecoration.ITALIC);

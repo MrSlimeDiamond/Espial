@@ -27,8 +27,39 @@ public class EspialRegistryLoader {
                         .id(1)
                         .description("Place a block")
                         .verb("placed")
+                        .build(),
+                EspialEvents.DECAY.location(), EspialEvent.builder()
+                        .name("Decay")
+                        .id(3)
+                        .description("Natural block decay")
+                        .verb("decayed")
+                        .build(),
+                EspialEvents.GROWTH.location(), EspialEvent.builder()
+                        .name("Growth")
+                        .id(4)
+                        .description("Growth of a block")
+                        .verb("grew")
+                        .build(),
+                EspialEvents.LIQUID_DECAY.location(), EspialEvent.builder()
+                        .name("Liquid Decay")
+                        .id(5)
+                        .description("Liquid Decay")
+                        .verb("decayed")
+                        .build(),
+                EspialEvents.MODIFY.location(), EspialEvent.builder()
+                        .name("Modify")
+                        .id(6)
+                        .description("Modify the state of a block")
+                        .verb("modified")
+                        .build(),
+                EspialEvents.INTERACT.location(), EspialEvent.builder()
+                        .name("Interact")
+                        .id(7)
+                        .description("Secondarily interact with a block")
+                        .verb("used")
                         .build()
         ));
+
         event.register(EspialRegistryTypes.TRANSACTION_TYPE.location(), false, () -> Map.of(
                 TransactionTypes.ROLLBACK.location(), new RollbackTransactionType(),
                 TransactionTypes.RESTORE.location(), new RestoreTransactionType()

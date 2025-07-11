@@ -15,7 +15,11 @@ public class RecordFactoryProvider {
 
     private static final Map<EspialEvent, Supplier<RecordFactory<? extends EspialRecord>>> RECORD_TYPES = Map.of(
             EspialEvents.BREAK.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.PLACE.get(), SpongeBlockRecordFactory::new
+            EspialEvents.PLACE.get(), SpongeBlockRecordFactory::new,
+            EspialEvents.DECAY.get(), SpongeBlockRecordFactory::new,
+            EspialEvents.LIQUID_DECAY.get(), SpongeBlockRecordFactory::new,
+            EspialEvents.MODIFY.get(), SpongeBlockRecordFactory::new,
+            EspialEvents.INTERACT.get(), SpongeBlockRecordFactory::new
     );
 
     @SuppressWarnings("unchecked")
