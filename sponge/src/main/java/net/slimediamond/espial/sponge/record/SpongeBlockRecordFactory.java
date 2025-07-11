@@ -33,7 +33,7 @@ public final class SpongeBlockRecordFactory implements RecordFactory<EspialBlock
         }
 
         final EntityType<?> entityType = EntityTypes.registry()
-                .value(ResourceKey.resolve(rs.getString("entity_type")));
+                .value(ResourceKey.resolve(rs.getString("entity_type_key")));
         final ResourceKey worldKey = ResourceKey.resolve(rs.getString("world_key"));
         final int x = rs.getInt("x");
         final int y = rs.getInt("y");

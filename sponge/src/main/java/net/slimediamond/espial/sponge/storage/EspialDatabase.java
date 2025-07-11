@@ -251,13 +251,15 @@ public final class EspialDatabase {
                         "block_extra.replacement AS extra_replacement, " +
                         "original.state AS state_original, " +
                         "replacement.state AS state_replacement, " +
-                        "worlds.resource_key AS world_key " +
+                        "worlds.resource_key AS world_key, " +
+                        "entity_types.resource_key AS entity_type_key " +
                         "FROM records " +
                         "LEFT JOIN block_extra ON records.id = block_extra.record_id " +
                         "LEFT JOIN block_state ON records.id = block_state.record_id " +
                         "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
                         "LEFT JOIN block_states AS original ON bs.original = original.id " +
                         "LEFT JOIN block_states AS replacement ON bs.replacement = replacement.id " +
+                        "JOIN entity_types ON records.entity_type = entity_types.id " +
                         "JOIN worlds ON records.world = worlds.id " +
                         "WHERE worlds.resource_key = ? " +
                         "AND x BETWEEN ? AND ? " +

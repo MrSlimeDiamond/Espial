@@ -80,19 +80,17 @@ public class RecordFormatter {
 
     public static Component format(@NotNull final EspialRecord record) {
         final TextComponent.Builder builder = Component.text();
-        if (record.getUser().isPresent()) {
-            final UUID uuid = record.getUser().get();
-            if (Sponge.server().userManager().exists(uuid)) {
-                builder.append(Component.text(Sponge.server().userManager().loadOrCreate(uuid).join().name())
-                        .color(NAME_COLOR));
-            } else {
-                builder.append(Component.text("Unknown User")
-                        .hoverEvent(HoverEvent.showText(Format.accent(uuid.toString())))
-                        .color(NAME_COLOR));
-            }
-        } else {
-            builder.append(Component.text("?").color(NAME_COLOR));
+        System.out.println(record.getEntityType());
+        Component name = Component.text("#")
+                .append(record.getEntityType().asComponent())
+                .decorate(TextDecoration.ITALIC);
+
+        if (record.getUser().isPresent() && Sponge.server().userManager().exists(record.getUser().get())) {
+            // blocking due to .join() doesn't matter here as we should be on another thread regardless
+            name = Component.text(Sponge.server().userManager().loadOrCreate(record.getUser().get()).join().name());
         }
+        builder.append(name.color(NAME_COLOR));
+
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         if (record instanceof EspialBlockRecord blockRecord) {
             builder.appendSpace().append(getTarget(blockRecord).state().type().asComponent().color(SPREAD_TARGET_COLOR));
