@@ -49,7 +49,7 @@ public class EspialRegistryLoader {
                 EspialEvents.MODIFY.location(), EspialEvent.builder()
                         .name("Modify")
                         .id(6)
-                        .description("Modify the state of a block")
+                        .description("Modify the internal state or data of a block")
                         .verb("modified")
                         .build(),
                 EspialEvents.INTERACT.location(), EspialEvent.builder()
@@ -57,6 +57,12 @@ public class EspialRegistryLoader {
                         .id(7)
                         .description("Secondarily interact with a block")
                         .verb("used")
+                        .build(),
+                EspialEvents.HANGING_DEATH.location(), EspialEvent.builder()
+                        .name("Hanging Death")
+                        .id(8)
+                        .description("Kill an entity which is 'Hanging' (e.g. paintings or item frames)")
+                        .verb("killed")
                         .build()
         ));
 

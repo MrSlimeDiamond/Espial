@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -40,6 +41,15 @@ public class SpongeBlockRecord extends SpongeEspialRecord implements EspialBlock
     @Override
     public BlockSnapshot getOriginalBlock() {
         return original;
+    }
+
+    @Override
+    public String getTarget() {
+        if (getEvent().equals(EspialEvents.PLACE.get())
+                || getEvent().equals(EspialEvents.GROWTH.get())) {
+            return getReplacementBlock().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
+        }
+        return getOriginalBlock().state().type().key(RegistryTypes.BLOCK_TYPE).formatted();
     }
 
     @Override

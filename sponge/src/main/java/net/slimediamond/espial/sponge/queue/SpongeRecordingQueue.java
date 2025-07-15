@@ -1,11 +1,8 @@
 package net.slimediamond.espial.sponge.queue;
 
 import net.slimediamond.espial.sponge.Espial;
-import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -19,18 +16,14 @@ public class SpongeRecordingQueue extends Thread {
         while (running) {
             try {
                 final SpongeEspialRecord record = queue.take();
-                if (record instanceof SpongeBlockRecord blockRecord) {
-                    final int id = Espial.getInstance().getDatabase().submit(blockRecord);
-                    blockRecord.setId(id);
-                }
-                // we should have handled invalid records via EspialService, so no need
-                // to do anything at this stage
+                final int id = Espial.getInstance().getDatabase().submit(record);
+                record.setId(id);
             } catch (final InterruptedException e) {
                 // TODO: Send them all to the database immediately
                 Thread.currentThread().interrupt();
                 break;
-            } catch (final SQLException | IOException e) {
-                Espial.getInstance().getLogger().error("Unable to insert EspialRecord", e);
+            } catch (final Throwable t) {
+                Espial.getInstance().getLogger().error("Unable to insert EspialRecord", t);
             }
         }
     }

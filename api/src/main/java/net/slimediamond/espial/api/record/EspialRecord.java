@@ -38,6 +38,14 @@ public interface EspialRecord {
     Optional<UUID> getUser();
 
     /**
+     * Get the "target" of the record, for example the block broken
+     * or placed, the entity attacked, etc.
+     *
+     * @return Record target
+     */
+    String getTarget();
+
+    /**
      * Get the entity type which triggered this
      *
      * @return Entity type cause
@@ -75,7 +83,7 @@ public interface EspialRecord {
      */
     boolean isRolledBack();
 
-    interface Builder extends org.spongepowered.api.util.Builder<EspialRecord, Builder> {
+    interface Builder<T extends Builder<T>> extends org.spongepowered.api.util.Builder<EspialRecord, T> {
 
         /**
          * Sets the date the action happened at
@@ -85,7 +93,7 @@ public interface EspialRecord {
          * @param date The date of the event
          * @return This builder, for chaining
          */
-        Builder date(@NotNull Date date);
+        T date(@NotNull Date date);
 
         /**
          * Sets the user which caused the action
@@ -93,7 +101,7 @@ public interface EspialRecord {
          * @param user The user cauase of the action
          * @return This builder, for chaining
          */
-        Builder user(@NotNull UUID user);
+        T user(@NotNull UUID user);
 
         /**
          * Sets the entity type which caused the action
@@ -101,7 +109,7 @@ public interface EspialRecord {
          * @param entityType The entity type which caused the action
          * @return This builder, for chaining
          */
-        Builder entityType(@NotNull EntityType<?> entityType);
+        T entityType(@NotNull EntityType<?> entityType);
 
         /**
          * Sets the location the action happened at
@@ -111,7 +119,7 @@ public interface EspialRecord {
          * @param location The location of the action
          * @return This builder, for chaining
          */
-        Builder location(@NotNull ServerLocation location);
+        T location(@NotNull ServerLocation location);
 
         /**
          * Sets the event associated with the action
@@ -121,7 +129,7 @@ public interface EspialRecord {
          * @param event The event
          * @return This builder, for chaining
          */
-        Builder event(@NotNull EspialEvent event);
+        T event(@NotNull EspialEvent event);
 
     }
 

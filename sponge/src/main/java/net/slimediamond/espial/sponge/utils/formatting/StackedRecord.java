@@ -23,11 +23,7 @@ public class StackedRecord {
         this.entityType = record.getEntityType();
         this.event = record.getEvent();
         this.rolledBack = record.isRolledBack();
-        if (record instanceof EspialBlockRecord blockRecord) {
-            this.target = RecordFormatter.getTarget(blockRecord).state().type().asComponent();
-        } else {
-            this.target = Component.empty();
-        }
+        this.target = RecordFormatter.getTarget(record);
     }
 
     public UUID getUser() {

@@ -4,6 +4,7 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
@@ -13,9 +14,12 @@ import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.service.pagination.PaginationList;
@@ -76,7 +80,7 @@ public class SpongeListeners {
             }
             final EspialEvent espialEvent = eventOptional.get();
 
-            final EspialRecord.Builder builder = EspialBlockRecord.builder()
+            final EspialBlockRecord.Builder builder = EspialBlockRecord.builder()
                     .original(original)
                     .replacement(replacement)
                     .entityType(cause.type())
@@ -85,6 +89,23 @@ public class SpongeListeners {
 
             playerOptional.ifPresent(player -> builder.user(player.uniqueId()));
 
+            Espial.getInstance().getEspialService().submit(builder.build());
+        }
+    }
+
+    @Listener
+    public void onEntityDestruct(final DestructEntityEvent event, @First final Entity cause) {
+        final Entity entity = event.entity();
+        if (entity instanceof final Hanging hanging) {
+            final EspialHangingDeathRecord.Builder builder = EspialHangingDeathRecord.builder()
+                    .entityType(cause.type())
+                    .targetEntityType(hanging.type())
+                    .event(EspialEvents.HANGING_DEATH.get())
+                    .location(entity.serverLocation())
+                    .extraData(hanging.toContainer());
+            if (cause instanceof final ServerPlayer player) {
+                builder.user(player.uniqueId());
+            }
             Espial.getInstance().getEspialService().submit(builder.build());
         }
     }

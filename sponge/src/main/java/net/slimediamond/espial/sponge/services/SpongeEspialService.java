@@ -8,6 +8,7 @@ import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionManager;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
@@ -18,17 +19,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class SpongeEspialService implements EspialService {
+public final class SpongeEspialService implements EspialService {
 
     private final TransactionManager transactionManager = new EspialTransactionManager();
     private final List<UUID> inspectingUsers = new ArrayList<>();
 
     @Override
     public void submit(@NotNull final EspialRecord record) {
-        assert record instanceof SpongeEspialRecord : "Records submitted to the Sponge Espial " +
-                "service should be Sponge Espial records.";
-        if (record instanceof SpongeBlockRecord blockRecord) {
-            Espial.getInstance().getRecordingQueue().getQueue().add(blockRecord);
+        if (!(record instanceof final SpongeEspialRecord spongeRecord)) {
+            throw new IllegalArgumentException("Non-Sponge EspialRecord submitted to SpongeEspialService");
+        }
+        if (record instanceof SpongeBlockRecord
+                || record instanceof SpongeHangingDeathRecord) {
+            Espial.getInstance().getRecordingQueue().getQueue().add(spongeRecord);
             return;
         }
         throw new IllegalArgumentException("Record type " + record.getClass().getName() + " is not supported");

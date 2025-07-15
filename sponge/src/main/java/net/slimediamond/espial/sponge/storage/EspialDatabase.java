@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
@@ -71,7 +72,7 @@ public final class EspialDatabase {
             final String blockStatesCreation;
             final String entityTypesCreation;
             final String worldsCreation;
-            final String extraCreation = "CREATE TABLE IF NOT EXISTS block_extra (" +
+            final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
                     "record_id INT NOT NULL, " +
                     "original TEXT, " +
                     "replacement TEXT, " +
@@ -143,13 +144,13 @@ public final class EspialDatabase {
     }
 
     /**
-     * Submit a {@link EspialBlockRecord} to the database.
+     * Submit a {@link EspialRecord} to the database.
      *
      * @param record The record to insert
      * @return The ID primary key of the inserted record
      * @throws SQLException
      */
-    public int submit(@NotNull final EspialBlockRecord record) throws SQLException, IOException {
+    public int submit(@NotNull final EspialRecord record) throws SQLException, IOException {
         try (final Connection conn = getConn()) {
             final PreparedStatement ps = conn.prepareStatement("INSERT INTO records "
                     + " (type," +
@@ -174,13 +175,6 @@ public final class EspialDatabase {
                 ps.setNull(3, Types.VARCHAR);
             }
 
-            final BlockSnapshot target;
-            if (record.getEvent().equals(EspialEvents.PLACE.get())) {
-                target = record.getReplacementBlock();
-            } else {
-                target = record.getOriginalBlock();
-            }
-
             // this makes stuff slower, but it's much more efficient for storage
             final int entityTypeId = getOrCreateId(conn, "entity_types", "resource_key",
                     record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
@@ -188,7 +182,7 @@ public final class EspialDatabase {
                     record.getLocation().worldKey().formatted());
 
             ps.setInt(4, entityTypeId);
-            ps.setString(5, target.state().type().key(RegistryTypes.BLOCK_TYPE).formatted());
+            ps.setString(5, record.getTarget());
             ps.setInt(6, worldId);
             ps.setInt(7, record.getLocation().blockPosition().x());
             ps.setInt(8, record.getLocation().blockPosition().y());
@@ -206,35 +200,47 @@ public final class EspialDatabase {
             if (rs.next()) {
                 final int id = rs.getInt(1);
 
-                // insert into block_state
-                final int originalState = getOrCreateId(conn, "block_states", "state",
-                        record.getOriginalBlock().state().asString());
-                final int replacementState = getOrCreateId(conn, "block_states", "state",
-                        record.getReplacementBlock().state().asString());
-
-                final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
+                final DataQuery unsafeData = DataQuery.of("UnsafeData");
+                final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO extra (record_id, original, replacement) " +
                         "VALUES (?, ?, ?)");
 
-                insertState.setInt(1, id);
-                insertState.setInt(2, originalState);
-                insertState.setInt(3, replacementState);
-                insertState.execute();
+                if (record instanceof final EspialBlockRecord blockRecord) {
+                    // insert into block_state
+                    final int originalState = getOrCreateId(conn, "block_states", "state",
+                            blockRecord.getOriginalBlock().state().asString());
+                    final int replacementState = getOrCreateId(conn, "block_states", "state",
+                            blockRecord.getReplacementBlock().state().asString());
 
-                final DataQuery unsafeData = DataQuery.of("UnsafeData");
-                if (record.getOriginalBlock().toContainer().contains(unsafeData)
-                    || record.getReplacementBlock().toContainer().contains(unsafeData)) {
-                    final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO block_extra (record_id, original, replacement) " +
+                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
                             "VALUES (?, ?, ?)");
-                    insertExtra.setInt(1, id);
-                    if (record.getOriginalBlock().toContainer().contains(unsafeData)) {
+
+                    insertState.setInt(1, id);
+                    insertState.setInt(2, originalState);
+                    insertState.setInt(3, replacementState);
+                    insertState.execute();
+
+                    if (blockRecord.getOriginalBlock().toContainer().contains(unsafeData)
+                            || blockRecord.getReplacementBlock().toContainer().contains(unsafeData)) {
+                        insertExtra.setInt(1, id);
+                        if (blockRecord.getOriginalBlock().toContainer().contains(unsafeData)) {
+                            insertExtra.setString(2, DataFormats.JSON.get()
+                                    .write(blockRecord.getOriginalBlock().toContainer()));
+                        }
+                        if (blockRecord.getReplacementBlock().toContainer().contains(unsafeData)) {
+                            insertExtra.setString(3, DataFormats.JSON.get()
+                                    .write(blockRecord.getReplacementBlock().toContainer()));
+                        }
+                        insertExtra.execute();
+                    }
+                } else if (record instanceof final EspialHangingDeathRecord hangingDeathRecord) {
+                    if (hangingDeathRecord.getExtraData().isPresent()
+                            && hangingDeathRecord.getExtraData().get().contains(unsafeData)) {
+                        insertExtra.setInt(1, id);
                         insertExtra.setString(2, DataFormats.JSON.get()
-                                .write(record.getOriginalBlock().toContainer()));
+                                .write(hangingDeathRecord.getExtraData().get()));
+                        insertExtra.setNull(3, Types.CHAR);
+                        insertExtra.execute();
                     }
-                    if (record.getReplacementBlock().toContainer().contains(unsafeData)) {
-                        insertExtra.setString(3, DataFormats.JSON.get()
-                                .write(record.getReplacementBlock().toContainer()));
-                    }
-                    insertExtra.execute();
                 }
 
                 return id;
@@ -247,14 +253,14 @@ public final class EspialDatabase {
         final StringBuilder sql = new StringBuilder(
                 "SELECT " +
                         "records.*, " +
-                        "block_extra.original AS extra_original, " +
-                        "block_extra.replacement AS extra_replacement, " +
+                        "extra.original AS extra_original, " +
+                        "extra.replacement AS extra_replacement, " +
                         "original.state AS state_original, " +
                         "replacement.state AS state_replacement, " +
                         "worlds.resource_key AS world_key, " +
                         "entity_types.resource_key AS entity_type_key " +
                         "FROM records " +
-                        "LEFT JOIN block_extra ON records.id = block_extra.record_id " +
+                        "LEFT JOIN extra ON records.id = extra.record_id " +
                         "LEFT JOIN block_state ON records.id = block_state.record_id " +
                         "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
                         "LEFT JOIN block_states AS original ON bs.original = original.id " +

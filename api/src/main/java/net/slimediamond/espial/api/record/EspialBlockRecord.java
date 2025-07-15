@@ -25,7 +25,7 @@ public interface EspialBlockRecord extends EspialRecord {
         return Sponge.game().builderProvider().provide(Builder.class);
     }
 
-    interface Builder extends EspialRecord.Builder {
+    interface Builder extends EspialRecord.Builder<Builder> {
 
         /**
          * Set the block snapshot for the original
