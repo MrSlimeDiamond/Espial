@@ -122,7 +122,8 @@ public class RecordFormatter {
     }
 
     public static BlockSnapshot getTarget(final EspialBlockRecord record) {
-        if (record.getEvent().equals(EspialEvents.PLACE.get())) {
+        if (record.getEvent().equals(EspialEvents.PLACE.get())
+                || record.getEvent().equals(EspialEvents.GROWTH.get())) {
             return record.getReplacementBlock();
         }
         return record.getOriginalBlock();

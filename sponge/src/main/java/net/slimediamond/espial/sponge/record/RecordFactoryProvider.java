@@ -17,6 +17,7 @@ public class RecordFactoryProvider {
             EspialEvents.BREAK.get(), SpongeBlockRecordFactory::new,
             EspialEvents.PLACE.get(), SpongeBlockRecordFactory::new,
             EspialEvents.DECAY.get(), SpongeBlockRecordFactory::new,
+            EspialEvents.GROWTH.get(), SpongeBlockRecordFactory::new,
             EspialEvents.LIQUID_DECAY.get(), SpongeBlockRecordFactory::new,
             EspialEvents.MODIFY.get(), SpongeBlockRecordFactory::new,
             EspialEvents.INTERACT.get(), SpongeBlockRecordFactory::new
