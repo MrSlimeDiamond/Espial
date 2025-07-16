@@ -1,6 +1,11 @@
 # Espial
 Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks, restores, and much more.
 
+## v2 warning
+Espial version 2 is **not compatible** with below versions. The entire database structure has changed.
+
+Sorry for this inconvenience.
+
 ## Requirements
 * Java 21
 * SpongeAPI 12 or higher (Minecraft 1.21+)
@@ -8,7 +13,7 @@ Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks
 ## Command Usage
 * **/espial | /es**
   * Permission: espial.command.base
-  * Base command. If no subcommand is specified, defaults to an info screen (**/espial info**)
+  * Base command. If no subcommand is specified, defaults to an info screen
   * **lookup | l**
     * Permission: espial.command.lookup
     * Look up a block. Defaults to the block you are looking at.
