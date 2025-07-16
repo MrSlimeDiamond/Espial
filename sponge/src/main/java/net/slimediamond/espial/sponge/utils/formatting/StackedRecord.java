@@ -13,7 +13,7 @@ import java.util.UUID;
 public class StackedRecord {
 
     private final UUID user;
-    private final EntityType entityType;
+    private final EntityType<?> entityType;
     private final EspialEvent event;
     private final Component target;
     private final boolean rolledBack;
@@ -30,7 +30,7 @@ public class StackedRecord {
         return user;
     }
 
-    public EntityType getEntityType() {
+    public EntityType<?> getEntityType() {
         return entityType;
     }
 
