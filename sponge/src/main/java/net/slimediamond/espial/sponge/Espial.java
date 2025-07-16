@@ -108,7 +108,8 @@ public class Espial {
     @Listener
     public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
         RootCommand rootCommand = new RootCommand();
-        event.register(this.container, rootCommand.build(), rootCommand.getAliases().getFirst(), rootCommand.getAliases().toArray(new String[0]));
+        event.register(this.container, rootCommand.build(), rootCommand.getAliases().getFirst(),
+                rootCommand.getAliases().toArray(new String[0]));
     }
 
     @Listener

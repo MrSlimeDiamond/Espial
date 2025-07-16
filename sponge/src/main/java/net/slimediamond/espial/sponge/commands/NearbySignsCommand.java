@@ -5,7 +5,6 @@ import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.common.permission.Permissions;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.registry.RegistryTypes;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,10 +15,9 @@ public class NearbySignsCommand extends RecordResultCommand {
         super(Permissions.NEARBY_SIGNS, Component.text("Lookup signs near you"));
 
         addAlias("nearbysigns");
+
         addPredicate(record -> record instanceof EspialBlockRecord);
-        // FIXME
-        //addPredicate(record -> ((EspialBlockRecord)record).getOriginalBlock()
-                //.state().type().key(RegistryTypes.BLOCK_TYPE).formatted().contains("sign"));
+        addPredicate(record -> record.getTarget().contains("sign"));
     }
 
     @Override
