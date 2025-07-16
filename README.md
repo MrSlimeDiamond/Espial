@@ -18,7 +18,7 @@ Sorry for this inconvenience.
     * Permission: espial.command.lookup
     * Look up a block. Defaults to the block you are looking at.
     * Flags:
-      *  *[--spread | -s]* - Do not group outputs
+      *  *[-s]* - Do not group outputs
       * Everything from query command flags (below).
   * **near**
     * Permission: espial.command.lookup
@@ -49,7 +49,7 @@ Sorry for this inconvenience.
     * Lookup nearby signs
     * Can also be used as a base command (**/nearbysigns**)
     * Flags: 
-      * *[--range | -r \<range\>]* - Lookup a cuboid range
+      * *[-r \<range\>]* - Lookup a cuboid range
   * **isthisblockmine | isthismyblock | myblock**
     * Permission: espial.command.myblock
     * Check if a block was placed by you
@@ -60,12 +60,15 @@ Sorry for this inconvenience.
     * Can also be used as a base command (**/whoplacedthis**)
 
 ## Query command flags
-| Aliases                            | Description                                 |
-|------------------------------------|---------------------------------------------|
-| *[--worldedit \| -w]*              | Use your WorldEdit selection                |
-| *[--range \| -r \<range\>]*        | Lookup a cuboid around you                  |
-| *[--player \| -p \<player name\>]* | Only look at actions from a specific player |
-| *[--block \| -b \<block id\>]*     | Only look at a specific block type          |
+| Usage                 | Description                                                             |
+|-----------------------|-------------------------------------------------------------------------|
+| `-w`                  | Use your WorldEdit selection                                            |
+| `-r <range>`          | Lookup a cuboid around you                                              |
+| `-p <player>`         | Only look at actions from a specific **player**                         |
+| `-b <block type>`     | Only look at a specific **block type**                                  |
+| `-e <event>`          | Specify a certain **Espial event** to filter for                        |
+| `-t <duration>`       | Query for logs **after** a specific date. Specified in duration format  |
+| `--before <duration>` | Query for logs **before** a specific date. Specified in duration format |
 
 ## Server admin usage
 > Espial only supports SpongeAPI 12+
@@ -92,10 +95,10 @@ The following tools are required
 #### General compile
 Use `gradle build` and find the jars in `build/libs` (not in the submodules)
 
-| Pattern                   | Description                  |
-|---------------------------|------------------------------|
-| `build/libs/espial-api-*` | API jar files                |
-| `build/libs/espial-*.jar` | SpongeAPI jar files          |
+| Pattern                          | Description                  |
+|----------------------------------|------------------------------|
+| `api/build/libs/espial-api-*`    | API jar files                |
+| `sponge/build/libs/espial-*.jar` | SpongeAPI jar files          |
 
 Other jar files are not relevant.
 
@@ -104,6 +107,8 @@ You may use `gradle :submodule:build` to get a specific submodule's file. For ex
 
 ### API usage
 There is an API available (which currently is not very well documented). With Gradle, it can be imported with:
+
+**Gradle (Groovy)**
 ```groovy
 repositories {
   maven {
@@ -116,6 +121,19 @@ repositories {
   }
 }
 ```
+
+**Gradle (Kotlin)**
+```kotlin
+repositories {
+    maven("https://repo.zenoc.net/repository")
+}
+
+dependencies {
+    compileOnly("net.slimediamond:espial:{version}")
+}
+```
+
+Replace `{version}` with the desired version.
 
 ## Contact
 * Discord: `@slimediamond`
