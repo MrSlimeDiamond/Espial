@@ -16,20 +16,19 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 public class RecordFactoryProvider {
 
-    private static final Map<EspialEvent, Supplier<RecordFactory<? extends EspialRecord>>> RECORD_TYPES = Map.of(
-            EspialEvents.BREAK.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.PLACE.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.DECAY.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.GROWTH.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.LIQUID_DECAY.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.MODIFY.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.INTERACT.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.HANGING_DEATH.get(), SpongeHangingDeathRecordFactory::new,
-            EspialEvents.SIGN_MODIFY.get(), SpongeSignModifyRecordFactory::new
+    private static final Map<EspialEvent, RecordFactory<? extends EspialRecord>> RECORD_TYPES = Map.of(
+            EspialEvents.BREAK.get(),         new SpongeBlockRecordFactory(),
+            EspialEvents.PLACE.get(),         new SpongeBlockRecordFactory(),
+            EspialEvents.DECAY.get(),         new SpongeBlockRecordFactory(),
+            EspialEvents.GROWTH.get(),        new SpongeBlockRecordFactory(),
+            EspialEvents.LIQUID_DECAY.get(),  new SpongeBlockRecordFactory(),
+            EspialEvents.MODIFY.get(),        new SpongeBlockRecordFactory(),
+            EspialEvents.INTERACT.get(),      new SpongeBlockRecordFactory(),
+            EspialEvents.HANGING_DEATH.get(), new SpongeHangingDeathRecordFactory(),
+            EspialEvents.SIGN_MODIFY.get(),   new SpongeSignModifyRecordFactory()
     );
 
     @SuppressWarnings("unchecked")
@@ -59,7 +58,7 @@ public class RecordFactoryProvider {
         final ServerLocation location = ServerLocation.of(worldKey, Vector3i.from(x, y, z));
         final boolean rolledBack = rs.getBoolean("rolled_back");
 
-        return (T) RECORD_TYPES.get(event).get().create(event, rs, id, date, user, entityType, location, rolledBack);
+        return (T) RECORD_TYPES.get(event).create(event, rs, id, date, user, entityType, location, rolledBack);
     }
 
 }
