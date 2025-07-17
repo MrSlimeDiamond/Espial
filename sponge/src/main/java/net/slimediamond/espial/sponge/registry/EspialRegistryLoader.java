@@ -63,6 +63,12 @@ public class EspialRegistryLoader {
                         .id(8)
                         .description("Kill an entity which is 'Hanging' (e.g. paintings or item frames)")
                         .verb("killed")
+                        .build(),
+                EspialEvents.SIGN_MODIFY.location(), EspialEvent.builder()
+                        .name("Sign Modification")
+                        .id(9)
+                        .description("Modify the contents of a sign")
+                        .verb("modified")
                         .build()
         ));
 

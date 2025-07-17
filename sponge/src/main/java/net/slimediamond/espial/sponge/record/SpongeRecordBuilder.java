@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @SuppressWarnings("unchecked")
-public abstract class SpongeRecordBuilder<T extends EspialRecord, B extends EspialRecord.Builder<B>>
+public abstract class SpongeRecordBuilder<B extends EspialRecord.Builder<B>>
         implements EspialRecord.Builder<B> {
 
     protected Date date = new Date();

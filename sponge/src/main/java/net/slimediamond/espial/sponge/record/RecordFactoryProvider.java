@@ -28,7 +28,8 @@ public class RecordFactoryProvider {
             EspialEvents.LIQUID_DECAY.get(), SpongeBlockRecordFactory::new,
             EspialEvents.MODIFY.get(), SpongeBlockRecordFactory::new,
             EspialEvents.INTERACT.get(), SpongeBlockRecordFactory::new,
-            EspialEvents.HANGING_DEATH.get(), SpongeHangingDeathRecordFactory::new
+            EspialEvents.HANGING_DEATH.get(), SpongeHangingDeathRecordFactory::new,
+            EspialEvents.SIGN_MODIFY.get(), SpongeSignModifyRecordFactory::new
     );
 
     @SuppressWarnings("unchecked")

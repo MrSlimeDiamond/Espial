@@ -9,6 +9,7 @@ import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
+import net.slimediamond.espial.sponge.record.SpongeSignModifyRecord;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionManager;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
@@ -30,7 +31,8 @@ public final class SpongeEspialService implements EspialService {
             throw new IllegalArgumentException("Non-Sponge EspialRecord submitted to SpongeEspialService");
         }
         if (record instanceof SpongeBlockRecord
-                || record instanceof SpongeHangingDeathRecord) {
+                || record instanceof SpongeHangingDeathRecord
+                || record instanceof SpongeSignModifyRecord) {
             Espial.getInstance().getRecordingQueue().getQueue().add(spongeRecord);
             return;
         }

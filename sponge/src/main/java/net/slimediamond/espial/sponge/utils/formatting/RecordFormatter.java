@@ -10,6 +10,7 @@ import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.record.EspialSignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
@@ -131,6 +132,8 @@ public class RecordFormatter {
             return blockRecord.getOriginalBlock().state().type().asComponent();
         } else if (record instanceof final EspialHangingDeathRecord hangingDeathRecord) {
             return hangingDeathRecord.getTargetEntityType().asComponent();
+        } else if (record instanceof final EspialSignModifyRecord signModifyRecord) {
+            return signModifyRecord.getBlockState().type().asComponent();
         }
         return Component.text("(unknown)");
     }

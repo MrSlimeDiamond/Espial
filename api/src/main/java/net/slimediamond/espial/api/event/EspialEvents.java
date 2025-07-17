@@ -29,6 +29,8 @@ public final class EspialEvents {
 
     public static final DefaultedRegistryReference<EspialEvent> HANGING_DEATH = EspialEvents.key(EspialResourceKey.espial("hanging_death"));
 
+    public static final DefaultedRegistryReference<EspialEvent> SIGN_MODIFY = EspialEvents.key(EspialResourceKey.espial("sign_modify"));
+
     public static Registry<EspialEvent> registry() {
         return Sponge.game().registry(EspialRegistryTypes.EVENT);
     }

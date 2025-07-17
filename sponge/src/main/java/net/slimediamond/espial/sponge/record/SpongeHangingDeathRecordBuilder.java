@@ -6,7 +6,7 @@ import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.entity.EntityType;
 
 public class SpongeHangingDeathRecordBuilder
-        extends SpongeRecordBuilder<EspialHangingDeathRecord, EspialHangingDeathRecord.Builder>
+        extends SpongeRecordBuilder<EspialHangingDeathRecord.Builder>
         implements EspialHangingDeathRecord.Builder {
 
     private EntityType<?> targetEntityType;

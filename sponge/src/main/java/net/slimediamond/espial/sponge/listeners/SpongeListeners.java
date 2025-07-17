@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.record.EspialSignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
@@ -15,9 +16,11 @@ import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.hanging.Hanging;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.registry.RegistryEntry;
@@ -110,7 +113,20 @@ public class SpongeListeners {
         }
     }
 
-    private static Optional<EspialEvent> getEspialEvent(Operation operation) {
+    @Listener
+    public void onSignChange(final ChangeSignEvent event, @First final Player player) {
+        Espial.getInstance().getEspialService().submit(EspialSignModifyRecord.builder()
+                .originalContents(event.originalText().all())
+                .replacementContents(event.text().all())
+                .entityType(player.type())
+                .user(player.uniqueId())
+                .event(EspialEvents.SIGN_MODIFY.get())
+                .location(event.sign().serverLocation())
+                .blockState(event.sign().block())
+                .build());
+    }
+
+    private static Optional<EspialEvent> getEspialEvent(final Operation operation) {
         // see if a Sponge operation matches the value of the ResourceKey
         return EspialEvents.registry().streamEntries()
                 .filter(entry -> entry.key().value().equals(operation.key(RegistryTypes.OPERATION).value()))

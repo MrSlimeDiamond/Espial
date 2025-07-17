@@ -1,12 +1,16 @@
 package net.slimediamond.espial.sponge.storage;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.record.EspialSignModifyRecord;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
@@ -193,7 +197,7 @@ public final class EspialDatabase {
             ResultSet rs;
             try {
                 rs = ps.getGeneratedKeys();
-            } catch (SQLFeatureNotSupportedException e) {
+            } catch (final SQLFeatureNotSupportedException e) {
                 // Try to use another approach (this should work for sqlite)
                 rs = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
             }
@@ -241,6 +245,33 @@ public final class EspialDatabase {
                         insertExtra.setNull(3, Types.CHAR);
                         insertExtra.execute();
                     }
+                } else if (record instanceof final EspialSignModifyRecord signModifyRecord) {
+                    // turn sign stuff into json stuff
+
+                    final JsonArray original = new JsonArray();
+                    signModifyRecord.getOriginalContents().stream()
+                            .map(component -> GsonComponentSerializer.gson().serializeToTree(component))
+                            .forEach(original::add);
+                    final JsonArray replacement = new JsonArray();
+                    signModifyRecord.getReplacementContents().stream()
+                            .map(component -> GsonComponentSerializer.gson().serializeToTree(component))
+                            .forEach(replacement::add);
+
+                    insertExtra.setInt(1, id);
+                    insertExtra.setString(2, original.toString());
+                    insertExtra.setString(3, replacement.toString());
+                    insertExtra.execute();
+
+                    final int state = getOrCreateId(conn, "block_states", "state",
+                            signModifyRecord.getBlockState().asString());
+
+                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
+                            "VALUES (?, ?, ?)");
+
+                    insertState.setInt(1, id);
+                    insertState.setInt(2, state);
+                    insertState.setInt(3, state);
+                    insertState.execute();
                 }
 
                 return id;
@@ -379,7 +410,7 @@ public final class EspialDatabase {
         }
 
         // Insert if not exists
-        PreparedStatement insert = conn.prepareStatement("INSERT INTO " + table + " (" + column + ") VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+        final PreparedStatement insert = conn.prepareStatement("INSERT INTO " + table + " (" + column + ") VALUES (?)", Statement.RETURN_GENERATED_KEYS);
         insert.setString(1, value);
         insert.executeUpdate();
         final ResultSet keys;

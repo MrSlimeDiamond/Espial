@@ -4,7 +4,7 @@ import net.slimediamond.espial.api.record.EspialBlockRecord;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.block.BlockSnapshot;
 
-public class SpongeBlockRecordBuilder extends SpongeRecordBuilder<EspialBlockRecord, EspialBlockRecord.Builder>
+public class SpongeBlockRecordBuilder extends SpongeRecordBuilder<EspialBlockRecord.Builder>
         implements EspialBlockRecord.Builder {
 
     private BlockSnapshot original;
