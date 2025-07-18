@@ -14,6 +14,7 @@ import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Keys;
 
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ public class RecordFormatter {
     private static final TextColor STACK_COLOR = Format.THEME_COLOR;
     private static final TextColor SPREAD_TARGET_COLOR = Format.THEME_COLOR;
     private static final TextColor GROUPED_TARGET_COLOR = Format.ACCENT_COLOR;
+    private static final String FRONT_LINES_PREFIX = "Front line ";
+    private static final String BACK_LINES_PREFIX = "Back line ";
 
     public static List<Component> formatRecords(@NotNull final List<EspialRecord> records, boolean spread) {
         if (spread) {
@@ -93,20 +96,27 @@ public class RecordFormatter {
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         builder.appendSpace().append(getTarget(record).color(SPREAD_TARGET_COLOR));
 
+        final List<Component> extraDisplay = new LinkedList<>();
+
         if (record instanceof BlockRecord blockRecord) {
-            final List<Component> extraDisplay = new LinkedList<>();
             // also append sign data if it exists (not working)
-            blockRecord.getReplacementBlock().get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
-                    extraDisplay.addAll(formatSignLines("Front Line ", signText.lines().get())));
-            blockRecord.getReplacementBlock().get(Keys.SIGN_BACK_TEXT).ifPresent(signText ->
-                    extraDisplay.addAll(formatSignLines("Back Line ", signText.lines().get())));
-
-
-            if (!extraDisplay.isEmpty()) {
-                builder.append(Format.accent(" (...)")
-                        .hoverEvent(HoverEvent.showText(Component.join(JoinConfiguration.newlines(), extraDisplay))));
-            }
+            blockRecord.getOriginalBlock().createArchetype().ifPresent(blockEntity -> {
+                blockEntity.get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
+                        extraDisplay.addAll(formatSignLines(FRONT_LINES_PREFIX, signText.lines().get())));
+                blockEntity.get(Keys.SIGN_BACK_TEXT).ifPresent(signText ->
+                        extraDisplay.addAll(formatSignLines(BACK_LINES_PREFIX, signText.lines().get())));
+            });
+        } else if (record instanceof final SignModifyRecord signModifyRecord) {
+            // TODO: Show other side
+            extraDisplay.addAll(formatSignLines(signModifyRecord.isFrontSide() ? FRONT_LINES_PREFIX : BACK_LINES_PREFIX,
+                    signModifyRecord.getReplacementContents()));
         }
+
+        if (!extraDisplay.isEmpty()) {
+            builder.append(Component.text(" (...)").color(Format.PADDING_COLOR)
+                    .hoverEvent(HoverEvent.showText(Component.join(JoinConfiguration.newlines(), extraDisplay))));
+        }
+
         if (record.isRolledBack()) {
             builder.decorate(TextDecoration.STRIKETHROUGH);
         }
