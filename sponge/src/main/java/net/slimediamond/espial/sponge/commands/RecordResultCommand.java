@@ -35,21 +35,20 @@ import java.util.stream.Stream;
 
 public abstract class RecordResultCommand extends AbstractCommand {
 
-    private final List<Predicate<EspialRecord>> predicates = new LinkedList<>();
-
-    private static final Set<Selector> selectors = new HashSet<>();
-
-    static {
-        selectors.add(new RangeSelector());
-        Sponge.pluginManager().plugin("worldedit")
-                .ifPresent(worldedit -> selectors.add(new WorldEditSelector()));
-    }
+    protected final List<Predicate<EspialRecord>> predicates = new LinkedList<>();
+    protected final Set<Selector> selectors = new HashSet<>();
 
     public RecordResultCommand(final @Nullable Permission permission,
                                final @NotNull Component description) {
         super(permission, description);
 
-        selectors.forEach(selector -> addFlag(selector.getFlag(), selector.getDescription()));
+        selectors.add(new RangeSelector());
+        Sponge.pluginManager().plugin("worldedit")
+                .ifPresent(worldedit -> selectors.add(new WorldEditSelector()));
+
+        selectors.stream().flatMap(selector -> selector.getFlag().stream())
+                        .forEach(entry -> addFlag(entry.getFlag(), entry.getDescription()));
+
         addFlag(Flags.BEFORE, Component.text("Query for logs before a certain time"));
         addFlag(Flags.AFTER, Component.text("Query for logs after a specific time"));
         addFlag(Flags.PLAYER, Component.text("Filter for a specific player"));
@@ -63,10 +62,11 @@ public abstract class RecordResultCommand extends AbstractCommand {
                 .orElseThrow(() -> new CommandException(Component.text("You must have a location to use this command")));
         Vector3iRange selection = null;
         for (final Selector selector : selectors) {
-            if (context.hasFlag(selector.getFlag())) {
-                if (selection != null) {
-                    return CommandResult.error(Format.error("Provide only one selector!"));
+            if (selector.getFlag().isPresent()) {
+                if (context.hasFlag(selector.getFlag().get().getFlag())) {
+                    selection = selector.select(context);
                 }
+            } else {
                 selection = selector.select(context);
             }
         }
@@ -117,6 +117,10 @@ public abstract class RecordResultCommand extends AbstractCommand {
 
     protected void addPredicate(@NotNull final Predicate<EspialRecord> predicate) {
         predicates.add(predicate);
+    }
+
+    protected void addSelector(@NotNull final Selector selector) {
+        selectors.add(selector);
     }
 
     public void displayRecords(final CommandContext context, final List<EspialRecord> records, final boolean spread) {

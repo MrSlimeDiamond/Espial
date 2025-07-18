@@ -10,7 +10,6 @@ public class Flags {
     public static final Flag PLAYER = Flag.of(Parameters.USER, "p");
     public static final Flag EVENT = Flag.of(Parameters.EVENT, "e");
     public static final Flag BLOCK = Flag.of(Parameters.BLOCK_TYPE, "b");
-    public static final Flag WORLDEDIT = Flag.of(Parameters.WORLDEDIT, "w");
     public static final Flag YES = Flag.of(Parameters.YES, "yes");
 
 }

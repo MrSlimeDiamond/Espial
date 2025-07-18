@@ -9,7 +9,7 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.sponge.SpongeAdapter;
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.common.utils.formatting.Format;
-import net.slimediamond.espial.sponge.commands.subsystem.Flags;
+import net.slimediamond.espial.sponge.commands.subsystem.Parameters;
 import net.slimediamond.espial.sponge.utils.CommandUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
@@ -18,6 +18,8 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.managed.Flag;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.math.vector.Vector3i;
+
+import java.util.Optional;
 
 public class WorldEditSelector implements Selector {
 
@@ -38,13 +40,9 @@ public class WorldEditSelector implements Selector {
     }
 
     @Override
-    public Flag getFlag() {
-        return Flags.WORLDEDIT;
-    }
-
-    @Override
-    public Component getDescription() {
-        return Component.text("Use your WorldEdit selection for the query");
+    public Optional<SelectorFlag> getFlag() {
+        return Optional.of(SelectorFlag.of(Flag.of(Parameters.WORLDEDIT, "w"),
+                Component.text("Use your WorldEdit selection as a region")));
     }
 
     private static Vector3i adapt(BlockVector3 worldedit) {

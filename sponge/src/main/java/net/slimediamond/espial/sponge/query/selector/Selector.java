@@ -1,10 +1,10 @@
 package net.slimediamond.espial.sponge.query.selector;
 
-import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.managed.Flag;
+
+import java.util.Optional;
 
 /**
  * A selector that a player can use
@@ -21,17 +21,12 @@ public interface Selector {
     Vector3iRange select(@NotNull CommandContext context) throws CommandException;
 
     /**
-     * Get the flag associated with this selector
+     * Get the flag associated with this selector, if present
      *
      * @return Selector flag
      */
-    Flag getFlag();
-
-    /**
-     * Get the description for this selector
-     *
-     * @return Selector description
-     */
-    Component getDescription();
+    default Optional<SelectorFlag> getFlag() {
+        return Optional.empty();
+    }
 
 }
