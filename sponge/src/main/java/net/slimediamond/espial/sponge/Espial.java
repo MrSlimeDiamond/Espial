@@ -7,6 +7,7 @@ import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.services.EspialService;
+import net.slimediamond.espial.api.services.EspialServiceProvider;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.commands.RootCommand;
@@ -76,6 +77,7 @@ public class Espial {
                 this.container.metadata().version().toString());
 
         this.espialService = new SpongeEspialService();
+        EspialServiceProvider.offer(espialService);
         Sponge.eventManager().registerListeners(this.container, new SpongeListeners());
         Sponge.eventManager().registerListeners(this.container, new EspialRegistryLoader());
         this.config = this.reference.referenceTo(Configuration.class).get();

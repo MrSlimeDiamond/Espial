@@ -10,6 +10,7 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -93,6 +94,26 @@ public interface EspialQuery {
          * @return This builder, for chaining
          */
         Builder before(@NotNull Date date);
+
+        /**
+         * Set the date to query records before
+         *
+         * @param before The date to query before
+         * @return This builder, for chaining
+         */
+        default Builder before(@NotNull final Instant before) {
+            return before(new Date(before.toEpochMilli()));
+        }
+
+        /**
+         * Set the date to query records after
+         *
+         * @param after The date to query after
+         * @return This builder, for chaining
+         */
+        default Builder after(@NotNull final Instant after) {
+            return before(new Date(after.toEpochMilli()));
+        }
 
         /**
          * Set the date to query records after

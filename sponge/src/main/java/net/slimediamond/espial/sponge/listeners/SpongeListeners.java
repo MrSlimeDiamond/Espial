@@ -13,6 +13,7 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.player.Player;
@@ -44,7 +45,7 @@ public class SpongeListeners {
             return;
         }
         final Entity cause = optionalCause.get();
-        for (BlockTransaction transaction : event.transactions()) {
+        for (final BlockTransaction transaction : event.transactions()) {
             final BlockSnapshot original = transaction.original();
             final BlockSnapshot replacement = transaction.finalReplacement();
             if (original.location().isEmpty() || replacement.location().isEmpty()) {
