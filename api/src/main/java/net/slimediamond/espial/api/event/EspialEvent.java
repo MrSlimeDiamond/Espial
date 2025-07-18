@@ -3,11 +3,12 @@ package net.slimediamond.espial.api.event;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.registry.DefaultedRegistryValue;
 import org.spongepowered.api.util.annotation.CatalogedBy;
 
 
 @CatalogedBy(EspialEvents.class)
-public interface EspialEvent {
+public interface EspialEvent extends DefaultedRegistryValue {
 
     /**
      * Get the ID of the Espial event

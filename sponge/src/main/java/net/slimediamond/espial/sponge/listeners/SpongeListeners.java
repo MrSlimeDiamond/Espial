@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
+import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
@@ -73,6 +74,10 @@ public class SpongeListeners {
             }
             final Optional<ServerPlayer> playerOptional = event.cause().first(ServerPlayer.class);
 
+            if (playerOptional.isEmpty() && Espial.getInstance().getConfig().isLogPlayersOnly()) {
+                return;
+            }
+
             if (playerOptional.isPresent()
                     && Espial.getInstance().getEspialService().getInspectingUsers().contains(playerOptional.get().uniqueId())) {
                 event.setCancelled(true);
@@ -81,7 +86,9 @@ public class SpongeListeners {
             }
 
             final Optional<EspialEvent> eventOptional = getEspialEvent(transaction.operation());
-            if (eventOptional.isEmpty()) {
+            if (eventOptional.isEmpty()
+                    || Espial.getInstance().getConfig().getIgnoredEvents()
+                    .contains(eventOptional.get().key(EspialRegistryTypes.EVENT))) {
                 continue; // unknown operation
             }
             final EspialEvent espialEvent = eventOptional.get();

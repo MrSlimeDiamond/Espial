@@ -36,6 +36,7 @@ import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.CommentedConfigurationNode;
+import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.plugin.PluginContainer;
@@ -59,8 +60,7 @@ public class Espial {
     @Inject
     private Logger logger;
 
-    // TODO no shared root
-    @DefaultConfig(sharedRoot = true)
+    @DefaultConfig(sharedRoot = false)
     @Inject
     private ConfigurationReference<CommentedConfigurationNode> reference;
 
@@ -72,7 +72,7 @@ public class Espial {
     }
 
     @Listener
-    public void onConstructPlugin(final ConstructPluginEvent event) throws SerializationException, SQLException {
+    public void onConstructPlugin(final ConstructPluginEvent event) throws ConfigurateException, SQLException {
         this.logger.info("Starting Espial version {} by SlimeDiamond",
                 this.container.metadata().version().toString());
 
@@ -81,6 +81,7 @@ public class Espial {
         Sponge.eventManager().registerListeners(this.container, new SpongeListeners());
         Sponge.eventManager().registerListeners(this.container, new EspialRegistryLoader());
         this.config = this.reference.referenceTo(Configuration.class).get();
+        this.reference.save();
 
         this.recordingQueue = new SpongeRecordingQueue();
         this.recordingQueue.start();
