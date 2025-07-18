@@ -12,7 +12,7 @@ import java.util.List;
 public class RollbackCommand extends TransactionCommand {
 
     public RollbackCommand() {
-        super(TransactionTypes.ROLLBACK.get(), Permissions.RESTORE, Component.text("Restore a selection"));
+        super(TransactionTypes.ROLLBACK.get(), Permissions.ROLLBACK, Component.text("Rollback a selection"));
 
         addAlias("rollback");
         addAlias("rb");
