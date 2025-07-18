@@ -392,8 +392,8 @@ public final class EspialDatabase {
                     "UPDATE records SET rolled_back = ? WHERE id IN (" + placeholders + ")"
             );
             ps.setBoolean(1, rolledBack);
-            for (int i = 2; i < records.size(); i++) {
-                ps.setInt(i, records.get(i).getId());
+            for (int i = 0; i < records.size(); i++) {
+                ps.setInt(i + 2, records.get(i).getId());
             }
             ps.executeUpdate();
         }
