@@ -4,16 +4,22 @@ import com.google.gson.JsonArray;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.slimediamond.espial.api.event.InsertRecordEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.sponge.Espial;
+import net.slimediamond.espial.sponge.event.SpongeInsertRecordEvent;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataQuery;
+import org.spongepowered.api.event.Cause;
+import org.spongepowered.api.event.EventContext;
+import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import javax.sql.DataSource;
@@ -270,6 +276,12 @@ public final class EspialDatabase {
                     insertState.setInt(3, state);
                     insertState.execute();
                 }
+
+                final Cause cause = Cause.of(EventContext.builder()
+                        .add(EventContextKeys.PLUGIN, Espial.getInstance().getContainer())
+                        .build(), this, record);
+                final InsertRecordEvent.Post event = new SpongeInsertRecordEvent.PostImpl(record, cause);
+                Sponge.eventManager().post(event);
 
                 return id;
             }
