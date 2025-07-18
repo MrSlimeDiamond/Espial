@@ -6,7 +6,7 @@ import org.spongepowered.api.entity.EntityType;
 
 import java.util.Optional;
 
-public interface EspialHangingDeathRecord extends EspialRecord {
+public interface HangingDeathRecord extends EspialRecord {
 
     /**
      * Get the killed entity type

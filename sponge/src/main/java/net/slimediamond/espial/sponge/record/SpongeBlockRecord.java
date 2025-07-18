@@ -2,7 +2,7 @@ package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -14,7 +14,7 @@ import org.spongepowered.api.world.server.ServerLocation;
 import java.util.Date;
 import java.util.UUID;
 
-public class SpongeBlockRecord extends SpongeEspialRecord implements EspialBlockRecord {
+public class SpongeBlockRecord extends SpongeEspialRecord implements BlockRecord {
 
     private final BlockSnapshot original;
     private final BlockSnapshot replacement;

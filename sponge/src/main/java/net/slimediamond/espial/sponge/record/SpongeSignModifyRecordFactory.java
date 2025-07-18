@@ -1,14 +1,12 @@
 package net.slimediamond.espial.sponge.record;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.block.BlockState;
@@ -22,17 +20,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-public class SpongeSignModifyRecordFactory implements RecordFactory<EspialSignModifyRecord> {
+public class SpongeSignModifyRecordFactory implements RecordFactory<SignModifyRecord> {
 
     @Override
-    public EspialSignModifyRecord create(@NotNull final EspialEvent event,
-                                         @NotNull final ResultSet rs,
-                                         final int id,
-                                         @NotNull final Date date,
-                                         @Nullable final UUID user,
-                                         @NotNull final EntityType<?> entityType,
-                                         @NotNull final ServerLocation location,
-                                         final boolean rolledBack)
+    public SignModifyRecord create(@NotNull final EspialEvent event,
+                                   @NotNull final ResultSet rs,
+                                   final int id,
+                                   @NotNull final Date date,
+                                   @Nullable final UUID user,
+                                   @NotNull final EntityType<?> entityType,
+                                   @NotNull final ServerLocation location,
+                                   final boolean rolledBack)
             throws SQLException {
         final JsonArray original = JsonParser.parseString(rs.getString("extra_original")).getAsJsonArray();
         final JsonArray replacement = JsonParser.parseString(rs.getString("extra_replacement")).getAsJsonArray();

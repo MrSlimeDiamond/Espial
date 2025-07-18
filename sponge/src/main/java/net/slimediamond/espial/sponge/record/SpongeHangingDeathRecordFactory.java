@@ -1,7 +1,7 @@
 package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.ResourceKey;
@@ -14,17 +14,17 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
 
-public class SpongeHangingDeathRecordFactory implements RecordFactory<EspialHangingDeathRecord> {
+public class SpongeHangingDeathRecordFactory implements RecordFactory<HangingDeathRecord> {
 
     @Override
-    public EspialHangingDeathRecord create(@NotNull final EspialEvent event,
-                                           @NotNull final ResultSet rs,
-                                           final int id,
-                                           @NotNull final Date date,
-                                           @Nullable final UUID user,
-                                           @NotNull final EntityType<?> entityType,
-                                           @NotNull final ServerLocation location,
-                                           final boolean rolledBack)
+    public HangingDeathRecord create(@NotNull final EspialEvent event,
+                                     @NotNull final ResultSet rs,
+                                     final int id,
+                                     @NotNull final Date date,
+                                     @Nullable final UUID user,
+                                     @NotNull final EntityType<?> entityType,
+                                     @NotNull final ServerLocation location,
+                                     final boolean rolledBack)
             throws SQLException {
         final String target = rs.getString("target");
         final EntityType<?> targetEntityType = EntityTypes.registry().value(ResourceKey.resolve(target));

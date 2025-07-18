@@ -2,7 +2,7 @@ package net.slimediamond.espial.sponge.record;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.block.BlockState;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class SpongeSignModifyRecord extends SpongeEspialRecord implements EspialSignModifyRecord {
+public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignModifyRecord {
 
     private final List<Component> originalContents;
     private final List<Component> replacementContents;

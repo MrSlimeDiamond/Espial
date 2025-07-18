@@ -1,9 +1,9 @@
 package net.slimediamond.espial.sponge.commands;
 
 import net.kyori.adventure.text.Component;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.common.permission.Permissions;
 import net.slimediamond.espial.sponge.query.selector.DefaultRangeSelector;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -18,8 +18,8 @@ public class NearbySignsCommand extends RecordResultCommand {
 
         addAlias("nearbysigns");
 
-        addPredicate(record -> record instanceof EspialBlockRecord
-                || record instanceof EspialSignModifyRecord);
+        addPredicate(record -> record instanceof BlockRecord
+                || record instanceof SignModifyRecord);
         addPredicate(record -> record.getTarget().contains("sign"));
         addSelector(new DefaultRangeSelector());
     }

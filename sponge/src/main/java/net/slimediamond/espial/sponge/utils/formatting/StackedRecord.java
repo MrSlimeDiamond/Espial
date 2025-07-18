@@ -2,7 +2,6 @@ package net.slimediamond.espial.sponge.utils.formatting;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.entity.EntityType;

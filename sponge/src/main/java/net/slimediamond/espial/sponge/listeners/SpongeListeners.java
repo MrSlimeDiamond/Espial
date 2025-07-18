@@ -3,10 +3,9 @@ package net.slimediamond.espial.sponge.listeners;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
-import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
@@ -83,7 +82,7 @@ public class SpongeListeners {
             }
             final EspialEvent espialEvent = eventOptional.get();
 
-            final EspialBlockRecord.Builder builder = EspialBlockRecord.builder()
+            final BlockRecord.Builder builder = BlockRecord.builder()
                     .original(original)
                     .replacement(replacement)
                     .entityType(cause.type())
@@ -100,7 +99,7 @@ public class SpongeListeners {
     public void onEntityDestruct(final DestructEntityEvent event, @First final Entity cause) {
         final Entity entity = event.entity();
         if (entity instanceof final Hanging hanging) {
-            final EspialHangingDeathRecord.Builder builder = EspialHangingDeathRecord.builder()
+            final HangingDeathRecord.Builder builder = HangingDeathRecord.builder()
                     .entityType(cause.type())
                     .targetEntityType(hanging.type())
                     .event(EspialEvents.HANGING_DEATH.get())
@@ -115,7 +114,7 @@ public class SpongeListeners {
 
     @Listener
     public void onSignChange(final ChangeSignEvent event, @First final Player player) {
-        Espial.getInstance().getEspialService().submit(EspialSignModifyRecord.builder()
+        Espial.getInstance().getEspialService().submit(SignModifyRecord.builder()
                 .originalContents(event.originalText().all())
                 .replacementContents(event.text().all())
                 .entityType(player.type())

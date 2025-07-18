@@ -7,14 +7,13 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.api.event.EspialEvents;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Keys;
 
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class RecordFormatter {
 
@@ -95,7 +93,7 @@ public class RecordFormatter {
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         builder.appendSpace().append(getTarget(record).color(SPREAD_TARGET_COLOR));
 
-        if (record instanceof EspialBlockRecord blockRecord) {
+        if (record instanceof BlockRecord blockRecord) {
             final List<Component> extraDisplay = new LinkedList<>();
             // also append sign data if it exists (not working)
             blockRecord.getReplacementBlock().get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
@@ -124,15 +122,15 @@ public class RecordFormatter {
     }
 
     public static Component getTarget(final EspialRecord record) {
-        if (record instanceof final EspialBlockRecord blockRecord) {
+        if (record instanceof final BlockRecord blockRecord) {
             if (blockRecord.getEvent().equals(EspialEvents.PLACE.get())
                     || blockRecord.getEvent().equals(EspialEvents.GROWTH.get())) {
                 return blockRecord.getReplacementBlock().state().type().asComponent();
             }
             return blockRecord.getOriginalBlock().state().type().asComponent();
-        } else if (record instanceof final EspialHangingDeathRecord hangingDeathRecord) {
+        } else if (record instanceof final HangingDeathRecord hangingDeathRecord) {
             return hangingDeathRecord.getTargetEntityType().asComponent();
-        } else if (record instanceof final EspialSignModifyRecord signModifyRecord) {
+        } else if (record instanceof final SignModifyRecord signModifyRecord) {
             return signModifyRecord.getBlockState().type().asComponent();
         }
         return Component.text("(unknown)");

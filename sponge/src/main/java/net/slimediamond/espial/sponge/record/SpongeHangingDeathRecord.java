@@ -1,7 +1,7 @@
 package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.data.persistence.DataContainer;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SpongeHangingDeathRecord extends SpongeEspialRecord implements EspialHangingDeathRecord {
+public class SpongeHangingDeathRecord extends SpongeEspialRecord implements HangingDeathRecord {
 
     private final EntityType<?> targetEntityType;
     private final DataContainer extraData;

@@ -1,20 +1,17 @@
 package net.slimediamond.espial.sponge.storage;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
 import org.jetbrains.annotations.NotNull;
-import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.registry.RegistryTypes;
@@ -208,7 +205,7 @@ public final class EspialDatabase {
                 final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO extra (record_id, original, replacement) " +
                         "VALUES (?, ?, ?)");
 
-                if (record instanceof final EspialBlockRecord blockRecord) {
+                if (record instanceof final BlockRecord blockRecord) {
                     // insert into block_state
                     final int originalState = getOrCreateId(conn, "block_states", "state",
                             blockRecord.getOriginalBlock().state().asString());
@@ -236,7 +233,7 @@ public final class EspialDatabase {
                         }
                         insertExtra.execute();
                     }
-                } else if (record instanceof final EspialHangingDeathRecord hangingDeathRecord) {
+                } else if (record instanceof final HangingDeathRecord hangingDeathRecord) {
                     if (hangingDeathRecord.getExtraData().isPresent()
                             && hangingDeathRecord.getExtraData().get().contains(unsafeData)) {
                         insertExtra.setInt(1, id);
@@ -245,7 +242,7 @@ public final class EspialDatabase {
                         insertExtra.setNull(3, Types.CHAR);
                         insertExtra.execute();
                     }
-                } else if (record instanceof final EspialSignModifyRecord signModifyRecord) {
+                } else if (record instanceof final SignModifyRecord signModifyRecord) {
                     // turn sign stuff into json stuff
 
                     final JsonArray original = new JsonArray();

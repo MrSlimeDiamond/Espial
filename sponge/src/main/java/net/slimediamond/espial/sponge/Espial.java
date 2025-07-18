@@ -3,9 +3,9 @@ package net.slimediamond.espial.sponge;
 import com.google.inject.Inject;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
-import net.slimediamond.espial.api.record.EspialHangingDeathRecord;
-import net.slimediamond.espial.api.record.EspialSignModifyRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.HangingDeathRecord;
+import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.common.utils.formatting.Format;
@@ -117,9 +117,9 @@ public class Espial {
     @Listener
     public void onRegisterBuilders(final RegisterBuilderEvent event) {
         event.register(EspialEvent.Builder.class, SpongeEspialEventBuilder::new);
-        event.register(EspialBlockRecord.Builder.class, SpongeBlockRecordBuilder::new);
-        event.register(EspialHangingDeathRecord.Builder.class,SpongeHangingDeathRecordBuilder::new);
-        event.register(EspialSignModifyRecord.Builder.class, SpongeSignModifyRecordBuilder::new);
+        event.register(BlockRecord.Builder.class, SpongeBlockRecordBuilder::new);
+        event.register(HangingDeathRecord.Builder.class,SpongeHangingDeathRecordBuilder::new);
+        event.register(SignModifyRecord.Builder.class, SpongeSignModifyRecordBuilder::new);
         event.register(EspialQuery.Builder.class, SpongeQueryBuilder::new);
         event.register(Transaction.Builder.class, TransactionBuilder::new);
     }

@@ -5,7 +5,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 
 
-public interface EspialBlockRecord extends EspialRecord {
+public interface BlockRecord extends EspialRecord {
 
     /**
      * Get the block state for the record

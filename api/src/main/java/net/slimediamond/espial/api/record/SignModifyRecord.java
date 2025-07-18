@@ -6,7 +6,7 @@ import org.spongepowered.api.block.BlockState;
 
 import java.util.List;
 
-public interface EspialSignModifyRecord extends EspialRecord {
+public interface SignModifyRecord extends EspialRecord {
 
     /**
      * Get the original contents of the sign

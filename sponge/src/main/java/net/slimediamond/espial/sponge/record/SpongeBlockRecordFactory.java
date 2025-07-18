@@ -1,7 +1,7 @@
 package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.api.record.EspialBlockRecord;
+import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,17 +18,17 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
 
-public final class SpongeBlockRecordFactory implements RecordFactory<EspialBlockRecord> {
+public final class SpongeBlockRecordFactory implements RecordFactory<BlockRecord> {
 
     @Override
-    public EspialBlockRecord create(@NotNull final EspialEvent event,
-                                    @NotNull final ResultSet rs,
-                                    final int id,
-                                    @NotNull final Date date,
-                                    @Nullable final UUID user,
-                                    @NotNull final EntityType<?> entityType,
-                                    @NotNull final ServerLocation location,
-                                    final boolean rolledBack)
+    public BlockRecord create(@NotNull final EspialEvent event,
+                              @NotNull final ResultSet rs,
+                              final int id,
+                              @NotNull final Date date,
+                              @Nullable final UUID user,
+                              @NotNull final EntityType<?> entityType,
+                              @NotNull final ServerLocation location,
+                              final boolean rolledBack)
             throws SQLException {
         final ResourceKey worldKey = location.worldKey();
         final BlockState originalState = BlockState.fromString(rs.getString("state_original"));
