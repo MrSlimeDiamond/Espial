@@ -1,6 +1,7 @@
 package net.slimediamond.espial.sponge;
 
 import com.google.inject.Inject;
+import net.slimediamond.espial.api.EspialResourceKey;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -12,6 +13,7 @@ import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.commands.RootCommand;
 import net.slimediamond.espial.sponge.configuration.Configuration;
+import net.slimediamond.espial.sponge.data.EspialKeys;
 import net.slimediamond.espial.sponge.event.SpongeEspialEventBuilder;
 import net.slimediamond.espial.sponge.listeners.SpongeListeners;
 import net.slimediamond.espial.sponge.query.SpongeQueryBuilder;
@@ -24,21 +26,25 @@ import net.slimediamond.espial.sponge.services.SpongeEspialService;
 import net.slimediamond.espial.sponge.storage.EspialDatabase;
 import net.slimediamond.espial.sponge.transaction.TransactionBuilder;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.data.DataRegistration;
+import org.spongepowered.api.data.Key;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterBuilderEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
+import org.spongepowered.api.event.lifecycle.RegisterDataEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.reference.ConfigurationReference;
-import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
@@ -125,6 +131,27 @@ public class Espial {
         event.register(SignModifyRecord.Builder.class, SpongeSignModifyRecordBuilder::new);
         event.register(EspialQuery.Builder.class, SpongeQueryBuilder::new);
         event.register(Transaction.Builder.class, TransactionBuilder::new);
+    }
+
+    @Listener
+    public void onRegisterData(final RegisterDataEvent event) {
+        EspialKeys.WAND = Key.from(container, "is_wand", Boolean.class);
+        event.register(DataRegistration.of(EspialKeys.WAND, ItemStack.class));
+
+        EspialKeys.WAND_FILTERS = Key.from(container, "wand_filters", Integer.class);
+        event.register(DataRegistration.of(EspialKeys.WAND_FILTERS, ItemStack.class));
+
+        EspialKeys.WAND_DOES_LOOKUPS = Key.from(container, "wand_lookup", Boolean.class);
+        event.register(DataRegistration.of(EspialKeys.WAND_DOES_LOOKUPS, ItemStack.class));
+
+        EspialKeys.WAND_TRANSACTION_TYPE = Key.from(container, "transaction_type", ResourceKey.class);
+        event.register(DataRegistration.of(EspialKeys.WAND_TRANSACTION_TYPE, ItemStack.class));
+
+        EspialKeys.WAND_MAX_USES = Key.from(container, "wand_max_uses", Integer.class);
+        event.register(DataRegistration.of(EspialKeys.WAND_MAX_USES, ItemStack.class));
+
+        EspialKeys.WAND_USES = Key.from(container, "wand_uses", Integer.class);
+        event.register(DataRegistration.of(EspialKeys.WAND_USES, ItemStack.class));
     }
 
     public static Espial getInstance() {

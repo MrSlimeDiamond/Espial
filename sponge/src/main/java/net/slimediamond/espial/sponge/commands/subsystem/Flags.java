@@ -14,8 +14,17 @@ public class Flags {
     public static final Flag EVENT = Flag.of(Parameters.EVENT, "e");
     public static final Flag BLOCK = Flag.of(Parameters.BLOCK_TYPE, "b");
     public static final Flag YES = Flag.of(Parameters.YES, "yes");
+    public static final Flag MAXIMUM = Flag.of(Parameters.OPTIONAL_MAXIMUM, "m");
 
     public static final Map<Flag, Component> SPREAD_FLAG = Map.of(SPREAD,
             Component.text("Spread results, showing individual ones"));
+
+    public static final Map<Flag, Component> QUERY_FLAGS = Map.of(
+            Flags.BEFORE, Component.text("Query for logs before a certain time"),
+            Flags.AFTER, Component.text("Query for logs after a specific time"),
+            Flags.PLAYER, Component.text("Filter for a specific player"),
+            Flags.BLOCK, Component.text("Filter for a specific block type"),
+            Flags.EVENT, Component.text("Filter by a specific event")
+    );
 
 }

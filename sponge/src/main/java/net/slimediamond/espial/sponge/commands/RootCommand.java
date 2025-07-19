@@ -24,6 +24,7 @@ public class RootCommand extends AbstractCommand {
         addChild(new InteractiveCommand());
         addChild(new NearbySignsCommand());
         addChild(new QueueCommand());
+        addChild(new WandCommand());
     }
 
     @Override

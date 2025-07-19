@@ -11,6 +11,7 @@ import org.spongepowered.api.registry.RegistryType;
 public class EspialRegistryTypes {
 
     public static final DefaultedRegistryType<EspialEvent> EVENT = EspialRegistryTypes.espialKeyInGame("event");
+
     public static final DefaultedRegistryType<TransactionType> TRANSACTION_TYPE = EspialRegistryTypes.espialKeyInGame("transaction_type");
 
     private static <V>DefaultedRegistryType<V> espialKeyInGame(final String key) {

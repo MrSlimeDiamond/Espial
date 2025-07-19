@@ -7,12 +7,12 @@ import net.slimediamond.espial.common.permission.Permission;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
-import net.slimediamond.espial.sponge.commands.subsystem.Parameters;
 import net.slimediamond.espial.sponge.query.selector.RangeSelector;
 import net.slimediamond.espial.sponge.query.selector.Selector;
 import net.slimediamond.espial.sponge.query.selector.Vector3iRange;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.query.selector.WorldEditSelector;
+import net.slimediamond.espial.sponge.utils.CommandUtils;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +23,6 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,11 +47,7 @@ public abstract class RecordResultCommand extends AbstractCommand {
         selectors.stream().flatMap(selector -> selector.getFlag().stream())
                         .forEach(entry -> addFlag(entry.getFlag(), entry.getDescription()));
 
-        addFlag(Flags.BEFORE, Component.text("Query for logs before a certain time"));
-        addFlag(Flags.AFTER, Component.text("Query for logs after a specific time"));
-        addFlag(Flags.PLAYER, Component.text("Filter for a specific player"));
-        addFlag(Flags.BLOCK, Component.text("Filter for a specific block type"));
-        addFlag(Flags.EVENT, Component.text("Filter by a specific event"));
+        addFlags(Flags.QUERY_FLAGS);
     }
 
     @Override
@@ -75,25 +69,12 @@ public abstract class RecordResultCommand extends AbstractCommand {
             return CommandResult.error(Format.error("You need to provide a selector!"));
         }
 
-        final EspialQuery.Builder builder = EspialQuery.builder()
-                .minimum(selection.getMinimum())
-                .maximum(selection.getMaximum())
-                .worldKey(location.worldKey())
-                .audience(context.cause().audience());
+        final EspialQuery.Builder builder = CommandUtils.getQueryBuilder(context);
 
-        context.one(Parameters.AFTER).ifPresent(duration -> {
-            final Date date = Date.from(Instant.now().minus(duration));
-            builder.after(date);
-        });
+        builder.minimum(selection.getMinimum());
+        builder.maximum(selection.getMaximum());
+        builder.worldKey(location.worldKey());
 
-        context.one(Parameters.BEFORE).ifPresent(duration -> {
-            final Date date = Date.from(Instant.now().minus(duration));
-            builder.before(date);
-        });
-
-        context.all(Parameters.USER).forEach(builder::addUser);
-        context.all(Parameters.BLOCK_TYPE).forEach(builder::addBlockType);
-        context.all(Parameters.EVENT).forEach(builder::addEvent);
 
         final EspialQuery query = builder.build();
 

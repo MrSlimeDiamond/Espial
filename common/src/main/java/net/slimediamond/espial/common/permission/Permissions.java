@@ -34,4 +34,12 @@ public class Permissions {
             "espial.command.queue.flush"
     );
 
+    public static final Permission WAND = Permission.of(
+            "espial.command.wand"
+    );
+
+    public static final Permission WAND_OTHER = Permission.of(
+            "espial.command.wand.other"
+    );
+
 }

@@ -9,18 +9,28 @@ import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
+import net.slimediamond.espial.api.transaction.Transaction;
+import net.slimediamond.espial.api.transaction.TransactionType;
+import net.slimediamond.espial.api.transaction.TransactionTypes;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
-import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
+import net.slimediamond.espial.sponge.data.EspialKeys;
+import net.slimediamond.espial.sponge.query.EspialQueries;
+import net.slimediamond.espial.sponge.wand.QueryBuilderCache;
+import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.event.Cancellable;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -29,33 +39,49 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
+import org.spongepowered.api.event.item.inventory.DropItemEvent;
+import org.spongepowered.api.item.inventory.Carrier;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
-import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.plugin.PluginContainer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class SpongeListeners {
 
+    private static final Predicate<Slot> WAND_PREDICATE = slot -> slot.peek().get(EspialKeys.WAND).orElse(false);
+
     @Listener(order = Order.EARLY)
     public void onBlockChange(final InteractBlockEvent.Primary.Start event, @First ServerPlayer player) {
-        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
-            event.block().location().ifPresent(location -> {
+        event.block().location().ifPresent(location -> {
+            if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
                 event.setCancelled(true);
-                queryRecords(location, player);
-            });
-        }
+                EspialQueries.queryRecords(location, player);
+            } else {
+                handleWand(event, location, player);
+            }
+        });
     }
 
     @Listener(order = Order.EARLY)
     public void onBlockChange(final InteractBlockEvent.Secondary event, @First ServerPlayer player) {
-        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())
-                && event.context().get(EventContextKeys.USED_HAND).map(h -> h.equals(HandTypes.MAIN_HAND.get())).orElse(false)) {
-            event.block().location().ifPresent(location -> queryRecords(location.relativeTo(event.targetSide()), player));
+        if (!event.context().get(EventContextKeys.USED_HAND).map(ht -> ht.equals(HandTypes.MAIN_HAND.get())).orElse(false)) {
+            return;
         }
+        event.block().location().ifPresent(location -> {
+            final ServerLocation actualLocation = location.relativeTo(event.targetSide());
+            if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
+                EspialQueries.queryRecords(actualLocation, player);
+            } else {
+                handleWand(event, actualLocation, player);
+            }
+        });
     }
 
     @Listener
@@ -84,7 +110,6 @@ public class SpongeListeners {
             if (playerOptional.isPresent()
                     && Espial.getInstance().getEspialService().getInspectingUsers().contains(playerOptional.get().uniqueId())) {
                 event.setCancelled(true);
-                queryRecords(replacement.location().get(), playerOptional.get());
                 return;
             }
 
@@ -158,22 +183,84 @@ public class SpongeListeners {
                 .findFirst();
     }
 
-    private static void queryRecords(final ServerLocation location, final Player player) {
-        Espial.getInstance().getEspialService().query(EspialQuery.builder()
-                        .location(location)
-                        .audience(player)
-                        .build())
-                .thenAccept(records -> {
-                    if (records.isEmpty()) {
-                        player.sendMessage(Format.NO_RECORDS_FOUND);
-                    } else {
-                        PaginationList.builder()
-                                .title(Format.title("Lookup results"))
-                                .padding(Format.PADDING)
-                                .contents(RecordFormatter.formatRecords(records, true))
-                                .sendTo(player);
-                    }
+    private static void handleWand(final Event event, final ServerLocation location, final ServerPlayer player) {
+        final ItemStack item = player.itemInHand(HandTypes.MAIN_HAND.get());
+        if (item.get(EspialKeys.WAND).orElse(false)) {
+            if (event instanceof Cancellable cancellable) {
+                cancellable.setCancelled(true);
+            }
+            final Optional<EspialQuery.Builder> queryOptional = item.get(EspialKeys.WAND_FILTERS)
+                    .map(QueryBuilderCache::get);
+            if (queryOptional.isEmpty()) {
+                player.sendMessage(Format.error("This wand does not store a valid query"));
+                removeItem(player, WAND_PREDICATE);
+                return;
+            }
+            final EspialQuery.Builder query = queryOptional.get();
+            query.location(location);
+
+            if (item.get(EspialKeys.WAND_MAX_USES).isPresent()) {
+                // remove 1 durability, or kill it entirely
+                final int max = item.get(EspialKeys.WAND_MAX_USES).get();
+                final int used = item.get(EspialKeys.WAND_USES).orElse(max);
+                final int result = used - 1;
+                if (result <= 0) {
+                    // durability is used up
+                    removeItem(player, slot -> slot.peek().get(EspialKeys.WAND).orElse(false)
+                            && slot.peek().get(EspialKeys.WAND_USES).orElse(0) == used);
+                    player.sendActionBar(Format.error("Wand durability used up!"));
+
+                    // ...but still continue
+                } else {
+                    // apply new shit
+                    item.offer(EspialKeys.WAND_USES, result);
+                    item.offer(Keys.LORE, WandLoreBuilder.getLore(item, query));
+                }
+            }
+
+            if (item.get(EspialKeys.WAND_DOES_LOOKUPS).orElse(false)) {
+                EspialQueries.showRecords(query.build(), player);
+            } else {
+                // get applier transaction
+                final Optional<TransactionType> transactionOptional = item.get(EspialKeys.WAND_TRANSACTION_TYPE)
+                        .map(typeKey -> TransactionTypes.registry().value(typeKey));
+                if (transactionOptional.isEmpty()) {
+                    player.sendMessage(Format.error("This wand does not have a valid transaction type"));
+                    return;
+                }
+                Espial.getInstance().getEspialService().query(query.build()).thenAccept(records -> {
+                    final Transaction result = transactionOptional.get().apply(records);
+                    Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), result);
+                    // TODO: messaging
                 });
+            }
+        }
+    }
+
+    @Listener(order = Order.FIRST)
+    public void onDispenseItem(final DropItemEvent.Dispense event) {
+        clearTools(event.entities());
+    }
+
+    @Listener(order = Order.FIRST)
+    public void onDestructItem(final DropItemEvent.Destruct event) {
+        clearTools(event.entities());
+    }
+
+    private static void clearTools(final List<Entity> entities) {
+        entities.forEach(entity -> {
+            if (entity instanceof Item item) {
+                if (item.item().get().get(EspialKeys.WAND).orElse(false)) {
+                    entity.remove();
+                }
+            }
+        });
+    }
+
+    private static void removeItem(final Carrier carrier, final Predicate<Slot> predicate) {
+        carrier.inventory().slots().stream()
+                .filter(predicate)
+                .forEach(Slot::poll);
     }
 
 }
