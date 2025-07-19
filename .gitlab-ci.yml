@@ -1,5 +1,5 @@
 include:
-  - component: $CI_SERVER_FQDN/$CI_PROJECT_NAMESPACE/ci-cd/gradle@v0.2.0
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_NAMESPACE/ci-cd/gradle@v0.3
     inputs:
       image: amazoncorretto:21
       publish: "push"
