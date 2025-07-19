@@ -2,9 +2,6 @@ plugins {
     id("java")
 }
 
-group = "net.slimediamond.espial"
-version = "2.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }

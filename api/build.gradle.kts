@@ -3,9 +3,6 @@ plugins {
     `maven-publish`
 }
 
-group = "net.slimediamond"
-version = "2.0r-SNAPSHOT"
-
 repositories {
     mavenCentral()
     maven("https://repo.spongepowered.org/maven")
@@ -27,7 +24,7 @@ tasks.test {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifactId = "espial"
+            artifactId = "espial-api"
 
             // Attach the API JAR
             artifact(tasks["jar"]) {

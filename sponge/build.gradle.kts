@@ -5,7 +5,6 @@ plugins {
     id("java")
     id("org.spongepowered.gradle.plugin") version "2.3.0"
     id("com.gradleup.shadow") version "9.0.0-beta8"
-    `maven-publish`
 }
 
 val javaTarget = 21
@@ -17,9 +16,6 @@ java {
         toolchain.languageVersion.set(JavaLanguageVersion.of(javaTarget))
     }
 }
-
-group = "net.slimediamond.espial"
-version = "2.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -106,21 +102,7 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["shadow"])
 
-            artifactId = "espial"
+            artifactId = "espial-sponge"
         }
     }
-    repositories {
-        maven {
-            name = "GitLab"
-            url = uri("https://gitlab.com/api/v4/projects/" + System.getenv("CI_PROJECT_ID") + "/packages/maven")
-            credentials(HttpHeaderCredentials::class) {
-                name = "Job-Token"
-                value = System.getenv("CI_JOB_TOKEN") // deploy packages should only be created by a CI job
-            }
-            authentication {
-                create("header", HttpHeaderAuthentication::class)
-            }
-        }
-    }
-
 }
