@@ -6,6 +6,7 @@ import net.slimediamond.espial.common.permission.Permissions;
 import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
+import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
@@ -20,6 +21,7 @@ public class NearCommand extends AbstractCommand {
         super(Permissions.LOOKUP, Component.text("Look up blocks near you"));
 
         addAlias("near");
+        addFlags(Flags.SPREAD_FLAG);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class NearCommand extends AbstractCommand {
                     } else {
                         PaginationList.builder()
                                 .title(Format.title("Nearby results"))
-                                .contents(RecordFormatter.formatRecords(records, false))
+                                .contents(RecordFormatter.formatRecords(records, context.hasFlag("s")))
                                 .padding(Format.PADDING)
                                 .sendTo(context.cause().audience());
                     }

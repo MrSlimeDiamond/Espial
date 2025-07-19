@@ -60,7 +60,7 @@ public class SpongeSignModifyRecordFactory implements RecordFactory<SignModifyRe
 
         final BlockState blockState = BlockState.fromString(rs.getString("state_original"));
 
-        return new SpongeSignModifyRecord(date, user, entityType, location, event, rolledBack, originalText, replacementText, true, blockState);
+        return new SpongeSignModifyRecord(id, date, user, entityType, location, event, rolledBack, originalText, replacementText, true, blockState);
     }
 
     private static Component getComponent(final String string) {

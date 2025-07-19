@@ -21,6 +21,17 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     private final boolean frontSide;
     private final BlockState blockState;
 
+    public SpongeSignModifyRecord(final int id, final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
+                                  final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
+                                  final SignText originalContents, final SignText replacementContents, final boolean frontSide,
+                                  final BlockState blockState) {
+        super(id, date, user, entityType, location, event, rolledBack);
+        this.originalContents = originalContents;
+        this.replacementContents = replacementContents;
+        this.frontSide = frontSide;
+        this.blockState = blockState;
+    }
+
     public SpongeSignModifyRecord(final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
                                   final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
                                   final SignText originalContents, final SignText replacementContents, final boolean frontSide,

@@ -28,7 +28,7 @@ public class SpongeHangingDeathRecordFactory implements RecordFactory<HangingDea
             throws SQLException {
         final String target = rs.getString("target");
         final EntityType<?> targetEntityType = EntityTypes.registry().value(ResourceKey.resolve(target));
-        return new SpongeHangingDeathRecord(date, user, entityType, location, event, rolledBack, targetEntityType, null);
+        return new SpongeHangingDeathRecord(id, date, user, entityType, location, event, rolledBack, targetEntityType, null);
     }
 
 }

@@ -12,12 +12,16 @@ import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.TimeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,9 +37,12 @@ public class RecordFormatter {
     private static final String FRONT_LINES_PREFIX = "Front line ";
     private static final String BACK_LINES_PREFIX = "Back line ";
 
-    public static List<Component> formatRecords(@NotNull final List<EspialRecord> records, boolean spread) {
+    public static List<Component> formatRecords(@NotNull final List<EspialRecord> records, final boolean spread) {
         if (spread) {
-            return records.stream().map(RecordFormatter::format).toList();
+            // make it mutable before rearranging just in case
+            final List<EspialRecord> mutable = new LinkedList<>(records);
+            mutable.sort(Comparator.comparingInt(EspialRecord::getId).reversed());
+            return mutable.stream().map(RecordFormatter::format).toList();
         }
         // stack the records
         final Map<StackedRecord, Integer> recordCounts = new LinkedHashMap<>();
@@ -98,7 +105,7 @@ public class RecordFormatter {
 
         final List<Component> extraDisplay = new LinkedList<>();
 
-        if (record instanceof BlockRecord blockRecord) {
+        if (record instanceof final BlockRecord blockRecord) {
             // also append sign data if it exists (not working)
             blockRecord.getOriginalBlock().createArchetype().ifPresent(blockEntity -> {
                 blockEntity.get(Keys.SIGN_FRONT_TEXT).ifPresent(signText ->
@@ -113,6 +120,10 @@ public class RecordFormatter {
                     signModifyRecord.getReplacementContents().getBack()));
         }
 
+        builder.appendSpace()
+                .append(Component.text(TimeUtils.getTimeSince(record.getDate())).color(Format.TEXT_COLOR)
+                        .hoverEvent(HoverEvent.showText(Component.text(record.getDate().toString()))));
+
         if (!extraDisplay.isEmpty()) {
             builder.append(Component.text(" (...)").color(Format.PADDING_COLOR)
                     .hoverEvent(HoverEvent.showText(Component.join(JoinConfiguration.newlines(), extraDisplay))));
@@ -121,6 +132,10 @@ public class RecordFormatter {
         if (record.isRolledBack()) {
             builder.decorate(TextDecoration.STRIKETHROUGH);
         }
+
+        builder.clickEvent(SpongeComponents.executeCallback(cause ->
+                cause.first(ServerPlayer.class).ifPresent(player ->
+                        player.setPosition(record.getLocation().position().add(0.5, 0, 0.5)))));
         return builder.build();
     }
 
@@ -144,7 +159,8 @@ public class RecordFormatter {
         } else if (record instanceof final SignModifyRecord signModifyRecord) {
             return signModifyRecord.getBlockState().type().asComponent();
         }
-        return Component.text("(unknown)");
+        final ResourceKey resourceKey = ResourceKey.resolve(record.getTarget());
+        return Component.text(resourceKey.value().replace("_", " "));
     }
 
 }
