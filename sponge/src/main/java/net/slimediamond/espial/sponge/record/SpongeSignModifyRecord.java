@@ -1,6 +1,6 @@
 package net.slimediamond.espial.sponge.record;
 
-import net.kyori.adventure.text.Component;
+import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import org.jetbrains.annotations.NotNull;
@@ -12,19 +12,18 @@ import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignModifyRecord {
 
-    private final List<Component> originalContents;
-    private final List<Component> replacementContents;
+    private final SignText originalContents;
+    private final SignText replacementContents;
     private final boolean frontSide;
     private final BlockState blockState;
 
     public SpongeSignModifyRecord(final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
                                   final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
-                                  final List<Component> originalContents, final List<Component> replacementContents, final boolean frontSide,
+                                  final SignText originalContents, final SignText replacementContents, final boolean frontSide,
                                   final BlockState blockState) {
         super(date, user, entityType, location, event, rolledBack);
         this.originalContents = originalContents;
@@ -34,12 +33,12 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     }
 
     @Override
-    public List<Component> getOriginalContents() {
+    public SignText getOriginalContents() {
         return originalContents;
     }
 
     @Override
-    public List<Component> getReplacementContents() {
+    public SignText getReplacementContents() {
         return replacementContents;
     }
 
@@ -62,7 +61,7 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     public void rollback() {
         getLocation().blockEntity().ifPresent(blockEntity -> {
             // TODO: Back sign lines!
-            blockEntity.offer(Keys.SIGN_LINES, originalContents);
+            blockEntity.offer(Keys.SIGN_LINES, originalContents.getFront());
         });
     }
 
@@ -70,7 +69,7 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     public void restore() {
         getLocation().blockEntity().ifPresent(blockEntity -> {
             // TODO: Back sign lines!
-            blockEntity.offer(Keys.SIGN_LINES, replacementContents);
+            blockEntity.offer(Keys.SIGN_LINES, replacementContents.getFront());
         });
     }
 

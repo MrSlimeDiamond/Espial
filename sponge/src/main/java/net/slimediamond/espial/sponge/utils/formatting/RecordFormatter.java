@@ -107,9 +107,10 @@ public class RecordFormatter {
                         extraDisplay.addAll(formatSignLines(BACK_LINES_PREFIX, signText.lines().get())));
             });
         } else if (record instanceof final SignModifyRecord signModifyRecord) {
-            // TODO: Show other side
-            extraDisplay.addAll(formatSignLines(signModifyRecord.isFrontSide() ? FRONT_LINES_PREFIX : BACK_LINES_PREFIX,
-                    signModifyRecord.getReplacementContents()));
+            extraDisplay.addAll(formatSignLines(FRONT_LINES_PREFIX,
+                    signModifyRecord.getReplacementContents().getFront()));
+            extraDisplay.addAll(formatSignLines(BACK_LINES_PREFIX,
+                    signModifyRecord.getReplacementContents().getBack()));
         }
 
         if (!extraDisplay.isEmpty()) {
@@ -126,7 +127,7 @@ public class RecordFormatter {
     private static List<Component> formatSignLines(final String prefix, final List<Component> lines) {
         final List<Component> results = new LinkedList<>();
         for (int i = 0; i < lines.size(); i++) {
-            results.add(Format.detail(prefix + i, lines.get(i)));
+            results.add(Format.detail(prefix + (i + 1), lines.get(i)));
         }
         return results;
     }

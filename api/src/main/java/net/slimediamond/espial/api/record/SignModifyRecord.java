@@ -1,6 +1,6 @@
 package net.slimediamond.espial.api.record;
 
-import net.kyori.adventure.text.Component;
+import net.slimediamond.espial.api.SignText;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 
@@ -13,14 +13,14 @@ public interface SignModifyRecord extends EspialRecord {
      *
      * @return Original sign contents
      */
-    List<Component> getOriginalContents();
+    SignText getOriginalContents();
 
     /**
      * Get the replacement (new) contents of the sign
      *
      * @return Replacement sign contents
      */
-    List<Component> getReplacementContents();
+    SignText getReplacementContents();
 
     /**
      * Get whether this record affected the front side
@@ -50,7 +50,7 @@ public interface SignModifyRecord extends EspialRecord {
          * @param originalContents The original contents of the sign
          * @return This builder, for chaining
          */
-        Builder originalContents(List<Component> originalContents);
+        Builder originalContents(SignText originalContents);
 
         /**
          * Set the replacement contents of the sign
@@ -60,7 +60,7 @@ public interface SignModifyRecord extends EspialRecord {
          * @param replacementContents The new contents of the sign
          * @return This builder, for chaining
          */
-        Builder replacementContents(List<Component> replacementContents);
+        Builder replacementContents(SignText replacementContents);
 
         /**
          * Set whether the record affects the front side

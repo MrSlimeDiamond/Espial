@@ -3,7 +3,9 @@ package net.slimediamond.espial.sponge.storage;
 import com.google.gson.JsonArray;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.InsertRecordEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -37,8 +39,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public final class EspialDatabase {
 
@@ -79,6 +83,8 @@ public final class EspialDatabase {
             final String blockStatesCreation;
             final String entityTypesCreation;
             final String worldsCreation;
+            final String signsCreation;
+
             final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
                     "record_id INT NOT NULL, " +
                     "original TEXT, " +
@@ -95,31 +101,48 @@ public final class EspialDatabase {
                     "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
                     ")";
 
+            final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
+                    "record_id INT NOT NULL, " +
+                    "original INT NOT NULL, " +
+                    "replacement INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (original) REFERENCES signs(id), " +
+                    "FOREIGN KEY (replacement) REFERENCES signs(id)" +
+                    ")";
+
             // Databases need to be made differently on different databases.
             this.sqlite = connectionString.contains("sqlite");
             if (sqlite) {
                 Espial.getInstance().getLogger().info("Detected database type: sqlite");
 
-                recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                recordsCreation = "CREATE TABLE IF NOT EXISTS records " +
+                        "(id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
             } else {
                 // Probably MySQL/MariaDB or whatever. use a different statement
 
                 Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
 
-                recordsCreation = "CREATE TABLE IF NOT EXISTS records (id INT AUTO_INCREMENT PRIMARY KEY, ";
+                recordsCreation = "CREATE TABLE IF NOT EXISTS records (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
                 blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
                 entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
                 worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
+                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
             }
+
+            // order matters! Be careful.
 
             conn.prepareStatement(recordsCreation +
                     "type TINYINT NOT NULL, " +
@@ -135,11 +158,20 @@ public final class EspialDatabase {
                     "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
                     "FOREIGN KEY (world) REFERENCES worlds(id)" +
                     ")").execute();
-
             conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
             conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(entityTypesCreation + "resource_key TEXT NOT NULL)").execute();
             conn.prepareStatement(worldsCreation + "resource_key TEXT NOT NULL)").execute();
+            conn.prepareStatement(signsCreation +
+                    "front_1 VARCHAR(384), " +
+                    "front_2 VARCHAR(384), " +
+                    "front_3 VARCHAR(384), " +
+                    "front_4 VARCHAR(384), " +
+                    "back_1 VARCHAR(384), " +
+                    "back_2 VARCHAR(384), " +
+                    "back_3 VARCHAR(384), " +
+                    "back_4 VARCHAR(384))").execute();
+            conn.prepareStatement(signCreation).execute();
             conn.prepareStatement(extraCreation).execute();
 
             if (sqlite) {
@@ -249,21 +281,43 @@ public final class EspialDatabase {
                         insertExtra.execute();
                     }
                 } else if (record instanceof final SignModifyRecord signModifyRecord) {
-                    // turn sign stuff into json stuff
+                    // TODO: ideally each side is stored individually (as opposed to both sides)
+                    // or heck even each line, but that's way too much effort :)
+                    final SignText original = signModifyRecord.getOriginalContents();
+                    final SignText replacement = signModifyRecord.getReplacementContents();
 
-                    final JsonArray original = new JsonArray();
-                    signModifyRecord.getOriginalContents().stream()
-                            .map(component -> GsonComponentSerializer.gson().serializeToTree(component))
-                            .forEach(original::add);
-                    final JsonArray replacement = new JsonArray();
-                    signModifyRecord.getReplacementContents().stream()
-                            .map(component -> GsonComponentSerializer.gson().serializeToTree(component))
-                            .forEach(replacement::add);
+                    final Map<String, String> originalSign = Map.of(
+                            "front_1", componentToString(original.getFront1()),
+                            "front_2", componentToString(original.getFront2()),
+                            "front_3", componentToString(original.getFront3()),
+                            "front_4", componentToString(original.getFront4()),
 
-                    insertExtra.setInt(1, id);
-                    insertExtra.setString(2, original.toString());
-                    insertExtra.setString(3, replacement.toString());
-                    insertExtra.execute();
+                            "back_1", componentToString(original.getBack1()),
+                            "back_2", componentToString(original.getBack2()),
+                            "back_3", componentToString(original.getBack3()),
+                            "back_4", componentToString(original.getBack4())
+                    );
+
+                    final Map<String, String> replacementSign = Map.of(
+                            "front_1", componentToString(replacement.getFront1()),
+                            "front_2", componentToString(replacement.getFront2()),
+                            "front_3", componentToString(replacement.getFront3()),
+                            "front_4", componentToString(replacement.getFront4()),
+
+                            "back_1", componentToString(replacement.getBack1()),
+                            "back_2", componentToString(replacement.getBack2()),
+                            "back_3", componentToString(replacement.getBack3()),
+                            "back_4", componentToString(replacement.getBack4())
+                    );
+
+                    final int originalId = getOrCreateId(conn, "signs", originalSign);
+                    final int replacementId = getOrCreateId(conn, "signs", replacementSign);
+
+                    final PreparedStatement insertSign = conn.prepareStatement("INSERT INTO sign (record_id, original, replacement) VALUES (?, ?, ?)");
+                    insertSign.setInt(1, id);
+                    insertSign.setInt(2, originalId);
+                    insertSign.setInt(3, replacementId);
+                    insertSign.execute();
 
                     final int state = getOrCreateId(conn, "block_states", "state",
                             signModifyRecord.getBlockState().asString());
@@ -293,6 +347,22 @@ public final class EspialDatabase {
         final StringBuilder sql = new StringBuilder(
                 "SELECT " +
                         "records.*, " +
+                        "signs_original.front_1 AS original_front_1, " +
+                        "signs_original.front_2 AS original_front_2, " +
+                        "signs_original.front_3 AS original_front_3, " +
+                        "signs_original.front_4 AS original_front_4, " +
+                        "signs_original.back_1  AS original_back_1, " +
+                        "signs_original.back_2  AS original_back_2, " +
+                        "signs_original.back_3  AS original_back_3, " +
+                        "signs_original.back_4  AS original_back_4, " +
+                        "signs_replacement.front_1 AS replacement_front_1, " +
+                        "signs_replacement.front_2 AS replacement_front_2, " +
+                        "signs_replacement.front_3 AS replacement_front_3, " +
+                        "signs_replacement.front_4 AS replacement_front_4, " +
+                        "signs_replacement.back_1  AS replacement_back_1, " +
+                        "signs_replacement.back_2  AS replacement_back_2, " +
+                        "signs_replacement.back_3  AS replacement_back_3, " +
+                        "signs_replacement.back_4  AS replacement_back_4, " +
                         "extra.original AS extra_original, " +
                         "extra.replacement AS extra_replacement, " +
                         "original.state AS state_original, " +
@@ -305,6 +375,9 @@ public final class EspialDatabase {
                         "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
                         "LEFT JOIN block_states AS original ON bs.original = original.id " +
                         "LEFT JOIN block_states AS replacement ON bs.replacement = replacement.id " +
+                        "LEFT JOIN sign ON records.id = sign.record_id " +
+                        "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
+                        "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
                         "JOIN entity_types ON records.entity_type = entity_types.id " +
                         "JOIN worlds ON records.world = worlds.id " +
                         "WHERE worlds.resource_key = ? " +
@@ -430,6 +503,41 @@ public final class EspialDatabase {
         }
         keys.next();
         return keys.getInt(1);
+    }
+
+    private int getOrCreateId(final Connection conn, final String table, final Map<String, String> data) throws SQLException {
+        final String whereClause = data.keySet().stream()
+                .map(k -> k + " = ?")
+                .collect(Collectors.joining(" AND "));
+        final PreparedStatement select = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + whereClause);
+        int i = 1;
+        for (final String value : data.values()) {
+            select.setString(i++, value);
+        }
+        final ResultSet rs = select.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+        final String columns = String.join(", ", data.keySet());
+        final String placeholders = data.keySet().stream().map(k -> "?").collect(Collectors.joining(", "));
+        final PreparedStatement insert = conn.prepareStatement(
+                "INSERT INTO " + table + " (" + columns + ") VALUES (" + placeholders + ")", Statement.RETURN_GENERATED_KEYS);
+        i = 1;
+        for (final String value : data.values()) {
+            insert.setString(i++, value);
+        }
+        insert.executeUpdate();
+
+        final ResultSet keys = sqlite
+                ? conn.prepareStatement("SELECT last_insert_rowid()").executeQuery()
+                : insert.getGeneratedKeys();
+        keys.next();
+        return keys.getInt(1);
+    }
+
+    private static String componentToString(final Component component) {
+        return GsonComponentSerializer.gson().serialize(component);
     }
 
 }

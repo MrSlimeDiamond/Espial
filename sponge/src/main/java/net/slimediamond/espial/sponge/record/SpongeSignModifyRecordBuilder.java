@@ -1,29 +1,27 @@
 package net.slimediamond.espial.sponge.record;
 
-import net.kyori.adventure.text.Component;
+import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.block.BlockState;
 
-import java.util.List;
-
 public class SpongeSignModifyRecordBuilder extends SpongeRecordBuilder<SignModifyRecord.Builder>
         implements SignModifyRecord.Builder {
 
-    private List<Component> originalContents;
-    private List<Component> replacementContents;
+    private SignText originalContents;
+    private SignText replacementContents;
     private BlockState blockState;
     private boolean frontSide = true;
 
     @Override
-    public SignModifyRecord.Builder originalContents(final List<Component> originalContents) {
+    public SignModifyRecord.Builder originalContents(final SignText originalContents) {
         this.originalContents = originalContents;
         return this;
     }
 
     @Override
-    public SignModifyRecord.Builder replacementContents(final List<Component> replacementContents) {
+    public SignModifyRecord.Builder replacementContents(final SignText replacementContents) {
         this.replacementContents = replacementContents;
         return this;
     }

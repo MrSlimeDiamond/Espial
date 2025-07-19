@@ -1,5 +1,7 @@
 package net.slimediamond.espial.sponge.listeners;
 
+import net.kyori.adventure.text.Component;
+import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
@@ -33,6 +35,7 @@ import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.plugin.PluginContainer;
 
+import java.util.List;
 import java.util.Optional;
 
 public class SpongeListeners {
@@ -125,9 +128,20 @@ public class SpongeListeners {
 
     @Listener
     public void onSignChange(final ChangeSignEvent event, @First final Player player) {
+        final List<Component> front;
+        final List<Component> back;
+
+        if (event.isFrontSide()) {
+            front = event.text().all();
+            back = event.sign().backText().lines().all();
+        } else {
+            front = event.sign().frontText().lines().all();
+            back = event.text().all();
+        }
+
         Espial.getInstance().getEspialService().submit(SignModifyRecord.builder()
-                .originalContents(event.originalText().all())
-                .replacementContents(event.text().all())
+                .originalContents(SignText.from(event.sign().frontText(), event.sign().backText()))
+                .replacementContents(SignText.from(front, back))
                 .entityType(player.type())
                 .user(player.uniqueId())
                 .event(EspialEvents.SIGN_MODIFY.get())
