@@ -16,23 +16,23 @@ Sorry for this inconvenience.
   * Base command. If no subcommand is specified, defaults to an info screen
   * **lookup | l**
     * Permission: espial.command.lookup
-    * Look up a block. Defaults to the block you are looking at.
+    * Query server logs for grief
     * Flags:
-      *  *[-s]* - Do not group outputs
+      *  `-s` - Do not group outputs
       * Everything from query command flags (below).
   * **near**
     * Permission: espial.command.lookup
-    * Look up within 5 blocks of you. Basically an alias for **/es l -r 5**
+    * Look up within 5 blocks of you. Basically an alias for `/es l -r 5`
     * Flags:
-      * Everything from query command flags (below).
+      * `-s` - Do not group outputs
   * **rollback | rb**
     * Permission: espial.command.rollback
-    * Roll back a block or a range. Defaults to the block you are looking at
+    * Roll back a selection to a certain point in time. Default limit is 3 days
     * Flags:
       * Everything from query command flags (below).
   * **restore | rs**
     * Permission: espial.command.restore
-    * Restore a block or a range. Defaults to the block you are looking at
+    * Restore previously rolled back changes. Default limit is 3 days
     * Flags:
       * Everything from query command flags (below).
   * **interactive | i**
@@ -40,24 +40,22 @@ Sorry for this inconvenience.
     * Enter an interactive inspector mode where you can break or place blocks to query.
   * **undo**
     * Permission: espial.command.undo
-    * Revert you previous action(s).
+    * Revert your previous action(s).
   * **redo**
     * Permission: espial.command.redo
     * Revert your previous undoals.
-  * **nearbysigns | signsnear | signs**
-    * Permission: espial.command.signs
+  * **nearbysigns**
+    * Permission: espial.command.nearbysigns
     * Lookup nearby signs
     * Can also be used as a base command (**/nearbysigns**)
     * Flags: 
-      * *[-r \<range\>]* - Lookup a cuboid range
-  * **isthisblockmine | isthismyblock | myblock**
-    * Permission: espial.command.myblock
-    * Check if a block was placed by you
-    * Can also be used as a base command (**/isthisblockmine**)
-  * **whoplacedthis**
-    * Permission: espial.command.whoplacedthis
-    * Show the player who placed a block and nothing more.
-    * Can also be used as a base command (**/whoplacedthis**)
+      * Everything from query command flags (below).
+  * **wand | w**
+    * Permission: espial.command.wand
+    * Create a wand item which can be used to lookup, rollback, or restore a block
+    * Flags:
+      * *`-m [maximum]`* - Specify a maximum amount of uses the wand has. When the flag `-m` is specified,
+      defaults to 1, but otherwise the maximum uses is infinite.
 
 ## Query command flags
 | Usage                 | Description                                                             |
@@ -69,6 +67,14 @@ Sorry for this inconvenience.
 | `-e <event>`          | Specify a certain **Espial event** to filter for                        |
 | `-t <duration>`       | Query for logs **after** a specific date. Specified in duration format  |
 | `--before <duration>` | Query for logs **before** a specific date. Specified in duration format |
+
+## Configuration
+| Node             | Default                 | Description                                                                                                         |
+|------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------|
+| ignored-events   | *(empty)*               | A list of events which are ignored, in resource key format (e.g. `espial:break`)                                    |
+| jdbc             | `jdbc:sqlite:espial.db` | The string used to connect to the database, e.g. `jdbc:mysql://localhost:3306/DATABASE?user=USER&password=PASSWORD` |
+| log-players-only | `false`                 | Whether to log only **player-caused events**, not other causes, such as creepers, TNT, etc                          |
+| near-range       | `5`                     | The range that the `/es near` and `/es nearbysigns` commands use                                                    |
 
 ## Server admin usage
 > Espial only supports SpongeAPI 12+
@@ -87,12 +93,6 @@ The following tools are required
 * [Git](https://git-scm.com/)
 
 ### Compiling
-| Directory   | Description                 |
-|-------------|-----------------------------|
-| src/        | Common source code (Sponge) |
-| api/        | API source code             |
-
-#### General compile
 Use `gradle build` and find the jars in `build/libs` (not in the submodules)
 
 | Pattern                          | Description                  |
