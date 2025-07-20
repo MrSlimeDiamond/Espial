@@ -69,7 +69,6 @@ public final class EspialDatabase {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        config.setMaximumPoolSize(2); // TODO config value?
         config.setMaximumPoolSize(4); // TODO config value?
         config.setIdleTimeout(600000); // 10 minutes
         config.setMaxLifetime(1800000); // 30 minutes
@@ -143,25 +142,9 @@ public final class EspialDatabase {
             }
 
             // order matters! Be careful.
-
-            conn.prepareStatement(recordsCreation +
-                    "type TINYINT NOT NULL, " +
-                    "time TIMESTAMP NOT NULL, " +
-                    "player_uuid CHAR(36), " +
-                    "entity_type INT NOT NULL, " +
-                    "target TINYTEXT NOT NULL, " +
-                    "world INT NOT NULL, " +
-                    "x INT NOT NULL, " +
-                    "y INT NOT NULL, " +
-                    "z INT NOT NULL, " +
-                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE, " +
-                    "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
-                    "FOREIGN KEY (world) REFERENCES worlds(id)" +
-                    ")").execute();
-            conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
-            conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(entityTypesCreation + "resource_key TEXT NOT NULL)").execute();
             conn.prepareStatement(worldsCreation + "resource_key TEXT NOT NULL)").execute();
+            conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
             conn.prepareStatement(signsCreation +
                     "front_1 VARCHAR(384), " +
                     "front_2 VARCHAR(384), " +
@@ -171,8 +154,24 @@ public final class EspialDatabase {
                     "back_2 VARCHAR(384), " +
                     "back_3 VARCHAR(384), " +
                     "back_4 VARCHAR(384))").execute();
+            conn.prepareStatement(recordsCreation +
+                    "type TINYINT NOT NULL, " +
+                    "time TIMESTAMP NOT NULL, " +
+                    "player_uuid CHAR(36), " +
+                    "entity_type INT NOT NULL, " +
+                    "target VARCHAR(255) NOT NULL, " +
+                    "world INT NOT NULL, " +
+                    "x INT NOT NULL, " +
+                    "y INT NOT NULL, " +
+                    "z INT NOT NULL, " +
+                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE, " +
+                    "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
+                    "FOREIGN KEY (world) REFERENCES worlds(id)" +
+                    ")").execute();
+            conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(signCreation).execute();
             conn.prepareStatement(extraCreation).execute();
+
 
             if (sqlite) {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
@@ -459,6 +458,9 @@ public final class EspialDatabase {
     }
 
     public void batchSetRolledBack(@NotNull final List<EspialRecord> records, final boolean rolledBack) throws SQLException {
+        if (records.isEmpty()) {
+            return;
+        }
         try (final Connection conn = getConn()) {
             final String placeholders = String.join(", ", Collections.nCopies(records.size(), "?"));
             final PreparedStatement ps = conn.prepareStatement(
