@@ -2,6 +2,5 @@ include:
   - component: $CI_SERVER_FQDN/$CI_PROJECT_NAMESPACE/ci-cd/gradle@0.3
     inputs:
       image: amazoncorretto:21
-      publish: branch-pattern
-      publish-branch-pattern: "(master|v2r)"
+      publish: all-default-branch
       publish-task: publishAllPublicationsToGitLabRepository

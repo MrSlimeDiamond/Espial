@@ -5,7 +5,7 @@ plugins {
 allprojects {
     plugins.apply("maven-publish")
     group = "net.slimediamond"
-    version = "2.0r-SNAPSHOT"
+    version = "2.0-SNAPSHOT"
     publishing {
         repositories {
             maven {
