@@ -11,7 +11,9 @@ import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.services.EspialServiceProvider;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.commands.NearbySignsCommand;
 import net.slimediamond.espial.sponge.commands.RootCommand;
+import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.configuration.Configuration;
 import net.slimediamond.espial.sponge.data.EspialKeys;
 import net.slimediamond.espial.sponge.event.SpongeEspialEventBuilder;
@@ -118,9 +120,14 @@ public class Espial {
 
     @Listener
     public void onRegisterCommands(final RegisterCommandEvent<Command.Parameterized> event) {
-        RootCommand rootCommand = new RootCommand();
-        event.register(this.container, rootCommand.build(), rootCommand.getAliases().getFirst(),
-                rootCommand.getAliases().toArray(new String[0]));
+        registerCommand(event, new RootCommand());
+        registerCommand(event, new NearbySignsCommand());
+    }
+
+    private void registerCommand(final RegisterCommandEvent<Command.Parameterized> event,
+                                 final AbstractCommand command) {
+        event.register(this.container, command.build(), command.getAliases().getFirst(),
+                command.getAliases().toArray(new String[0]));
     }
 
     @Listener
