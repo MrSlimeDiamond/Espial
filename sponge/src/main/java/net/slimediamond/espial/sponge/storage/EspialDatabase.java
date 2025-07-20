@@ -263,10 +263,14 @@ public final class EspialDatabase {
                         if (blockRecord.getOriginalBlock().toContainer().contains(unsafeData)) {
                             insertExtra.setString(2, DataFormats.JSON.get()
                                     .write(blockRecord.getOriginalBlock().toContainer()));
+                        } else {
+                            insertExtra.setNull(2, Types.CHAR);
                         }
                         if (blockRecord.getReplacementBlock().toContainer().contains(unsafeData)) {
                             insertExtra.setString(3, DataFormats.JSON.get()
                                     .write(blockRecord.getReplacementBlock().toContainer()));
+                        } else {
+                            insertExtra.setNull(3, Types.CHAR);
                         }
                         insertExtra.execute();
                     }
