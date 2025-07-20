@@ -42,4 +42,8 @@ public class Permissions {
             "espial.command.wand.other"
     );
 
+    public static final Permission PURGE = Permission.of(
+            "espial.command.purge"
+    );
+
 }

@@ -1,6 +1,5 @@
 package net.slimediamond.espial.sponge.storage;
 
-import com.google.gson.JsonArray;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.kyori.adventure.text.Component;
@@ -544,6 +543,30 @@ public final class EspialDatabase {
 
     private static String componentToString(final Component component) {
         return GsonComponentSerializer.gson().serialize(component);
+    }
+
+    public void delete(final int id) throws SQLException {
+        try (final Connection conn = getConn()) {
+            final PreparedStatement ps = conn.prepareStatement("DELETE FROM records WHERE id = ?");
+            ps.setInt(1, id);
+            ps.execute();
+        }
+    }
+
+    public void batchDelete(final List<Integer> ids) throws SQLException {
+        if (ids.isEmpty()) {
+            return;
+        }
+        try (final Connection conn = getConn()) {
+            final String placeholders = String.join(", ", Collections.nCopies(ids.size(), "?"));
+            final PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM records WHERE id IN (" + placeholders + ")"
+            );
+            for (int i = 0; i < ids.size(); i++) {
+                ps.setInt(i + 1, ids.get(i));
+            }
+            ps.executeUpdate();
+        }
     }
 
 }

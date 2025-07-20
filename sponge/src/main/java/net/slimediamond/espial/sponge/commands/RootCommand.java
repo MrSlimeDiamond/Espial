@@ -25,6 +25,11 @@ public class RootCommand extends AbstractCommand {
         addChild(new NearbySignsCommand());
         addChild(new QueueCommand());
         addChild(new WandCommand());
+
+        // ...safety guard
+        if (Espial.getInstance().getConfig().isPurgeCommandEnabled()) {
+            addChild(new PurgeCommand());
+        }
     }
 
     @Override

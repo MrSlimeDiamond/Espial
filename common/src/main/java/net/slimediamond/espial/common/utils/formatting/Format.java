@@ -13,7 +13,7 @@ public class Format {
     public static final TextColor ACCENT_COLOR = TextColor.color(156, 226, 171);
     public static final TextColor TEXT_COLOR = TextColor.color(230, 255, 240);
     public static final TextColor DULL_COLOR = NamedTextColor.DARK_GRAY;
-    public static final TextColor DEBUG_COLOR = TextColor.color(255, 243, 0);
+    public static final TextColor WARNING_COLOR = TextColor.color(255, 243, 0);
     public static final TextColor PADDING_COLOR = TextColor.color(224, 186, 215);
     public static final TextColor ERROR_COLOR = NamedTextColor.RED;
     public static final TextColor DETAIL_KEY_COLOR = TextColor.color(49, 175, 212);
@@ -23,7 +23,6 @@ public class Format {
 
     public static final Component PADDING = Component.text("=").color(PADDING_COLOR);
     public static final Component PREFIX = Component.text("Espial › ").color(THEME_COLOR);
-    public static final Component DEBUG_PREFIX = PREFIX.append(Component.text("Debug › ")).color(DEBUG_COLOR);
     public static final Component NO_RECORDS_FOUND = Format.error("No records were found");
 
     public static Component component(final Component component) {
@@ -75,8 +74,8 @@ public class Format {
         return Component.text(text).color(DULL_COLOR);
     }
 
-    public static Component debug(final String text) {
-        return Component.text().append(DEBUG_PREFIX).append(Component.text(text)).build();
+    public static Component warn(final String text) {
+        return component(Component.text(text).color(Format.WARNING_COLOR));
     }
 
     public static Component detail(final String key, final String value) {

@@ -102,6 +102,7 @@ public abstract class RecordResultCommand extends AbstractCommand {
 
     protected void addSelector(@NotNull final Selector selector) {
         selectors.add(selector);
+        selector.getFlag().ifPresent(flag -> addFlag(flag.getFlag(), flag.getDescription()));
     }
 
     public void displayRecords(final CommandContext context, final List<EspialRecord> records, final boolean spread) {

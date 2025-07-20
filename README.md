@@ -69,12 +69,13 @@ Sorry for this inconvenience.
 | `--before <duration>` | Query for logs **before** a specific date. Specified in duration format |
 
 ## Configuration
-| Node             | Default                 | Description                                                                                                         |
-|------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------|
-| ignored-events   | *(empty)*               | A list of events which are ignored, in resource key format (e.g. `espial:break`)                                    |
-| jdbc             | `jdbc:sqlite:espial.db` | The string used to connect to the database, e.g. `jdbc:mysql://localhost:3306/DATABASE?user=USER&password=PASSWORD` |
-| log-players-only | `false`                 | Whether to log only **player-caused events**, not other causes, such as creepers, TNT, etc                          |
-| near-range       | `5`                     | The range that the `/es near` and `/es nearbysigns` commands use                                                    |
+| Node                  | Default                 | Description                                                                                                         |
+|-----------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------|
+| ignored-events        | *(empty)*               | A list of events which are ignored, in resource key format (e.g. `espial:break`)                                    |
+| jdbc                  | `jdbc:sqlite:espial.db` | The string used to connect to the database, e.g. `jdbc:mysql://localhost:3306/DATABASE?user=USER&password=PASSWORD` |
+| log-players-only      | `false`                 | Whether to log only **player-caused events**, not other causes, such as creepers, TNT, etc                          |
+| near-range            | `5`                     | The range that the `/es near` and `/es nearbysigns` commands use                                                    |
+| purge-command-enabled | `false`                 | Whether the `/es purge` command is enabled, which deletes records **permanently**                                   |
 
 ## Server admin usage
 > Espial only supports SpongeAPI 12+

@@ -73,4 +73,9 @@ public class Parameters {
             .optional()
             .build();
 
+    public static final Parameter.Value<Boolean> GLOBAL = Parameter.bool()
+            .key("global")
+            .optional()
+            .build();
+
 }

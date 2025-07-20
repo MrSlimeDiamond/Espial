@@ -27,6 +27,11 @@ public class Configuration {
     @Comment("With this enabled, only events done by players are logged")
     private boolean logPlayersOnly = false;
 
+    @Setting
+    @Comment("Whether the '/es purge' command is enabled. " +
+            "This is very dangerous, hence the config value")
+    private boolean purgeCommandEnabled = false;
+
     public String getJdbc() {
         return jdbc;
     }
@@ -41,6 +46,10 @@ public class Configuration {
 
     public boolean isLogPlayersOnly() {
         return logPlayersOnly;
+    }
+
+    public boolean isPurgeCommandEnabled() {
+        return purgeCommandEnabled;
     }
 
 }
