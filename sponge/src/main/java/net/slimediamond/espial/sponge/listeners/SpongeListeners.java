@@ -6,6 +6,7 @@ import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
+import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
@@ -19,6 +20,7 @@ import net.slimediamond.espial.sponge.query.EspialQueries;
 import net.slimediamond.espial.sponge.wand.QueryBuilderCache;
 import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
@@ -130,7 +132,12 @@ public class SpongeListeners {
 
             playerOptional.ifPresent(player -> builder.user(player.uniqueId()));
 
-            Espial.getInstance().getEspialService().submit(builder.build());
+            final EspialRecord record = builder.build();
+            if (record.getTarget().equals(BlockTypes.AIR.location().formatted())) {
+                return;
+            }
+
+            Espial.getInstance().getEspialService().submit(record);
         }
     }
 
