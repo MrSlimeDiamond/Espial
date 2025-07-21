@@ -7,6 +7,7 @@ import net.slimediamond.espial.common.permission.Permission;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
+import net.slimediamond.espial.sponge.commands.subsystem.HelpCommand;
 import net.slimediamond.espial.sponge.query.selector.RangeSelector;
 import net.slimediamond.espial.sponge.query.selector.Selector;
 import net.slimediamond.espial.sponge.query.selector.Vector3iRange;
@@ -52,6 +53,10 @@ public abstract class RecordResultCommand extends AbstractCommand {
 
     @Override
     public CommandResult execute(final CommandContext context) throws CommandException {
+        // This can throw a CommandException, so if we don't meet some preconditions
+        // then we can exit
+        prerequisites();
+
         final ServerLocation location = context.cause().location()
                 .orElseThrow(() -> new CommandException(Component.text("You must have a location to use this command")));
         Vector3iRange selection = null;
@@ -66,7 +71,9 @@ public abstract class RecordResultCommand extends AbstractCommand {
         }
 
         if (selection == null) {
-            return CommandResult.error(Format.error("You need to provide a selector!"));
+            // show help
+            context.sendMessage(Format.error("You need to provide a selector"));
+            return new HelpCommand(this).execute(context);
         }
 
         final EspialQuery.Builder builder = CommandUtils.getQueryBuilder(context);
@@ -74,7 +81,6 @@ public abstract class RecordResultCommand extends AbstractCommand {
         builder.minimum(selection.getMinimum());
         builder.maximum(selection.getMaximum());
         builder.worldKey(location.worldKey());
-
 
         final EspialQuery query = builder.build();
 
@@ -95,6 +101,10 @@ public abstract class RecordResultCommand extends AbstractCommand {
     }
 
     public abstract void apply(final CommandContext context, final List<EspialRecord> records);
+
+    public void prerequisites() throws CommandException {
+
+    }
 
     protected void addPredicate(@NotNull final Predicate<EspialRecord> predicate) {
         predicates.add(predicate);

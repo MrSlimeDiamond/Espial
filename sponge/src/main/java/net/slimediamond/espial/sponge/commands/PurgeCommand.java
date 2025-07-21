@@ -7,6 +7,7 @@ import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import net.slimediamond.espial.sponge.query.selector.GlobalSelector;
+import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 
 import java.sql.SQLException;
@@ -20,6 +21,14 @@ public class PurgeCommand extends RecordResultCommand {
         addAlias("purge");
         addSelector(new GlobalSelector());
         addFlag(Flags.YES, Component.text("Confirm the removal of records"));
+    }
+
+    @Override
+    public void prerequisites() throws CommandException {
+        if (!Espial.getInstance().getConfig().isPurgeCommandEnabled()) {
+            throw new CommandException(Format.error("The purge command is currently disabled " +
+                    "in the server's config. Please enable it and try again"));
+        }
     }
 
     @Override

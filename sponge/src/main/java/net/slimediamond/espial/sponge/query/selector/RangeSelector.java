@@ -17,6 +17,9 @@ public class RangeSelector implements Selector {
     @Override
     public Vector3iRange select(@NotNull final CommandContext context) throws CommandException {
         final int range = context.one(Parameters.RANGE).orElse(Espial.getInstance().getConfig().getNearRange());
+        if (getFlag().isEmpty()) {
+            context.sendMessage(Format.defaults("Range: " + range + " blocks"));
+        }
         final Vector3i origin = context.cause().location()
                 .orElseThrow(() -> new CommandException(Format.error("Only things with a location can run this")))
                 .blockPosition();

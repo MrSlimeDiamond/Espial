@@ -26,19 +26,27 @@ public class Format {
     public static final Component NO_RECORDS_FOUND = Format.error("No records were found");
 
     public static Component component(final Component component) {
-        return PREFIX.append(component);
+        return Component.text().append(PREFIX).append(component).build().color(component.color());
     }
 
     public static Component component(final TextComponent.Builder builder) {
         return component(builder.build());
     }
 
+    public static Component text(final Component component) {
+        return component(component.color(TEXT_COLOR));
+    }
+
     public static Component text(final String text) {
-        return PREFIX.append(Component.text(text).color(TEXT_COLOR));
+        return text(Component.text(text));
+    }
+
+    public static Component error(final Component component) {
+        return component(component.color(ERROR_COLOR));
     }
 
     public static Component error(final String text) {
-        return component(Component.text(text).color(ERROR_COLOR));
+        return error(Component.text(text));
     }
 
     public static Component commandHint(final String command) {

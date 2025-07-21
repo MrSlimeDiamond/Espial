@@ -44,15 +44,14 @@ public class SpongeEspialEvent implements EspialEvent {
     }
 
     @Override
-    public Component getVerbComponent() {
-        return Component.text(this.verb)
-                .hoverEvent(HoverEvent.showText(Format.title("Event")
+    public HoverEvent<Component> getHoverEvent() {
+                return HoverEvent.showText(Format.title("Event")
                         .appendNewline()
                         .append(Format.detail("Name", this.name))
                         .appendNewline()
                         .append(Format.detail("ID", String.valueOf(this.id)))
                         .appendNewline()
-                        .append(Format.detail("Description", this.description))));
+                        .append(Format.detail("Description", this.description)));
     }
 
     @Override

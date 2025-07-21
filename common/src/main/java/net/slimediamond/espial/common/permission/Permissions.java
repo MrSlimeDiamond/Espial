@@ -46,4 +46,20 @@ public class Permissions {
             "espial.command.purge"
     );
 
+    public static final Permission RELOAD = Permission.of(
+            "espial.command.reload"
+    );
+
+    public static final Permission EVENTS = Permission.of(
+            "espial.command.events"
+    );
+
+    public static final Permission EVENTS_ENABLE = Permission.of(
+            "espial.command.events.enable"
+    );
+
+    public static final Permission EVENTS_DISABLE = Permission.of(
+            "espial.command.events.disable"
+    );
+
 }

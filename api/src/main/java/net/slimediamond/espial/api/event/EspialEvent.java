@@ -1,6 +1,8 @@
 package net.slimediamond.espial.api.event;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.registry.DefaultedRegistryValue;
@@ -8,7 +10,7 @@ import org.spongepowered.api.util.annotation.CatalogedBy;
 
 
 @CatalogedBy(EspialEvents.class)
-public interface EspialEvent extends DefaultedRegistryValue {
+public interface EspialEvent extends DefaultedRegistryValue, ComponentLike {
 
     /**
      * Get the ID of the Espial event
@@ -42,11 +44,26 @@ public interface EspialEvent extends DefaultedRegistryValue {
     String getVerb();
 
     /**
+     * Get the text shown when hovering over the event
+     * name or verb
+     *
+     * @return Hover component
+     */
+    HoverEvent<Component> getHoverEvent();
+
+    /**
      * Get the event's verb as a component
      *
      * @return Verb component
      */
-    Component getVerbComponent();
+    default Component getVerbComponent() {
+        return Component.text(getVerb()).hoverEvent(getHoverEvent());
+    }
+
+    @Override
+    default @NotNull Component asComponent() {
+        return Component.text(getName()).hoverEvent(getHoverEvent());
+    }
 
     static Builder builder() {
         return Sponge.game().builderProvider().provide(Builder.class);

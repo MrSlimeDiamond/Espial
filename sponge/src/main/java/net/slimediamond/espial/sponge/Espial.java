@@ -1,7 +1,6 @@
 package net.slimediamond.espial.sponge;
 
 import com.google.inject.Inject;
-import net.slimediamond.espial.api.EspialResourceKey;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -28,6 +27,7 @@ import net.slimediamond.espial.sponge.services.SpongeEspialService;
 import net.slimediamond.espial.sponge.storage.EspialDatabase;
 import net.slimediamond.espial.sponge.transaction.TransactionBuilder;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -37,6 +37,7 @@ import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.data.Key;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
+import org.spongepowered.api.event.lifecycle.RefreshGameEvent;
 import org.spongepowered.api.event.lifecycle.RegisterBuilderEvent;
 import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
 import org.spongepowered.api.event.lifecycle.RegisterDataEvent;
@@ -70,7 +71,7 @@ public class Espial {
 
     @DefaultConfig(sharedRoot = false)
     @Inject
-    private ConfigurationReference<CommentedConfigurationNode> reference;
+    private ConfigurationReference<@NotNull CommentedConfigurationNode> reference;
 
     public Espial() {
         if (instance != null) {
@@ -131,10 +132,27 @@ public class Espial {
     }
 
     @Listener
+    public void onRefresh(final RefreshGameEvent event) throws ConfigurateException {
+        reload();
+    }
+
+    public void reload() throws ConfigurateException {
+        logger.info("Reloading");
+        this.reference.load();
+        this.config = this.reference.referenceTo(Configuration.class).get();
+        logger.info("Finished reloading");
+    }
+
+    public void saveConfig() throws ConfigurateException {
+        logger.info("Saving config!");
+        this.reference.save();
+    }
+
+    @Listener
     public void onRegisterBuilders(final RegisterBuilderEvent event) {
         event.register(EspialEvent.Builder.class, SpongeEspialEventBuilder::new);
         event.register(BlockRecord.Builder.class, SpongeBlockRecordBuilder::new);
-        event.register(HangingDeathRecord.Builder.class,SpongeHangingDeathRecordBuilder::new);
+        event.register(HangingDeathRecord.Builder.class, SpongeHangingDeathRecordBuilder::new);
         event.register(SignModifyRecord.Builder.class, SpongeSignModifyRecordBuilder::new);
         event.register(EspialQuery.Builder.class, SpongeQueryBuilder::new);
         event.register(Transaction.Builder.class, TransactionBuilder::new);

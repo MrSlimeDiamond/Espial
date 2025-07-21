@@ -35,6 +35,9 @@ Sorry for this inconvenience.
     * Restore previously rolled back changes. Default limit is 3 days
     * Flags:
       * Everything from query command flags (below).
+  * **reload**
+    * Permission: espial.command.reload
+    * Reload values from the configuration file
   * **interactive | i**
     * Permission: espial.command.interactive
     * Enter an interactive inspector mode where you can break or place blocks to query.
@@ -56,6 +59,12 @@ Sorry for this inconvenience.
     * Flags:
       * *`-m [maximum]`* - Specify a maximum amount of uses the wand has. When the flag `-m` is specified,
       defaults to 1, but otherwise the maximum uses is infinite.
+  * **purge**
+    * Permission: espial.command.purge
+    * Remove records permanently. Requires the config value `purge-command-enabled` to work (see below)
+    * Flags:
+      * `-g` - Use a global selection
+      * Everything from query command flags (below)
 
 ## Query command flags
 | Usage                 | Description                                                             |
@@ -112,14 +121,14 @@ There is an API available (which currently is not very well documented). With Gr
 **Gradle (Groovy)**
 ```groovy
 repositories {
-  maven {
-    name = 'zenoc-repo'
-    url = 'https://repo.zenoc.net/repository'
-  }
+    maven {
+      name = 'zenoc-repo'
+      url = 'https://repo.zenoc.net/repository'
+    }
   
-  dependencies {
-    compileOnly 'net.slimediamond:espial:{version}'
-  }
+    dependencies {
+      compileOnly 'net.slimediamond:espial:{version}'
+    }
 }
 ```
 

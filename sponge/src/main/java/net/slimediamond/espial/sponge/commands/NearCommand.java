@@ -30,7 +30,7 @@ public class NearCommand extends AbstractCommand {
                 .orElseThrow(() -> new CommandException(Component.text("You need a location to use this")));
 
         final int range = Espial.getInstance().getConfig().getNearRange();
-        context.sendMessage(Format.defaults("Range: 5 blocks"));
+        context.sendMessage(Format.defaults("Range: " + range + " blocks"));
 
         Espial.getInstance().getEspialService().query(EspialQuery.builder()
                 .worldKey(location.worldKey())

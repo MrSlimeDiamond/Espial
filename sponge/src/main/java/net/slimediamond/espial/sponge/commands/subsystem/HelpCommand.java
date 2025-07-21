@@ -7,6 +7,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.slimediamond.espial.common.utils.formatting.Format;
+import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -14,6 +15,8 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.service.pagination.PaginationList;
 
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class HelpCommand extends AbstractCommand {
 
@@ -30,7 +33,7 @@ public class HelpCommand extends AbstractCommand {
     }
 
     @Override
-    public CommandResult execute(CommandContext context) throws CommandException {
+    public CommandResult execute(CommandContext context) {
         final TextComponent.Builder header = Component.text()
                 .append(Component.text("Description: ").color(Format.TITLE_COLOR))
                 .append(parent.getDescription().color(Format.TEXT_COLOR));
@@ -63,6 +66,7 @@ public class HelpCommand extends AbstractCommand {
                 .padding(Format.PADDING)
                 .header(header.build())
                 .contents(this.parent.getChildren().stream()
+                        .sorted(Comparator.comparing(child -> child.getAliases().getFirst()))
                         .filter(child -> child.showInHelp)
                         .filter(child -> context.hasPermission(child.getPermission().get()))
                         .map(child ->
@@ -73,7 +77,7 @@ public class HelpCommand extends AbstractCommand {
                                                     String.join(", ", child.getAliases())))))
                                     .appendSpace()
                                     .append(child.getDescription().color(Format.TEXT_COLOR))
-                                    .clickEvent(ClickEvent.runCommand("/espial " + child.getAliases().getFirst() + " help"))
+                                    .clickEvent(SpongeComponents.executeCallback(cause -> new HelpCommand(child).execute(context)))
                                     .build().asComponent())
                             .toList());
 
