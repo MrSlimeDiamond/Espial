@@ -1,4 +1,4 @@
-package net.slimediamond.espial.common.permission;
+package net.slimediamond.espial.sponge.permission;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -7,7 +7,7 @@ import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
-import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
 import net.slimediamond.espial.sponge.record.SpongeSignModifyRecord;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionManager;

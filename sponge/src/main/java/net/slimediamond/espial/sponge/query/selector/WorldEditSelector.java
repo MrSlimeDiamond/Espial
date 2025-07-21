@@ -8,7 +8,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.sponge.SpongeAdapter;
 import net.kyori.adventure.text.Component;
-import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.commands.subsystem.Parameters;
 import net.slimediamond.espial.sponge.utils.CommandUtils;
 import org.jetbrains.annotations.NotNull;

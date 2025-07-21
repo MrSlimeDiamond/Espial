@@ -4,7 +4,7 @@ import io.leangen.geantyref.TypeToken;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.transaction.TransactionType;
-import net.slimediamond.espial.common.permission.Permissions;
+import net.slimediamond.espial.sponge.permission.Permissions;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;

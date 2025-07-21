@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
-import net.slimediamond.espial.common.permission.Permissions;
+import net.slimediamond.espial.sponge.permission.Permissions;
 import net.slimediamond.espial.sponge.query.selector.DefaultRangeSelector;
 import org.spongepowered.api.command.parameter.CommandContext;
 

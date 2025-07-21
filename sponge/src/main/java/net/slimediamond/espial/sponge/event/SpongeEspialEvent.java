@@ -3,7 +3,7 @@ package net.slimediamond.espial.sponge.event;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.slimediamond.espial.api.event.EspialEvent;
-import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
 
 public class SpongeEspialEvent implements EspialEvent {

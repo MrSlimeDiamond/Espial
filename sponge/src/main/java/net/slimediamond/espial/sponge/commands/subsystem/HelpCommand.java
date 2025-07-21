@@ -2,21 +2,17 @@ package net.slimediamond.espial.sponge.commands.subsystem;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.slimediamond.espial.common.utils.formatting.Format;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.service.pagination.PaginationList;
 
 import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class HelpCommand extends AbstractCommand {
 

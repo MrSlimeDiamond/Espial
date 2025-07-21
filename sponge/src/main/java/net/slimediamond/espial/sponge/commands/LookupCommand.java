@@ -2,7 +2,7 @@ package net.slimediamond.espial.sponge.commands;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.common.permission.Permissions;
+import net.slimediamond.espial.sponge.permission.Permissions;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import org.spongepowered.api.command.parameter.CommandContext;
 

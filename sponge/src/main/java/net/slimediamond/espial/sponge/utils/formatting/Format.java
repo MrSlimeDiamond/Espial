@@ -1,4 +1,4 @@
-package net.slimediamond.espial.common.utils.formatting;
+package net.slimediamond.espial.sponge.utils.formatting;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

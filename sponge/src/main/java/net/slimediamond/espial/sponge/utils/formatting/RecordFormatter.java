@@ -11,7 +11,6 @@ import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
-import net.slimediamond.espial.common.utils.formatting.Format;
 import net.slimediamond.espial.sponge.utils.TimeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.ResourceKey;
