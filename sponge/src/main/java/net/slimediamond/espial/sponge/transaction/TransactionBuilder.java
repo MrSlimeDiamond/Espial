@@ -35,7 +35,7 @@ public class TransactionBuilder implements Transaction.Builder {
         } else if (type.equals(TransactionTypes.RESTORE.get())) {
             return new RestoreTransaction(records);
         }
-        throw new IllegalStateException("Unsupported transaction type");
+        return new EmptyTransaction();
     }
 
 }

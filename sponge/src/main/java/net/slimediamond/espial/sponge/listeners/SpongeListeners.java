@@ -1,5 +1,6 @@
 package net.slimediamond.espial.sponge.listeners;
 
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.EspialEvent;
@@ -26,6 +27,7 @@ import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HandTypes;
+import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.hanging.Hanging;
@@ -215,6 +217,7 @@ public class SpongeListeners {
                     // durability is used up
                     removeItem(player, slot -> slot.peek().get(EspialKeys.WAND).orElse(false)
                             && slot.peek().get(EspialKeys.WAND_USES).orElse(0) == used);
+                    player.playSound(Sound.sound(SoundTypes.ENTITY_ITEM_BREAK, Sound.Source.PLAYER, 1, 1));
                     player.sendActionBar(Format.error("Wand durability used up!"));
 
                     // ...but still continue
@@ -236,7 +239,7 @@ public class SpongeListeners {
                     return;
                 }
                 Espial.getInstance().getEspialService().query(query.build()).thenAccept(records -> {
-                    final Transaction result = transactionOptional.get().apply(records);
+                    final Transaction result = transactionOptional.get().apply(records, player);
                     Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), result);
                     // TODO: messaging
                 });

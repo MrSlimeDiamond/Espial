@@ -47,6 +47,10 @@ public interface Transaction {
         return Sponge.game().builderProvider().provide(Builder.class);
     }
 
+    static Transaction empty() {
+        return builder().build();
+    }
+
     interface Builder extends org.spongepowered.api.util.Builder<Transaction, Builder> {
 
         /**

@@ -15,7 +15,6 @@ import org.spongepowered.api.entity.living.player.Player;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,18 +42,9 @@ public abstract class TransactionCommand extends RecordResultCommand {
             context.sendMessage(Format.defaults("After: 3 days ago"));
         }
 
-        sort(records);
-        final Transaction transaction = transactionType.apply(records);
+        final Transaction transaction = transactionType.apply(records, context.cause().audience());
         context.cause().first(Player.class).ifPresent(player ->
                 Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), transaction));
-        context.sendMessage(showResults(records));
     }
-
-    // for overriding
-    public void sort(List<EspialRecord> records) {
-        // nothing
-    }
-
-    public abstract Component showResults(List<EspialRecord> records);
 
 }
