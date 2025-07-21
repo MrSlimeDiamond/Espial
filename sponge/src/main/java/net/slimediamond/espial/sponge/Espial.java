@@ -158,22 +158,11 @@ public class Espial {
 
     @Listener
     public void onRegisterData(final RegisterDataEvent event) {
-        EspialKeys.WAND = Key.from(container, "is_wand", Boolean.class);
         event.register(DataRegistration.of(EspialKeys.WAND, ItemStack.class));
-
-        EspialKeys.WAND_FILTERS = Key.from(container, "wand_filters", Integer.class);
         event.register(DataRegistration.of(EspialKeys.WAND_FILTERS, ItemStack.class));
-
-        EspialKeys.WAND_DOES_LOOKUPS = Key.from(container, "wand_lookup", Boolean.class);
         event.register(DataRegistration.of(EspialKeys.WAND_DOES_LOOKUPS, ItemStack.class));
-
-        EspialKeys.WAND_TRANSACTION_TYPE = Key.from(container, "transaction_type", ResourceKey.class);
         event.register(DataRegistration.of(EspialKeys.WAND_TRANSACTION_TYPE, ItemStack.class));
-
-        EspialKeys.WAND_MAX_USES = Key.from(container, "wand_max_uses", Integer.class);
         event.register(DataRegistration.of(EspialKeys.WAND_MAX_USES, ItemStack.class));
-
-        EspialKeys.WAND_USES = Key.from(container, "wand_uses", Integer.class);
         event.register(DataRegistration.of(EspialKeys.WAND_USES, ItemStack.class));
     }
 
