@@ -20,10 +20,13 @@ import net.slimediamond.espial.sponge.data.EspialKeys;
 import net.slimediamond.espial.sponge.query.EspialQueries;
 import net.slimediamond.espial.sponge.wand.QueryBuilderCache;
 import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
+import org.spongepowered.api.block.transaction.Operations;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HandTypes;
@@ -54,14 +57,20 @@ import org.spongepowered.plugin.PluginContainer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class SpongeListeners {
 
     private static final Predicate<Slot> WAND_PREDICATE = slot -> slot.peek().get(EspialKeys.WAND).orElse(false);
+    // need to store resource key because Sponge registry isn't initialized yet
+    private static final Set<ResourceKey> IGNORED_MODIFICATION_BLOCK_TYPES = Set.of(
+            BlockTypes.REDSTONE_ORE.location(),
+            BlockTypes.DEEPSLATE_REDSTONE_ORE.location()
+    );
 
     @Listener(order = Order.EARLY)
-    public void onBlockChange(final InteractBlockEvent.Primary.Start event, @First ServerPlayer player) {
+    public void onBlockChange(final InteractBlockEvent.Primary.Start event, @First final ServerPlayer player) {
         event.block().location().ifPresent(location -> {
             if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
                 event.setCancelled(true);
@@ -73,7 +82,7 @@ public class SpongeListeners {
     }
 
     @Listener(order = Order.EARLY)
-    public void onBlockChange(final InteractBlockEvent.Secondary event, @First ServerPlayer player) {
+    public void onBlockChange(final InteractBlockEvent.Secondary event, @First final ServerPlayer player) {
         if (!event.context().get(EventContextKeys.USED_HAND).map(ht -> ht.equals(HandTypes.MAIN_HAND.get())).orElse(false)) {
             return;
         }
@@ -103,6 +112,12 @@ public class SpongeListeners {
             final BlockSnapshot replacement = transaction.finalReplacement();
             if (original.location().isEmpty() || replacement.location().isEmpty()) {
                 continue; // somehow no location
+            }
+            // some blocks, such as redstone ore, are very spammy in the logs when "modified"
+            // so hard-ignore some of them
+            if (IGNORED_MODIFICATION_BLOCK_TYPES.contains(original.state().type().key(RegistryTypes.BLOCK_TYPE))
+                    && transaction.operation().equals(Operations.MODIFY.get())) {
+                return;
             }
             final Optional<ServerPlayer> playerOptional = event.cause().first(ServerPlayer.class);
 
