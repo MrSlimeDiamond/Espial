@@ -18,7 +18,7 @@ public class RollbackTransactionType implements TransactionType {
 
     @Override
     public Transaction apply(final List<EspialRecord> records, final Audience audience) {
-        if (records.size() == 0) {
+        if (records.isEmpty()) {
             audience.sendMessage(Format.error("Nothing was rolled back"));
             return Transaction.empty();
         }
