@@ -2,11 +2,11 @@ package net.slimediamond.espial.sponge.commands;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.sponge.permission.Permissions;
-import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
+import net.slimediamond.espial.sponge.permission.Permissions;
 import net.slimediamond.espial.sponge.query.selector.GlobalSelector;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 

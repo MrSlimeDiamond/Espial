@@ -5,8 +5,8 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.api.transaction.TransactionType;
 import net.slimediamond.espial.api.transaction.TransactionTypes;
-import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 

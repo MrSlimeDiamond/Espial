@@ -2,8 +2,8 @@ package net.slimediamond.espial.sponge.query;
 
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.Espial;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.utils.formatting.RecordFormatter;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.pagination.PaginationList;

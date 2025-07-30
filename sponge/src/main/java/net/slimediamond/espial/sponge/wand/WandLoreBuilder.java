@@ -6,8 +6,8 @@ import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.data.EspialKeys;
+import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.inventory.ItemStackLike;
 
