@@ -3,15 +3,23 @@ package net.slimediamond.espial.sponge.registry;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
+import net.slimediamond.espial.api.transaction.TransactionType;
 import net.slimediamond.espial.api.transaction.TransactionTypes;
+import net.slimediamond.espial.api.wand.WandTypes;
 import net.slimediamond.espial.sponge.transaction.RestoreTransactionType;
 import net.slimediamond.espial.sponge.transaction.RollbackTransactionType;
+import net.slimediamond.espial.sponge.wand.types.LookupWand;
+import net.slimediamond.espial.sponge.wand.types.StageWand;
+import net.slimediamond.espial.sponge.wand.types.TransactionWand;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.lifecycle.RegisterRegistryEvent;
 
 import java.util.Map;
 
 public class EspialRegistryLoader {
+
+    private final TransactionType rollback = new RollbackTransactionType();
+    private final TransactionType restore = new RestoreTransactionType();
 
     @Listener
     public void onRegisterRegistries(final RegisterRegistryEvent.GameScoped event) {
@@ -73,8 +81,15 @@ public class EspialRegistryLoader {
         ));
 
         event.register(EspialRegistryTypes.TRANSACTION_TYPE.location(), false, () -> Map.of(
-                TransactionTypes.ROLLBACK.location(), new RollbackTransactionType(),
-                TransactionTypes.RESTORE.location(), new RestoreTransactionType()
+                TransactionTypes.ROLLBACK.location(), rollback,
+                TransactionTypes.RESTORE.location(), restore
+        ));
+
+        event.register(EspialRegistryTypes.WAND_TYPE.location(), false, () -> Map.of(
+                WandTypes.LOOKUP.location(), new LookupWand(),
+                WandTypes.ROLLBACK.location(), new TransactionWand(rollback),
+                WandTypes.RESTORE.location(), new TransactionWand(restore),
+                WandTypes.STAGE.location(), new StageWand()
         ));
     }
 

@@ -11,9 +11,8 @@ import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
-import net.slimediamond.espial.api.transaction.Transaction;
-import net.slimediamond.espial.api.transaction.TransactionType;
-import net.slimediamond.espial.api.transaction.TransactionTypes;
+import net.slimediamond.espial.api.wand.WandType;
+import net.slimediamond.espial.api.wand.WandTypes;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.data.EspialKeys;
 import net.slimediamond.espial.sponge.query.EspialQueries;
@@ -46,6 +45,7 @@ import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
+import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
@@ -68,8 +68,29 @@ public class SpongeListeners {
             BlockTypes.DEEPSLATE_REDSTONE_ORE.location()
     );
 
+    @Listener
+    public void onInteractItemPrimary(final InteractItemEvent.Primary event, @First final ServerPlayer player) {
+        if (event.context().get(EventContextKeys.USED_HAND)
+                .map(hand -> hand.equals(HandTypes.MAIN_HAND.get()))
+                .orElse(false)) {
+            final ItemStack itemStack = player.itemInHand(HandTypes.MAIN_HAND.get());
+            if (itemStack.get(EspialKeys.STAGE_ROLLS_BACK).isPresent()) {
+                if (player.sneaking().get()) {
+                    // switch it to a different kind of stage wand
+                    final boolean stageRollsBack = !itemStack.require(EspialKeys.STAGE_ROLLS_BACK);
+                    itemStack.offer(EspialKeys.STAGE_ROLLS_BACK, stageRollsBack);
+                    final String modeDisplay = stageRollsBack ? "rollback" : "restore";
+                    itemStack.offer(Keys.ITEM_NAME,
+                            WandLoreBuilder.getItemName(modeDisplay, true));
+                    player.sendMessage(Format.text("Switched stage wand type to ")
+                            .append(Format.accent(modeDisplay)));
+                }
+            }
+        }
+    }
+
     @Listener(order = Order.EARLY)
-    public void onBlockChange(final InteractBlockEvent.Primary.Start event, @First final ServerPlayer player) {
+    public void onInteractBlockPrimary(final InteractBlockEvent.Primary.Start event, @First final ServerPlayer player) {
         event.block().location().ifPresent(location -> {
             if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
                 event.setCancelled(true);
@@ -81,7 +102,7 @@ public class SpongeListeners {
     }
 
     @Listener(order = Order.EARLY)
-    public void onBlockChange(final InteractBlockEvent.Secondary event, @First final ServerPlayer player) {
+    public void onInteractBlockSecondary(final InteractBlockEvent.Secondary event, @First final ServerPlayer player) {
         if (!event.context().get(EventContextKeys.USED_HAND).map(ht -> ht.equals(HandTypes.MAIN_HAND.get())).orElse(false)) {
             return;
         }
@@ -208,7 +229,7 @@ public class SpongeListeners {
     private static void handleWand(final Event event, final ServerLocation location, final ServerPlayer player) {
         final ItemStack item = player.itemInHand(HandTypes.MAIN_HAND.get());
         if (item.get(EspialKeys.WAND).orElse(false)) {
-            if (event instanceof Cancellable cancellable) {
+            if (event instanceof final Cancellable cancellable) {
                 cancellable.setCancelled(true);
             }
             final Optional<EspialQuery.Builder> queryOptional = item.get(EspialKeys.WAND_FILTERS)
@@ -241,22 +262,9 @@ public class SpongeListeners {
                 }
             }
 
-            if (item.get(EspialKeys.WAND_DOES_LOOKUPS).orElse(false)) {
-                EspialQueries.showRecords(query.build(), player);
-            } else {
-                // get applier transaction
-                final Optional<TransactionType> transactionOptional = item.get(EspialKeys.WAND_TRANSACTION_TYPE)
-                        .map(typeKey -> TransactionTypes.registry().value(typeKey));
-                if (transactionOptional.isEmpty()) {
-                    player.sendMessage(Format.error("This wand does not have a valid transaction type"));
-                    return;
-                }
-                Espial.getInstance().getEspialService().query(query.build()).thenAccept(records -> {
-                    final Transaction result = transactionOptional.get().apply(records, player);
-                    Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), result);
-                    // TODO: messaging
-                });
-            }
+            // because I don't want to be bothered with serialization things for the key itself
+            final WandType wandType = WandTypes.registry().value(item.require(EspialKeys.WAND_TYPE));
+            wandType.apply(query.build(), player, item);
         }
     }
 
@@ -272,7 +280,7 @@ public class SpongeListeners {
 
     private static void clearTools(final List<Entity> entities) {
         entities.forEach(entity -> {
-            if (entity instanceof Item item) {
+            if (entity instanceof final Item item) {
                 if (item.item().get().get(EspialKeys.WAND).orElse(false)) {
                     entity.remove();
                 }

@@ -55,4 +55,10 @@ public final class WandLoreBuilder {
                 .toList();
     }
 
+    public static Component getItemName(final String modeDisplay, final boolean stageWand) {
+        return Component.text("Espial" + (stageWand ? " Stage" : "") + " Wand").color(Format.THEME_COLOR)
+                .append(Component.text(" - ").color(Format.TITLE_COLOR))
+                .append(Format.accent(modeDisplay));
+    }
+
 }

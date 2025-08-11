@@ -160,10 +160,10 @@ public class Espial {
     public void onRegisterData(final RegisterDataEvent event) {
         event.register(DataRegistration.of(EspialKeys.WAND, ItemStack.class));
         event.register(DataRegistration.of(EspialKeys.WAND_FILTERS, ItemStack.class));
-        event.register(DataRegistration.of(EspialKeys.WAND_DOES_LOOKUPS, ItemStack.class));
-        event.register(DataRegistration.of(EspialKeys.WAND_TRANSACTION_TYPE, ItemStack.class));
+        event.register(DataRegistration.of(EspialKeys.WAND_TYPE, ItemStack.class));
         event.register(DataRegistration.of(EspialKeys.WAND_MAX_USES, ItemStack.class));
         event.register(DataRegistration.of(EspialKeys.WAND_USES, ItemStack.class));
+        event.register(DataRegistration.of(EspialKeys.STAGE_ROLLS_BACK, ItemStack.class));
     }
 
     public static Espial getInstance() {

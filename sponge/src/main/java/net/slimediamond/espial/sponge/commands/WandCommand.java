@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
+import net.slimediamond.espial.api.wand.WandType;
+import net.slimediamond.espial.api.wand.WandTypes;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import net.slimediamond.espial.sponge.commands.subsystem.Parameters;
@@ -13,6 +15,8 @@ import net.slimediamond.espial.sponge.utils.CommandUtils;
 import net.slimediamond.espial.sponge.utils.formatting.Format;
 import net.slimediamond.espial.sponge.wand.QueryBuilderCache;
 import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
+import net.slimediamond.espial.sponge.wand.types.StageWand;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -30,7 +34,7 @@ public class WandCommand extends AbstractCommand {
         addAlias("wand");
         addAlias("w");
         addParameter(Parameters.WAND_TARGET);
-        addParameter(Parameters.OPTIONAL_TRANSACTION_TYPE);
+        addParameter(Parameters.OPTIONAL_WAND_TYPE);
         addFlags(Flags.QUERY_FLAGS);
         addFlag(Flags.MAXIMUM, Component.text("Specify a maximum amount of uses the wand will have"));
     }
@@ -40,18 +44,31 @@ public class WandCommand extends AbstractCommand {
         final ServerPlayer target = context.one(Parameters.WAND_TARGET).orElse(CommandUtils.getServerPlayer(context));
         final EspialQuery.Builder builder = CommandUtils.getQueryBuilder(context);
 
-        final String modeDisplay = context.one(Parameters.OPTIONAL_TRANSACTION_TYPE)
-                .map(t -> t.key(EspialRegistryTypes.TRANSACTION_TYPE).value())
-                .orElse("inspect");
+        final WandType wandType = context.one(Parameters.OPTIONAL_WAND_TYPE).orElse(WandTypes.LOOKUP.get());
+        final ResourceKey wandTypeKey = wandType.key(EspialRegistryTypes.WAND_TYPE);
+        final String modeDisplay;
+        final boolean stageWand;
+
+        if (wandType instanceof StageWand) {
+            stageWand = true;
+            modeDisplay = "rollback"; // default to rollback
+        } else {
+            stageWand = false;
+            modeDisplay = wandTypeKey.value();
+        }
 
         // create item stack
         final ItemStack.Builder itemStackBuilder = ItemStack.builder()
                 .itemType(ItemTypes.STICK.get())
                 .add(EspialKeys.WAND, true)
                 .add(EspialKeys.WAND_FILTERS, QueryBuilderCache.add(builder))
-                .add(Keys.ITEM_NAME, Component.text("Espial Wand").color(Format.THEME_COLOR)
-                        .append(Component.text(" - ").color(Format.TITLE_COLOR))
-                        .append(Format.accent(modeDisplay)));
+                .add(EspialKeys.WAND_TYPE, wandTypeKey)
+                .add(Keys.ITEM_NAME, WandLoreBuilder.getItemName(modeDisplay, stageWand));
+
+        if (stageWand) {
+            // begin with rollback
+            itemStackBuilder.add(EspialKeys.STAGE_ROLLS_BACK, true);
+        }
 
         if (context.hasFlag(Flags.MAXIMUM)) {
             // apply max uses stat. Assume 1 max use as the default if the flag is specified
@@ -60,13 +77,6 @@ public class WandCommand extends AbstractCommand {
             itemStackBuilder.add(EspialKeys.WAND_USES, max);
         }
 
-        if (context.hasAny(Parameters.OPTIONAL_TRANSACTION_TYPE)) {
-            itemStackBuilder.add(EspialKeys.WAND_TRANSACTION_TYPE,
-                    context.requireOne(Parameters.OPTIONAL_TRANSACTION_TYPE)
-                            .key(EspialRegistryTypes.TRANSACTION_TYPE));
-        } else {
-            itemStackBuilder.add(EspialKeys.WAND_DOES_LOOKUPS, true);
-        }
 
         // temporary build :)
         itemStackBuilder.add(Keys.LORE, WandLoreBuilder.getLore(itemStackBuilder.build(), builder));
@@ -79,7 +89,7 @@ public class WandCommand extends AbstractCommand {
             final TextComponent.Builder textBuilder = Component.text().color(Format.TEXT_COLOR)
                     .append(Format.text("Gave "));
 
-            if (context.subject() instanceof ServerPlayer source
+            if (context.subject() instanceof final ServerPlayer source
                     && source.uniqueId().equals(target.uniqueId())) {
                 textBuilder.append(Component.text("you").color(Format.TEXT_COLOR));
             } else {

@@ -6,6 +6,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.spongepowered.math.vector.Vector3i;
 
 public class Format {
 
@@ -102,6 +103,10 @@ public class Format {
         return Component.text(display).color(COMMAND_HINT_COLOR)
                 .hoverEvent(HoverEvent.showText(Component.text(url).color(NamedTextColor.GRAY)))
                 .clickEvent(ClickEvent.openUrl(url));
+    }
+
+    public static Component position(final Vector3i position) {
+        return Component.text("(" + position.x() + ", " + position.y() + ", " + position.z() + ")");
     }
 
 }

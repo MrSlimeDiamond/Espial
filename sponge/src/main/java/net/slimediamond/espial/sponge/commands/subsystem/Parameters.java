@@ -4,6 +4,7 @@ import io.leangen.geantyref.TypeToken;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.transaction.TransactionType;
+import net.slimediamond.espial.api.wand.WandType;
 import net.slimediamond.espial.sponge.permission.Permissions;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.command.parameter.Parameter;
@@ -65,6 +66,12 @@ public class Parameters {
     public static final Parameter.Value<TransactionType> OPTIONAL_TRANSACTION_TYPE = Parameter.registryElement(new TypeToken<TransactionType>() {},
                     EspialRegistryTypes.TRANSACTION_TYPE, "espial")
             .key("transaction type")
+            .optional()
+            .build();
+
+    public static final Parameter.Value<WandType> OPTIONAL_WAND_TYPE = Parameter.registryElement(new TypeToken<WandType>() {},
+                    EspialRegistryTypes.WAND_TYPE, "espial")
+            .key("wand type")
             .optional()
             .build();
 
