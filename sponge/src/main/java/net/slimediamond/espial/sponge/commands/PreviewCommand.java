@@ -7,10 +7,12 @@ import net.slimediamond.espial.sponge.commands.subsystem.RootOnlyCommand;
 import net.slimediamond.espial.sponge.permission.Permissions;
 import net.slimediamond.espial.sponge.utils.CommandUtils;
 import net.slimediamond.espial.sponge.utils.formatting.Format;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.scheduler.Task;
 
 public class PreviewCommand extends RootOnlyCommand {
 
@@ -59,12 +61,17 @@ public class PreviewCommand extends RootOnlyCommand {
         @Override
         public CommandResult execute(final CommandContext context) throws CommandException {
             final ServerPlayer player = CommandUtils.getServerPlayer(context);
-            if (Espial.getInstance().getEspialService().getPreviewManager().cancel(player)) {
-                context.sendMessage(Format.text("Current preview cancelled"));
-                return CommandResult.success();
-            } else {
-                return CommandResult.error(Format.error("No preview is available for you to cancel"));
-            }
+            Sponge.asyncScheduler().submit(Task.builder()
+                    .execute(() -> {
+                        if (Espial.getInstance().getEspialService().getPreviewManager().cancel(player)) {
+                            context.sendMessage(Format.text("Current preview cancelled"));
+                        } else {
+                            context.sendMessage(Format.error("No preview is available for you to cancel"));
+                        }
+                    })
+                    .plugin(Espial.getInstance().getContainer())
+                    .build());
+            return CommandResult.success();
         }
 
     }

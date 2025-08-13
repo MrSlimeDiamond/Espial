@@ -41,22 +41,7 @@ public class EspialPreviewManager implements PreviewManager {
                 .map(r -> r.getLocation().position().toInt())
                 .collect(Collectors.toSet());
 
-        final Vector3i min = positions.stream()
-                .reduce(Vector3i::min)
-                .orElseThrow();
-
-        final Vector3i max = positions.stream()
-                .reduce(Vector3i::max)
-                .orElseThrow();
-
-        for (int x = min.x(); x <= max.x(); x++) {
-            for (int y = min.y(); y <= max.y(); y++) {
-                for (int z = min.z(); z <= max.z(); z++) {
-                    final Vector3i pos = new Vector3i(x, y, z);
-                    player.resetBlockChange(pos);
-                }
-            }
-        }
+        positions.forEach(player::resetBlockChange);
 
         previews.remove(player.uniqueId());
 
