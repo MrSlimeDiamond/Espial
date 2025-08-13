@@ -1,6 +1,7 @@
 package net.slimediamond.espial.sponge.commands;
 
 import net.kyori.adventure.text.Component;
+import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.RootOnlyCommand;
@@ -39,12 +40,14 @@ public class PreviewCommand extends RootOnlyCommand {
         @Override
         public CommandResult execute(final CommandContext context) throws CommandException {
             final ServerPlayer player = CommandUtils.getServerPlayer(context);
-            if (Espial.getInstance().getEspialService().getPreviewManager().apply(player.uniqueId())) {
-                context.sendMessage(Format.text("Preview applied"));
-                return CommandResult.success();
-            } else {
+            final Transaction transaction = Espial.getInstance().getEspialService().getPreviewManager().getPreviews().get(player.uniqueId());
+            if (transaction == null) {
                 return CommandResult.error(Format.error("No preview is available for you to apply"));
             }
+            transaction.apply();
+            Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), transaction);
+            context.sendMessage(Format.text("Preview applied"));
+            return CommandResult.success();
         }
 
     }
