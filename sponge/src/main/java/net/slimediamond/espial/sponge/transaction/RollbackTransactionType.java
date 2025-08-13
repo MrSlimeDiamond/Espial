@@ -19,13 +19,13 @@ import java.util.List;
 public class RollbackTransactionType implements TransactionType {
 
     @Override
-    public Transaction apply(final List<EspialRecord> records, final Audience audience) {
-        if (records.isEmpty()) {
+    public Transaction apply(final List<EspialRecord> targets, final Audience audience) {
+        if (targets.isEmpty()) {
             audience.sendMessage(Format.error("Nothing was rolled back"));
             return Transaction.empty();
         }
 
-        records.sort(Comparator.comparingInt(EspialRecord::getId).reversed());
+        final List<EspialRecord> records = targets.stream().sorted(Comparator.comparingInt(EspialRecord::getId).reversed()).toList();
         TransactionExecutor.run(records, EspialRecord::rollback);
 
         Sponge.asyncScheduler().submit(Task.builder()

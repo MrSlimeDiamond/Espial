@@ -19,13 +19,13 @@ import java.util.List;
 public class RestoreTransactionType implements TransactionType {
 
     @Override
-    public Transaction apply(final List<EspialRecord> records, final Audience audience) {
-        if (records.isEmpty()) {
+    public Transaction apply(final List<EspialRecord> targets, final Audience audience) {
+        if (targets.isEmpty()) {
             audience.sendMessage(Format.error("Nothing was restored"));
             return Transaction.empty();
         }
 
-        records.sort(Comparator.comparingInt(EspialRecord::getId));
+        final List<EspialRecord> records = targets.stream().sorted(Comparator.comparingInt(EspialRecord::getId).reversed()).toList();
         TransactionExecutor.run(records, EspialRecord::restore);
 
         Sponge.asyncScheduler().submit(Task.builder()
