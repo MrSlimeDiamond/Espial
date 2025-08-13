@@ -7,8 +7,8 @@ import net.slimediamond.espial.sponge.permission.Permissions;
 
 public class RestoreCommand extends TransactionCommand {
 
-    public RestoreCommand() {
-        super(TransactionTypes.RESTORE.get(), Permissions.RESTORE, Component.text("Restore a selection"));
+    public RestoreCommand(final boolean preview) {
+        super(TransactionTypes.RESTORE.get(), Permissions.RESTORE, Component.text("Restore a selection"), preview);
 
         addAlias("restore");
         addAlias("rs");

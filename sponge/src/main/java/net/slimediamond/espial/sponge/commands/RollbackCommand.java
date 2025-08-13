@@ -6,8 +6,8 @@ import net.slimediamond.espial.sponge.permission.Permissions;
 
 public class RollbackCommand extends TransactionCommand {
 
-    public RollbackCommand() {
-        super(TransactionTypes.ROLLBACK.get(), Permissions.ROLLBACK, Component.text("Rollback a selection"));
+    public RollbackCommand(final boolean preview) {
+        super(TransactionTypes.ROLLBACK.get(), Permissions.ROLLBACK, Component.text("Rollback a selection"), preview);
 
         addAlias("rollback");
         addAlias("rb");

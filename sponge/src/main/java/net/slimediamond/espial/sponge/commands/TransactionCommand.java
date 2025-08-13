@@ -12,22 +12,27 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class TransactionCommand extends RecordResultCommand {
 
     private final TransactionType transactionType;
+    private final boolean preview;
 
     public TransactionCommand(final TransactionType transactionType,
                               final @Nullable Permission permission,
-                              final @NotNull Component description) {
+                              final @NotNull Component description,
+                              final boolean preview) {
         super(permission, description);
 
         this.transactionType = transactionType;
+        this.preview = preview;
     }
 
     @Override
@@ -42,9 +47,29 @@ public abstract class TransactionCommand extends RecordResultCommand {
             context.sendMessage(Format.defaults("After: 3 days ago"));
         }
 
-        final Transaction transaction = transactionType.apply(records, context.cause().audience());
-        context.cause().first(Player.class).ifPresent(player ->
-                Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), transaction));
+        if (preview) {
+            final Optional<ServerPlayer> playerOptional = context.cause().first(ServerPlayer.class);
+            if (playerOptional.isEmpty()) {
+                context.sendMessage(Format.error("Only players can use this command"));
+                return;
+            }
+            final ServerPlayer player = playerOptional.get();
+            final Transaction preview = transactionType.preview(records, player);
+            Espial.getInstance().getEspialService().getPreviewManager().submit(player.uniqueId(), preview);
+            player.sendMessage(Format.text("Preview applied for ")
+                    .append(Format.accent(String.valueOf(records.size())))
+                    .append(Component.text(" records.")));
+            player.sendMessage(Format.text("Use ")
+                    .append(Format.commandHint("/espial preview apply"))
+                    .append(Component.text(" to apply changes.")));
+            player.sendMessage(Format.text("Use ")
+                    .append(Format.commandHint("/espial preview cancel"))
+                    .append(Component.text(" to cancel changes.")));
+        } else {
+            final Transaction transaction = transactionType.apply(records, context.cause().audience());
+            context.cause().first(Player.class).ifPresent(player ->
+                    Espial.getInstance().getEspialService().getTransactionManager().submit(player.uniqueId(), transaction));
+        }
     }
 
 }

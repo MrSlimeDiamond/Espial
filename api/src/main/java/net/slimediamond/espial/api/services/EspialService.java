@@ -1,5 +1,6 @@
 package net.slimediamond.espial.api.services;
 
+import net.slimediamond.espial.api.preview.PreviewManager;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.transaction.TransactionManager;
@@ -41,5 +42,12 @@ public interface EspialService {
      * @return Inspecting players
      */
     List<UUID> getInspectingUsers();
+
+    /**
+     * Get the preview manager
+     *
+     * @return Preview manager
+     */
+    PreviewManager getPreviewManager();
 
 }

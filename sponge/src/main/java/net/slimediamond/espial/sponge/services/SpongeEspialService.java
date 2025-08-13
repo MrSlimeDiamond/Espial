@@ -1,10 +1,12 @@
 package net.slimediamond.espial.sponge.services;
 
+import net.slimediamond.espial.api.preview.PreviewManager;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialRecord;
 import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.sponge.Espial;
+import net.slimediamond.espial.sponge.preview.EspialPreviewManager;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
 import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
 import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
@@ -24,6 +26,7 @@ public final class SpongeEspialService implements EspialService {
 
     private final TransactionManager transactionManager = new EspialTransactionManager();
     private final List<UUID> inspectingUsers = new ArrayList<>();
+    private final PreviewManager previewManager = new EspialPreviewManager();
 
     @Override
     public void submit(@NotNull final EspialRecord record) {
@@ -66,6 +69,11 @@ public final class SpongeEspialService implements EspialService {
     @Override
     public List<UUID> getInspectingUsers() {
         return inspectingUsers;
+    }
+
+    @Override
+    public PreviewManager getPreviewManager() {
+        return previewManager;
     }
 
 }

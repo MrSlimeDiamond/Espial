@@ -16,8 +16,8 @@ public class RootCommand extends AbstractCommand {
         addAlias("espial");
         addAlias("es");
         addChild(new LookupCommand());
-        addChild(new RollbackCommand());
-        addChild(new RestoreCommand());
+        addChild(new RollbackCommand(false));
+        addChild(new RestoreCommand(false));
         addChild(new NearCommand());
         addChild(new UndoCommand());
         addChild(new RedoCommand());
@@ -27,10 +27,11 @@ public class RootCommand extends AbstractCommand {
         addChild(new WandCommand());
         addChild(new ReloadCommand());
         addChild(new PurgeCommand());
+        addChild(new PreviewCommand());
     }
 
     @Override
-    public CommandResult execute(CommandContext context) throws CommandException {
+    public CommandResult execute(final CommandContext context) throws CommandException {
         context.sendMessage(Component.text()
                 .append(Component.text("=".repeat(30)).color(Format.PADDING_COLOR))
                 .appendNewline()

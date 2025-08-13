@@ -50,4 +50,8 @@ public class Permissions {
             "espial.command.reload"
     );
 
+    public static final Permission PREVIEW = Permission.of(
+            "espial.command.preview"
+    );
+
 }

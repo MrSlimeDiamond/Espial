@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.transaction;
 
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.api.record.EspialRecord;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.registry.DefaultedRegistryValue;
 import org.spongepowered.api.util.annotation.CatalogedBy;
 
@@ -35,5 +36,15 @@ public interface TransactionType extends DefaultedRegistryValue {
      * @return A transaction, which means that it can be undone
      */
     Transaction apply(List<EspialRecord> records, Audience audience);
+
+    /**
+     * Send a preview of fake blocks/entities/etc to a client
+     *
+     * @param records The records to preview the transaction
+     * @param viewer The player viewing the preview
+     * @return A transaction where it can be applied
+     * @see Transaction#apply()
+     */
+    Transaction preview(List<EspialRecord> records, ServerPlayer viewer);
 
 }
