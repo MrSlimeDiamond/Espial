@@ -130,6 +130,12 @@ public class SpongeListeners {
         for (final BlockTransaction transaction : event.transactions()) {
             final BlockSnapshot original = transaction.original();
             final BlockSnapshot replacement = transaction.finalReplacement();
+
+            if (original.state().equals(replacement.state())) {
+                // there is no point in storing it
+                continue;
+            }
+
             if (original.location().isEmpty() || replacement.location().isEmpty()) {
                 continue; // somehow no location
             }
@@ -142,7 +148,7 @@ public class SpongeListeners {
             final Optional<ServerPlayer> playerOptional = event.cause().first(ServerPlayer.class);
 
             if (playerOptional.isEmpty() && Espial.getInstance().getConfig().isLogPlayersOnly()) {
-                return;
+                continue;
             }
 
             if (playerOptional.isPresent()
@@ -169,9 +175,6 @@ public class SpongeListeners {
             playerOptional.ifPresent(player -> builder.user(player.uniqueId()));
 
             final EspialRecord record = builder.build();
-            if (record.getTarget().equals(BlockTypes.AIR.location().formatted())) {
-                return;
-            }
 
             Espial.getInstance().getEspialService().submit(record);
         }
