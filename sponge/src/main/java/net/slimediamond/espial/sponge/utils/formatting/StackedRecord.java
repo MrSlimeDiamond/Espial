@@ -2,14 +2,16 @@ package net.slimediamond.espial.sponge.utils.formatting;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.event.EspialEvent;
+import net.slimediamond.espial.api.record.EntityDataHeld;
 import net.slimediamond.espial.api.record.EspialRecord;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.entity.EntityType;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
-public class StackedRecord {
+public class StackedRecord implements EntityDataHeld {
 
     private final UUID user;
     private final EntityType<?> entityType;
@@ -25,7 +27,12 @@ public class StackedRecord {
         this.target = RecordFormatter.getTarget(record);
     }
 
-    public UUID getUser() {
+    @Override
+    public Optional<UUID> getUser() {
+        return Optional.ofNullable(user);
+    }
+
+    public UUID getUserOrNull() {
         return user;
     }
 

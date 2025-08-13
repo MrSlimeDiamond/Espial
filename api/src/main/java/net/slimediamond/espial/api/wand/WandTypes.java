@@ -17,6 +17,8 @@ public final class WandTypes {
 
     public static final DefaultedRegistryReference<WandType> STAGE = WandTypes.key(EspialResourceKey.espial("stage"));
 
+    public static final DefaultedRegistryReference<WandType> DEBUG = WandTypes.key(EspialResourceKey.espial("debug"));
+
     private static DefaultedRegistryReference<WandType> key(final ResourceKey key) {
         return RegistryKey.of(EspialRegistryTypes.WAND_TYPE, key).asDefaultedReference(Sponge::game);
     }

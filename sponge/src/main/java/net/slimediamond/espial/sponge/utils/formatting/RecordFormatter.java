@@ -4,20 +4,20 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.slimediamond.espial.api.event.EspialEvents;
-import net.slimediamond.espial.api.record.BlockRecord;
-import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.HangingDeathRecord;
-import net.slimediamond.espial.api.record.SignModifyRecord;
+import net.slimediamond.espial.api.record.*;
 import net.slimediamond.espial.sponge.utils.TimeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.registry.RegistryTypes;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -61,17 +61,8 @@ public class RecordFormatter {
                     final StackedRecord record = entry.getKey();
                     final int count = entry.getValue();
 
-                    Component name = Component.text("#")
-                            .append(record.getEntityType().asComponent())
-                            .decorate(TextDecoration.ITALIC);
-
-                    if (record.getUser() != null && Sponge.server().userManager().exists(record.getUser())) {
-                        // blocking due to .join() doesn't matter here as we should be on another thread regardless
-                        name = Component.text(Sponge.server().userManager().loadOrCreate(record.getUser()).join().name());
-                    }
-
                     final TextComponent.Builder builder = Component.text()
-                            .append(name.color(NAME_COLOR))
+                            .append(formatCause(record).color(NAME_COLOR))
                             .appendSpace()
                             .append(record.getEvent().getVerbComponent().color(EVENT_COLOR))
                             .appendSpace()
@@ -88,16 +79,8 @@ public class RecordFormatter {
     }
 
     public static Component format(@NotNull final EspialRecord record) {
-        final TextComponent.Builder builder = Component.text();
-        Component name = Component.text("#")
-                .append(record.getEntityType().asComponent())
-                .decorate(TextDecoration.ITALIC);
-
-        if (record.getUser().isPresent() && Sponge.server().userManager().exists(record.getUser().get())) {
-            // blocking due to .join() doesn't matter here as we should be on another thread regardless
-            name = Component.text(Sponge.server().userManager().loadOrCreate(record.getUser().get()).join().name());
-        }
-        builder.append(name.color(NAME_COLOR));
+        final TextComponent.Builder builder = Component.text()
+                .append(formatCause(record));
 
         builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
         builder.appendSpace().append(getTarget(record).color(SPREAD_TARGET_COLOR));
@@ -147,19 +130,40 @@ public class RecordFormatter {
     }
 
     public static Component getTarget(final EspialRecord record) {
-        if (record instanceof final BlockRecord blockRecord) {
-            if (blockRecord.getEvent().equals(EspialEvents.PLACE.get())
-                    || blockRecord.getEvent().equals(EspialEvents.GROWTH.get())) {
-                return blockRecord.getReplacementBlock().state().type().asComponent();
-            }
-            return blockRecord.getOriginalBlock().state().type().asComponent();
-        } else if (record instanceof final HangingDeathRecord hangingDeathRecord) {
-            return hangingDeathRecord.getTargetEntityType().asComponent();
-        } else if (record instanceof final SignModifyRecord signModifyRecord) {
-            return signModifyRecord.getBlockState().type().asComponent();
-        }
+        final TextComponent.Builder builder = Component.text();
         final ResourceKey resourceKey = ResourceKey.resolve(record.getTarget());
-        return Component.text(resourceKey.value().replace("_", " "));
+        switch (record) {
+            case final BlockRecord blockRecord -> {
+                if (blockRecord.getEvent().equals(EspialEvents.PLACE.get())
+                        || blockRecord.getEvent().equals(EspialEvents.GROWTH.get())) {
+                    builder.append(blockRecord.getReplacementBlock().state().type().asComponent());
+                } else {
+                    builder.append(blockRecord.getOriginalBlock().state().type().asComponent());
+                }
+            }
+            case final HangingDeathRecord hangingDeathRecord ->
+                    builder.append(hangingDeathRecord.getTargetEntityType().asComponent());
+            case final SignModifyRecord signModifyRecord ->
+                    builder.append(signModifyRecord.getBlockState().type().asComponent());
+            default -> builder.append(Component.text(resourceKey.value().replace("_", " ")));
+        }
+        builder.hoverEvent(HoverEvent.showText(Component.text(resourceKey.formatted()).color(NamedTextColor.GRAY)));
+        return builder.build();
+    }
+
+    public static Component formatCause(final EntityDataHeld entityData) {
+        Component name = Component.text("#")
+                .append(entityData.getEntityType().asComponent())
+                .decorate(TextDecoration.ITALIC);
+
+        if (entityData.getUser().isPresent() && Sponge.server().userManager().exists(entityData.getUser().get())) {
+            // blocking due to .join() doesn't matter here as we should be on another thread regardless
+            name = Component.text(Sponge.server().userManager().loadOrCreate(entityData.getUser().get()).join().name());
+        }
+        return name.color(NAME_COLOR)
+                .hoverEvent(HoverEvent.showText(
+                        Component.text(entityData.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted())
+                                .color(NamedTextColor.GRAY)));
     }
 
 }

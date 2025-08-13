@@ -6,13 +6,12 @@ import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
  * A record used for storing data in Espial
  */
-public interface EspialRecord {
+public interface EspialRecord extends EntityDataHeld {
 
     /**
      * Get the ID internally identifying this Espial record,
@@ -30,27 +29,12 @@ public interface EspialRecord {
     Date getDate();
 
     /**
-     * Get the user which caused the record to be created,
-     * if present
-     *
-     * @return Record user
-     */
-    Optional<UUID> getUser();
-
-    /**
      * Get the "target" of the record, for example the block broken
      * or placed, the entity attacked, etc.
      *
      * @return Record target
      */
     String getTarget();
-
-    /**
-     * Get the entity type which triggered this
-     *
-     * @return Entity type cause
-     */
-    EntityType<?> getEntityType();
 
     /**
      * Get the location of the record

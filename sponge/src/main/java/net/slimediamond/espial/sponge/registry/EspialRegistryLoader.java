@@ -8,6 +8,7 @@ import net.slimediamond.espial.api.transaction.TransactionTypes;
 import net.slimediamond.espial.api.wand.WandTypes;
 import net.slimediamond.espial.sponge.transaction.RestoreTransactionType;
 import net.slimediamond.espial.sponge.transaction.RollbackTransactionType;
+import net.slimediamond.espial.sponge.wand.types.DebugWand;
 import net.slimediamond.espial.sponge.wand.types.LookupWand;
 import net.slimediamond.espial.sponge.wand.types.StageWand;
 import net.slimediamond.espial.sponge.wand.types.TransactionWand;
@@ -89,7 +90,8 @@ public class EspialRegistryLoader {
                 WandTypes.LOOKUP.location(), new LookupWand(),
                 WandTypes.ROLLBACK.location(), new TransactionWand(rollback),
                 WandTypes.RESTORE.location(), new TransactionWand(restore),
-                WandTypes.STAGE.location(), new StageWand()
+                WandTypes.STAGE.location(), new StageWand(),
+                WandTypes.DEBUG.location(), new DebugWand()
         ));
     }
 
