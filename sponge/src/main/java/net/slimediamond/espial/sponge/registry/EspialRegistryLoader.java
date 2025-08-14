@@ -25,7 +25,7 @@ public class EspialRegistryLoader {
     @Listener
     public void onRegisterRegistries(final RegisterRegistryEvent.GameScoped event) {
         // TODO: More events to fill in missing id entries
-        //  {2, 3, 5, 6, 7} are missing
+        //  {2, 3, 5, 7} are missing
         event.register(EspialRegistryTypes.EVENT.location(), false, () -> Map.of(
                 EspialEvents.BREAK.location(), EspialEvent.builder()
                         .name("Break")
@@ -44,6 +44,12 @@ public class EspialRegistryLoader {
                         .id(4)
                         .description("Growth of a block")
                         .verb("grew")
+                        .build(),
+                EspialEvents.MODIFY.location(), EspialEvent.builder()
+                        .name("Modify")
+                        .id(6)
+                        .description("Modify the internal state or data of a block")
+                        .verb("modified")
                         .build(),
                 EspialEvents.HANGING_DEATH.location(), EspialEvent.builder()
                         .name("Hanging Death")
