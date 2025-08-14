@@ -33,18 +33,13 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public final class EspialDatabase {
 
+    private final Map<String, Integer> idCache = new HashMap<>();
     private final String connectionString;
     private DataSource dataSource;
     private boolean sqlite;
@@ -487,30 +482,23 @@ public final class EspialDatabase {
         }
     }
 
-    private int getOrCreateId(final Connection conn, final String table, final String column, final String value) throws SQLException {
-        // Try to find existing
-        final PreparedStatement select = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + column + " = ?");
-        select.setString(1, value);
-        final ResultSet rs = select.executeQuery();
-        if (rs.next()) {
-            return rs.getInt(1);
+    public int getOrCreateId(final Connection conn, final String table, final Map<String, String> data) throws SQLException {
+        if (data.isEmpty()) {
+            throw new IllegalArgumentException("Provided column-data map must not be empty");
         }
 
-        // Insert if not exists
-        final PreparedStatement insert = conn.prepareStatement("INSERT INTO " + table + " (" + column + ") VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-        insert.setString(1, value);
-        insert.executeUpdate();
-        final ResultSet keys;
-        if (sqlite) {
-            keys = conn.prepareStatement("SELECT last_insert_rowid()").executeQuery();
-        } else {
-            keys = insert.getGeneratedKeys();
-        }
-        keys.next();
-        return keys.getInt(1);
-    }
+        // Build a key for the cache map to actually use
+        final String key = table + "|" + data.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining("|"));
 
-    private int getOrCreateId(final Connection conn, final String table, final Map<String, String> data) throws SQLException {
+        // Integer because it might be null
+        final Integer cached = idCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        // DB lookup
         final String whereClause = data.keySet().stream()
                 .map(k -> k + " = ?")
                 .collect(Collectors.joining(" AND "));
@@ -521,8 +509,12 @@ public final class EspialDatabase {
         }
         final ResultSet rs = select.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1);
+            int id = rs.getInt(1);
+            idCache.put(key, id);
+            return id;
         }
+
+        // nothing in the db so insert it
 
         final String columns = String.join(", ", data.keySet());
         final String placeholders = data.keySet().stream().map(k -> "?").collect(Collectors.joining(", "));
@@ -538,7 +530,14 @@ public final class EspialDatabase {
                 ? conn.prepareStatement("SELECT last_insert_rowid()").executeQuery()
                 : insert.getGeneratedKeys();
         keys.next();
-        return keys.getInt(1);
+        int id = keys.getInt(1);
+
+        idCache.put(key, id);
+        return id;
+    }
+
+    public int getOrCreateId(final Connection conn, final String table, final String column, final String data) throws SQLException {
+        return this.getOrCreateId(conn, table, Map.of(column, data));
     }
 
     private static String componentToString(final Component component) {
