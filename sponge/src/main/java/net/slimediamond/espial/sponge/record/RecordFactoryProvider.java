@@ -22,11 +22,8 @@ public class RecordFactoryProvider {
     private static final Map<EspialEvent, RecordFactory<? extends EspialRecord>> RECORD_TYPES = Map.of(
             EspialEvents.BREAK.get(),         new SpongeBlockRecordFactory(),
             EspialEvents.PLACE.get(),         new SpongeBlockRecordFactory(),
-            EspialEvents.DECAY.get(),         new SpongeBlockRecordFactory(),
             EspialEvents.GROWTH.get(),        new SpongeBlockRecordFactory(),
-            EspialEvents.LIQUID_DECAY.get(),  new SpongeBlockRecordFactory(),
             EspialEvents.MODIFY.get(),        new SpongeBlockRecordFactory(),
-            EspialEvents.INTERACT.get(),      new SpongeBlockRecordFactory(),
             EspialEvents.HANGING_DEATH.get(), new SpongeHangingDeathRecordFactory(),
             EspialEvents.SIGN_MODIFY.get(),   new SpongeSignModifyRecordFactory()
     );

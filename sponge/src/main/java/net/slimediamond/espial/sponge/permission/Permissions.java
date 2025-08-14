@@ -54,4 +54,8 @@ public class Permissions {
             "espial.command.preview"
     );
 
+    public static final Permission EVENTS = Permission.of(
+            "espial.command.events"
+    );
+
 }
