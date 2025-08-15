@@ -25,7 +25,7 @@ public class RestoreTransactionType implements TransactionType {
             return Transaction.empty();
         }
 
-        final List<EspialRecord> records = targets.stream().sorted(Comparator.comparingInt(EspialRecord::getId).reversed()).toList();
+        final List<EspialRecord> records = targets.stream().sorted(Comparator.comparingInt(EspialRecord::getId)).toList();
         TransactionExecutor.run(records, EspialRecord::restore);
 
         Sponge.asyncScheduler().submit(Task.builder()
