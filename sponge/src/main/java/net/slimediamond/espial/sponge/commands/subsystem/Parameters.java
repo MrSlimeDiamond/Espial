@@ -1,6 +1,7 @@
 package net.slimediamond.espial.sponge.commands.subsystem;
 
 import io.leangen.geantyref.TypeToken;
+import net.slimediamond.espial.api.aggregate.Aggregator;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.transaction.TransactionType;
@@ -73,6 +74,11 @@ public class Parameters {
                     EspialRegistryTypes.WAND_TYPE, "espial")
             .key("wand type")
             .optional()
+            .build();
+
+    public static final Parameter.Value<Aggregator<?>> AGGREGATOR = Parameter.registryElement(new TypeToken<Aggregator<?>>() {},
+                    EspialRegistryTypes.AGGREGATOR, "espial")
+            .key("aggregator")
             .build();
 
     public static final Parameter.Value<Integer> OPTIONAL_MAXIMUM = Parameter.integerNumber()

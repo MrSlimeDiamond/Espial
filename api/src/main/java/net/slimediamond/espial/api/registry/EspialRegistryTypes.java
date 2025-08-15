@@ -1,6 +1,7 @@
 package net.slimediamond.espial.api.registry;
 
 import net.slimediamond.espial.api.EspialResourceKey;
+import net.slimediamond.espial.api.aggregate.Aggregator;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.transaction.TransactionType;
 import net.slimediamond.espial.api.wand.WandType;
@@ -16,6 +17,8 @@ public class EspialRegistryTypes {
     public static final DefaultedRegistryType<TransactionType> TRANSACTION_TYPE = EspialRegistryTypes.espialKeyInGame("transaction_type");
 
     public static final DefaultedRegistryType<WandType> WAND_TYPE = EspialRegistryTypes.espialKeyInGame("wand_type");
+
+    public static final DefaultedRegistryType<Aggregator<?>> AGGREGATOR = EspialRegistryTypes.espialKeyInGame("aggregator");
 
     private static <V>DefaultedRegistryType<V> espialKeyInGame(final String key) {
         return RegistryType.of(RegistryRoots.SPONGE, EspialResourceKey.espial(key)).asDefaultedType(Sponge::game);

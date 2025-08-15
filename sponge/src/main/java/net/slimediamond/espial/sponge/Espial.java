@@ -1,6 +1,7 @@
 package net.slimediamond.espial.sponge;
 
 import com.google.inject.Inject;
+import net.slimediamond.espial.api.aggregate.ResultAggregate;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
@@ -9,6 +10,7 @@ import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.services.EspialServiceProvider;
 import net.slimediamond.espial.api.transaction.Transaction;
+import net.slimediamond.espial.sponge.aggregate.SpongeResultAggregate;
 import net.slimediamond.espial.sponge.commands.NearbySignsCommand;
 import net.slimediamond.espial.sponge.commands.RootCommand;
 import net.slimediamond.espial.sponge.commands.subsystem.AbstractCommand;
@@ -34,13 +36,7 @@ import org.spongepowered.api.command.Command;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.data.DataRegistration;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
-import org.spongepowered.api.event.lifecycle.RefreshGameEvent;
-import org.spongepowered.api.event.lifecycle.RegisterBuilderEvent;
-import org.spongepowered.api.event.lifecycle.RegisterCommandEvent;
-import org.spongepowered.api.event.lifecycle.RegisterDataEvent;
-import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
-import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
+import org.spongepowered.api.event.lifecycle.*;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -154,6 +150,11 @@ public class Espial {
         event.register(SignModifyRecord.Builder.class, SpongeSignModifyRecordBuilder::new);
         event.register(EspialQuery.Builder.class, SpongeQueryBuilder::new);
         event.register(Transaction.Builder.class, TransactionBuilder::new);
+    }
+
+    @Listener
+    public void onRegisterFactories(final RegisterFactoryEvent event) {
+        event.register(ResultAggregate.Factory.class, new SpongeResultAggregate.FactoryImpl());
     }
 
     @Listener

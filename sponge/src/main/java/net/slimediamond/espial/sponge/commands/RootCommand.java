@@ -29,6 +29,7 @@ public class RootCommand extends AbstractCommand {
         addChild(new PurgeCommand());
         addChild(new PreviewCommand());
         addChild(new EventsCommand());
+        addChild(new GraphCommand());
     }
 
     @Override

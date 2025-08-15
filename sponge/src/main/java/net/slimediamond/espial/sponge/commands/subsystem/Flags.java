@@ -15,6 +15,7 @@ public class Flags {
     public static final Flag BLOCK = Flag.of(Parameters.BLOCK_TYPE, "b");
     public static final Flag YES = Flag.of(Parameters.YES, "yes");
     public static final Flag MAXIMUM = Flag.of(Parameters.OPTIONAL_MAXIMUM, "m");
+    public static final Flag AGGREGATE_BY = Flag.of(Parameters.AGGREGATOR, "a");
 
     public static final Map<Flag, Component> SPREAD_FLAG = Map.of(SPREAD,
             Component.text("Spread results, showing individual ones"));

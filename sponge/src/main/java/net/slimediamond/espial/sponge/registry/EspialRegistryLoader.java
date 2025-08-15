@@ -1,11 +1,15 @@
 package net.slimediamond.espial.sponge.registry;
 
+import net.slimediamond.espial.api.aggregate.Aggregators;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.transaction.TransactionType;
 import net.slimediamond.espial.api.transaction.TransactionTypes;
 import net.slimediamond.espial.api.wand.WandTypes;
+import net.slimediamond.espial.sponge.aggregate.DayAggregator;
+import net.slimediamond.espial.sponge.aggregate.MonthAggregator;
+import net.slimediamond.espial.sponge.aggregate.YearAggregator;
 import net.slimediamond.espial.sponge.transaction.RestoreTransactionType;
 import net.slimediamond.espial.sponge.transaction.RollbackTransactionType;
 import net.slimediamond.espial.sponge.wand.types.DebugWand;
@@ -76,6 +80,12 @@ public class EspialRegistryLoader {
                 WandTypes.RESTORE.location(), new TransactionWand(restore),
                 WandTypes.STAGE.location(), new StageWand(),
                 WandTypes.DEBUG.location(), new DebugWand()
+        ));
+
+        event.register(EspialRegistryTypes.AGGREGATOR.location(), false, () -> Map.of(
+                Aggregators.DAY.location(), new DayAggregator(),
+                Aggregators.MONTH.location(), new MonthAggregator(),
+                Aggregators.YEAR.location(), new YearAggregator()
         ));
     }
 

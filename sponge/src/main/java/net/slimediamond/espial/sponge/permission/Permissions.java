@@ -58,4 +58,8 @@ public class Permissions {
             "espial.command.events"
     );
 
+    public static final Permission TIMELINE = Permission.of(
+            "espial.command.timeline"
+    );
+
 }
