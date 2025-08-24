@@ -1,8 +1,12 @@
 # Espial
-Espial is a SpongeAPI plugin for preventing grief, supporting lookups, rollbacks, restores, and much more.
+Espial is a SpongeAPI plugin to retroactively prevent grief on Minecraft servers. It tracks block placements and breakages
+by all players and allows convenient rollbacks and restores of them.
+
+Espial is optimized for larger Minecraft servers which have hundreds of thousands of logs for tonnes of players. 
+It has various quality of life features like previews, wands, and more to aid server staff in repairing grief.
 
 ## v2 warning
-Espial version 2 is **not compatible** with below versions. The entire database structure has changed.
+Espial version 2 is **not compatible** with below versions currently. The entire database structure has changed.
 
 Sorry for this inconvenience.
 
@@ -11,10 +15,10 @@ Sorry for this inconvenience.
 * SpongeAPI 12 or higher (Minecraft 1.21+)
 
 ## Command Usage
-* **/espial | /es**
+* **/espial | /es** [...]
   * Permission: espial.command.base
   * Base command. If no subcommand is specified, defaults to an info screen
-  * **lookup | l**
+  * **lookup | l** \<parameters\>
     * Permission: espial.command.lookup
     * Query server logs for grief
     * Flags:
@@ -22,15 +26,15 @@ Sorry for this inconvenience.
       * Everything from query command flags (below).
   * **near**
     * Permission: espial.command.lookup
-    * Look up within 5 blocks of you. Basically an alias for `/es l -r 5`
+    * Look up blocks within a configurable range of you - default is 5 blocks
     * Flags:
       * `-s` - Do not group outputs
-  * **rollback | rb**
+  * **rollback | rb** \<parameters\>
     * Permission: espial.command.rollback
     * Roll back a selection to a certain point in time. Default limit is 3 days
     * Flags:
       * Everything from query command flags (below).
-  * **restore | rs**
+  * **restore | rs** \<parameters\>
     * Permission: espial.command.restore
     * Restore previously rolled back changes. Default limit is 3 days
     * Flags:
@@ -45,15 +49,15 @@ Sorry for this inconvenience.
     * Permission: espial.command.undo
     * Revert your previous action(s).
   * **redo**
-    * Permission: espial.command.redo
-    * Revert your previous undoals.
+    * Permission: espial.command.undo
+    * Revert previous undo commands.
   * **nearbysigns**
     * Permission: espial.command.nearbysigns
     * Lookup nearby signs
     * Can also be used as a base command (**/nearbysigns**)
     * Flags: 
       * Everything from query command flags (below).
-  * **wand | w**
+  * **wand | w** \[wand type\]
     * Permission: espial.command.wand
     * Create a wand item which can be used to lookup, rollback, or restore a block
     * Flags:
@@ -65,17 +69,45 @@ Sorry for this inconvenience.
     * Flags:
       * `-g` - Use a global selection
       * Everything from query command flags (below)
+  * **preview | p**
+    * Permission: espial.command.preview
+    * Preview what a transaction (rollback or restore) will do before applying it to the world, this only sends fake blocks to your client and does not affect the actual server
+    * **apply | a**
+      * Apply the currently previewed transaction to the world
+    * **cancel | c**
+      * Cancel your current preview and revert the world to its previous state on your client
+    * **rollback | rb**
+      * Permission: espial.command.rollback
+      * Preview a rollback transaction, see above for usage
+      * Flags:
+        * Everything from query command flags (below)
+    * **restore | rs**
+      * Permission: espial.command.restore
+      * Preview a restore transaction, see above for usage
+      * Flags:
+        * Everything from query command flags (below)
+    * **events**
+      * Permission: espial.command.events
+      * View the possible events that will be recorded and which ones are disabled by the server config
 
 ## Query command flags
 | Usage                 | Description                                                             |
 |-----------------------|-------------------------------------------------------------------------|
-| `-w`                  | Use your WorldEdit selection                                            |
-| `-r <range>`          | Lookup a cuboid around you                                              |
+| `-w`                  | Use your **WorldEdit** selection                                        |
+| `-r <range>`          | Lookup a **cuboid** around you                                          |
 | `-p <player>`         | Only look at actions from a specific **player**                         |
 | `-b <block type>`     | Only look at a specific **block type**                                  |
 | `-e <event>`          | Specify a certain **Espial event** to filter for                        |
 | `-t <duration>`       | Query for logs **after** a specific date. Specified in duration format  |
 | `--before <duration>` | Query for logs **before** a specific date. Specified in duration format |
+
+### Example command usages
+* `/es l -r 5` - Lookup actions within 5 blocks of you
+* `/es l -r 15 -p MrSlimeDiamond` - Lookup actions by **MrSlimeDiamond** within 15 blocks
+* `/es rb -r 5` - Roll back actions within 5 blocks (default time limit: last 3 days)
+* `/es rb -r 5 -t 200d` - Roll back actions within 5 blocks from the last 200 days
+* `/es rs -w` - Restore rolled back changes in your **WorldEdit** selection
+* `/es l -w` - Lookup actions in your **WorldEdit** selection
 
 ## Configuration
 | Node                  | Default                 | Description                                                                                                         |
