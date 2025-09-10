@@ -15,19 +15,17 @@ import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
-import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.registry.RegistryTypes;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class RecordFormatter {
 
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final TextColor DATE_COLOR = Format.TEXT_COLOR;
     private static final TextColor NAME_COLOR = Format.THEME_COLOR;
     private static final TextColor EVENT_COLOR = Format.ACCENT_COLOR;
     private static final TextColor STACK_COLOR = Format.THEME_COLOR;
@@ -50,12 +48,14 @@ public class RecordFormatter {
             final StackedRecord stackedRecord = new StackedRecord(record);
             recordCounts.put(stackedRecord, recordCounts.getOrDefault(stackedRecord, 0) + 1);
             final long time = record.getDate().getTime();
-            recordTimes.put(stackedRecord, Math.max(recordTimes.getOrDefault(stackedRecord, 0L), time));
+            recordTimes.put(stackedRecord, Math.min(recordTimes.getOrDefault(stackedRecord, time), time));
         }
 
         // TODO: Nicer and more chronological order of display, also show dates
         // this seems to be in the wrong order? So reverse it
-        final List<Map.Entry<StackedRecord, Integer>> sortedEntries = new ArrayList<>(recordCounts.entrySet()).reversed();
+        final List<Map.Entry<StackedRecord, Integer>> sortedEntries = new ArrayList<>(recordCounts.entrySet());
+        sortedEntries.sort(Comparator.comparing(e -> recordTimes.get(e.getKey())));
+        Collections.reverse(sortedEntries);
         return sortedEntries.stream()
                 .map(entry -> {
                     final StackedRecord record = entry.getKey();
@@ -68,7 +68,9 @@ public class RecordFormatter {
                             .appendSpace()
                             .append(Component.text(count + "x").color(STACK_COLOR))
                             .appendSpace()
-                            .append(record.getTarget().color(GROUPED_TARGET_COLOR));
+                            .append(record.getTarget().color(GROUPED_TARGET_COLOR))
+                            .appendSpace()
+                            .append(formatDate(new Date(recordTimes.get(record))));
 
                     if (record.isRolledBack()) {
                         builder.decorate(TextDecoration.STRIKETHROUGH);
@@ -80,10 +82,13 @@ public class RecordFormatter {
 
     public static Component format(@NotNull final EspialRecord record) {
         final TextComponent.Builder builder = Component.text()
-                .append(formatCause(record));
-
-        builder.appendSpace().append(record.getEvent().getVerbComponent().color(EVENT_COLOR));
-        builder.appendSpace().append(getTarget(record).color(SPREAD_TARGET_COLOR));
+                .append(formatCause(record))
+                .appendSpace()
+                .append(record.getEvent().getVerbComponent().color(EVENT_COLOR))
+                .appendSpace()
+                .append(getTarget(record).color(SPREAD_TARGET_COLOR))
+                .appendSpace()
+                .append(formatDate(record.getDate()));
 
         final List<Component> extraDisplay = new LinkedList<>();
 
@@ -101,10 +106,6 @@ public class RecordFormatter {
             extraDisplay.addAll(formatSignLines(BACK_LINES_PREFIX,
                     signModifyRecord.getReplacementContents().getBack()));
         }
-
-        builder.appendSpace()
-                .append(Component.text(TimeUtils.getTimeSince(record.getDate())).color(Format.TEXT_COLOR)
-                        .hoverEvent(HoverEvent.showText(Component.text(record.getDate().toString()))));
 
         if (!extraDisplay.isEmpty()) {
             builder.append(Component.text(" (...)").color(Format.PADDING_COLOR)
@@ -164,6 +165,11 @@ public class RecordFormatter {
                 .hoverEvent(HoverEvent.showText(
                         Component.text(entityData.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted())
                                 .color(NamedTextColor.GRAY)));
+    }
+
+    public static Component formatDate(final Date date) {
+        return Component.text(TimeUtils.getTimeSince(date))
+                .hoverEvent(HoverEvent.showText(Component.text(DATE_FORMAT.format(date)).color(NamedTextColor.GRAY)));
     }
 
 }
