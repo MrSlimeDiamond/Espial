@@ -51,8 +51,11 @@ public class Format {
     }
 
     public static Component commandHint(final String command) {
-        return commandHint(command, command,
-                Component.text(command).color(NamedTextColor.GRAY));
+        return commandHint(command, command);
+    }
+
+    public static Component commandHint(final String display, final String command) {
+        return commandHint(display, command, Component.text(command).color(NamedTextColor.GRAY));
     }
 
     public static Component commandHint(final String display, final String command,

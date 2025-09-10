@@ -58,13 +58,10 @@ public abstract class TransactionCommand extends RecordResultCommand {
             Espial.getInstance().getEspialService().getPreviewManager().submit(player.uniqueId(), preview);
             player.sendMessage(Format.text("Preview applied for ")
                     .append(Format.accent(String.valueOf(records.size())))
-                    .append(Component.text(" records.")));
-            player.sendMessage(Format.text("Use ")
-                    .append(Format.commandHint("/espial preview apply"))
-                    .append(Component.text(" to apply changes.")));
-            player.sendMessage(Format.text("Use ")
-                    .append(Format.commandHint("/espial preview cancel"))
-                    .append(Component.text(" to cancel changes.")));
+                    .append(Component.text(" records "))
+                    .append(Format.commandHint("apply", "/espial preview apply"))
+                    .appendSpace()
+                    .append(Format.commandHint("cancel", "/espial preview cancel")));
         } else {
             final Transaction transaction = transactionType.apply(records, context.cause().audience());
             context.cause().first(Player.class).ifPresent(player ->
