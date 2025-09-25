@@ -63,7 +63,7 @@ public final class EspialDatabase {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        config.setMaximumPoolSize(4); // TODO config value?
+        config.setMaximumPoolSize(Espial.getInstance().getConfig().getDatabasePoolSize());
         config.setIdleTimeout(600000); // 10 minutes
         config.setMaxLifetime(1800000); // 30 minutes
         config.setValidationTimeout(5000); // 5 seconds

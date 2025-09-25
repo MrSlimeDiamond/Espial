@@ -16,6 +16,10 @@ public class Configuration {
     private String jdbc = "jdbc:sqlite:espial.db";
 
     @Setting
+    @Comment("The pool size of the database connection")
+    private int databasePoolSize = 4;
+
+    @Setting
     private int nearRange = 5;
 
     @Setting
@@ -34,6 +38,10 @@ public class Configuration {
 
     public String getJdbc() {
         return jdbc;
+    }
+
+    public int getDatabasePoolSize() {
+        return databasePoolSize;
     }
 
     public int getNearRange() {
