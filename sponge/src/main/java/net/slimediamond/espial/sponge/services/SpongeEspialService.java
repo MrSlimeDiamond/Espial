@@ -30,6 +30,11 @@ public final class SpongeEspialService implements EspialService {
 
     @Override
     public void submit(@NotNull final EspialRecord record) {
+        if (Espial.getInstance().getRecordingQueue() == null
+                || !Espial.getInstance().getRecordingQueue().isRunning()) {
+            // don't bloat the recording queue if we don't want to record
+            return;
+        }
         if (!(record instanceof final SpongeEspialRecord spongeRecord)) {
             throw new IllegalArgumentException("Non-Sponge EspialRecord submitted to SpongeEspialService");
         }

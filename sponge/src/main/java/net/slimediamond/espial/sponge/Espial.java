@@ -79,7 +79,7 @@ public class Espial {
     }
 
     @Listener
-    public void onConstructPlugin(final ConstructPluginEvent event) throws ConfigurateException, SQLException {
+    public void onConstructPlugin(final ConstructPluginEvent event) throws ConfigurateException {
         this.logger.info("Starting Espial version {} by SlimeDiamond",
                 this.container.metadata().version().toString());
 
@@ -90,13 +90,16 @@ public class Espial {
         this.config = this.reference.referenceTo(Configuration.class).get();
         this.reference.save();
 
-        this.recordingQueue = new SpongeRecordingQueue();
-        this.recordingQueue.start();
-
         this.logger.info("Starting database");
         this.database = new EspialDatabase(this.config.getJdbc());
-        this.database.open();
-        this.logger.info("Database opened");
+        try {
+            this.database.open();
+            this.recordingQueue = new SpongeRecordingQueue();
+            this.recordingQueue.start();
+            this.logger.info("Database opened");
+        } catch (final SQLException e) {
+            this.logger.error("Could not open database connection. Espial will not do anything", e);
+        }
     }
 
     @Listener
