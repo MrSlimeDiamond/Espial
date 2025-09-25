@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;

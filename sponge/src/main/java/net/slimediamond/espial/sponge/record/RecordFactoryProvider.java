@@ -11,6 +11,7 @@ import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -25,7 +26,9 @@ public class RecordFactoryProvider {
             EspialEvents.GROWTH.get(),        new SpongeBlockRecordFactory(),
             EspialEvents.MODIFY.get(),        new SpongeBlockRecordFactory(),
             EspialEvents.HANGING_DEATH.get(), new SpongeHangingDeathRecordFactory(),
-            EspialEvents.SIGN_MODIFY.get(),   new SpongeSignModifyRecordFactory()
+            EspialEvents.SIGN_MODIFY.get(),   new SpongeSignModifyRecordFactory(),
+            EspialEvents.ITEM_INSERT.get(),   new SpongeContainerChangeRecordFactory(),
+            EspialEvents.ITEM_REMOVE.get(),   new SpongeContainerChangeRecordFactory()
     );
 
     @SuppressWarnings("unchecked")

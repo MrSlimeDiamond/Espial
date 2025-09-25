@@ -77,6 +77,7 @@ public final class EspialDatabase {
             final String entityTypesCreation;
             final String worldsCreation;
             final String signsCreation;
+            final String itemsCreation;
 
             final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
                     "record_id INT NOT NULL, " +
@@ -92,6 +93,15 @@ public final class EspialDatabase {
                     "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
                     "FOREIGN KEY (original) REFERENCES block_states(id), " +
                     "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
+                    ")";
+
+            final String itemCreation = "CREATE TABLE IF NOT EXISTS item (" +
+                    "record_id INT NOT NULL, " +
+                    "original INT NOT NULL, " +
+                    "replacement INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (original) REFERENCES items(id), " +
+                    "FOREIGN KEY (replacement) REFERENCES items(id)" +
                     ")";
 
             final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
@@ -118,6 +128,8 @@ public final class EspialDatabase {
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
             } else {
                 // Probably MySQL/MariaDB or whatever. use a different statement
 
@@ -132,6 +144,8 @@ public final class EspialDatabase {
                 worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
                 signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
             }
 
@@ -162,10 +176,11 @@ public final class EspialDatabase {
                     "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
                     "FOREIGN KEY (world) REFERENCES worlds(id)" +
                     ")").execute();
+            conn.prepareStatement(itemsCreation + "data TEXT NOT NULL)").execute();
+            conn.prepareStatement(itemCreation).execute();
             conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(signCreation).execute();
             conn.prepareStatement(extraCreation).execute();
-
 
             if (sqlite) {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();

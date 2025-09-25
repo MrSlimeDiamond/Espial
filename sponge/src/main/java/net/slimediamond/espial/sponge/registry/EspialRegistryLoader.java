@@ -26,6 +26,9 @@ public class EspialRegistryLoader {
     public void onRegisterRegistries(final RegisterRegistryEvent.GameScoped event) {
         // TODO: More events to fill in missing id entries
         //  {2, 3, 5, 7} are missing
+
+        // TODO: Track using the ResourceKey within the registry in the database.
+        //  This way, plugins can add custom events without worrying about it
         event.register(EspialRegistryTypes.EVENT.location(), false, () -> Map.of(
                 EspialEvents.BREAK.location(), EspialEvent.builder()
                         .name("Break")
@@ -62,6 +65,18 @@ public class EspialRegistryLoader {
                         .id(9)
                         .description("Modify the contents of a sign")
                         .verb("modified")
+                        .build(),
+                EspialEvents.ITEM_INSERT.location(), EspialEvent.builder()
+                        .name("Item Insert")
+                        .id(10)
+                        .description("Insert an item into a container")
+                        .verb("added")
+                        .build(),
+                EspialEvents.ITEM_REMOVE.location(), EspialEvent.builder()
+                        .name("Item Remove")
+                        .id(11)
+                        .description("Remove an item from a container")
+                        .verb("removed")
                         .build()
         ));
 
