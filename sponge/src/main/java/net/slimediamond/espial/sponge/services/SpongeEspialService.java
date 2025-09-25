@@ -1,5 +1,7 @@
 package net.slimediamond.espial.sponge.services;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.slimediamond.espial.api.preview.PreviewManager;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialRecord;
@@ -55,8 +57,10 @@ public final class SpongeEspialService implements EspialService {
                     try {
                         future.complete(Espial.getInstance().getDatabase().query(query));
                     } catch (final Throwable t) {
+                        final String stackTrace = t.toString();
                         query.getAudience().ifPresent(audience ->
-                                audience.sendMessage(Format.error("Unable to query for records. Check the console")));
+                                audience.sendMessage(Format.error("Unable to query for records")
+                                        .hoverEvent(HoverEvent.showText(Component.text(stackTrace)))));
                         Espial.getInstance().getLogger().error("Unable to query for records", t);
                         future.completeExceptionally(t);
                     }
