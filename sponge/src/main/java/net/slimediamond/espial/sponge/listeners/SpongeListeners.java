@@ -6,10 +6,7 @@ import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.BlockRecord;
-import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.HangingDeathRecord;
-import net.slimediamond.espial.api.record.SignModifyRecord;
+import net.slimediamond.espial.api.record.*;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.wand.WandType;
 import net.slimediamond.espial.api.wand.WandTypes;
@@ -22,6 +19,7 @@ import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.block.transaction.Operations;
@@ -44,13 +42,17 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
-import org.spongepowered.api.item.inventory.Carrier;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.*;
+import org.spongepowered.api.item.inventory.entity.PlayerInventory;
+import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
+import org.spongepowered.api.item.inventory.type.BlockEntityInventory;
+import org.spongepowered.api.item.inventory.type.CarriedInventory;
 import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -268,6 +270,53 @@ public class SpongeListeners {
             // because I don't want to be bothered with serialization things for the key itself
             final WandType wandType = WandTypes.registry().value(item.require(EspialKeys.WAND_TYPE));
             wandType.apply(query.build(), player, item);
+        }
+    }
+
+    @Listener
+    public void onAffectSlot(final AffectSlotEvent event, @First Player player) {
+        for (final SlotTransaction transaction : event.transactions()) {
+            if (transaction.original().quantity() == transaction.finalReplacement().quantity()) {
+                continue; // nothing happened
+            }
+
+            // must be on a container
+            if (!(transaction.slot().viewedSlot().parent() instanceof final CarriedInventory<?> carriedInventory)
+                    || carriedInventory.carrier().filter(Entity.class::isInstance).isPresent()
+                    && !(carriedInventory instanceof MultiBlockCarrier)) {
+                return;
+            }
+
+            final ServerLocation location = carriedInventory.carrier()
+                    .filter(Locatable.class::isInstance)
+                    .map(Locatable.class::cast)
+                    .map(Locatable::serverLocation)
+                    .orElse(player.serverLocation());
+
+            if (transaction.finalReplacement().equals(transaction.original())) {
+                continue; // nothing was changed
+            }
+
+            // for some reason there doesn't seem to be a way to get a slot's index within an inventory?
+            final Optional<Integer> optionalSlotIndex = transaction.slot().get(Keys.SLOT_INDEX);
+            if (optionalSlotIndex.isEmpty()) {
+                continue;
+            }
+            final int slotIndex = optionalSlotIndex.get();
+            final EspialEvent espialEvent = transaction.original().quantity() > transaction.finalReplacement().quantity()
+                    ? EspialEvents.ITEM_REMOVE.get()
+                    : EspialEvents.ITEM_INSERT.get();
+
+            Espial.getInstance().getEspialService().submit(
+                    ContainerChangeRecord.builder()
+                            .event(espialEvent)
+                            .location(location)
+                            .entityType(player.type())
+                            .slot(slotIndex)
+                            .user(player.uniqueId())
+                            .original(transaction.original())
+                            .replacement(transaction.finalReplacement())
+                            .build());
         }
     }
 

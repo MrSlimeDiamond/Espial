@@ -13,6 +13,7 @@ import org.spongepowered.math.vector.Vector3i;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
