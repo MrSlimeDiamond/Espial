@@ -5,6 +5,7 @@ import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.record.ContainerChangeRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.api.block.entity.carrier.chest.Chest;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -77,7 +78,9 @@ public class SpongeContainerChangeRecord extends SpongeEspialRecord implements C
         return this.getLocation().blockEntity()
                 .filter(Carrier.class::isInstance)
                 .map(Carrier.class::cast)
-                .map(Carrier::inventory);
+                .map(carrier -> carrier instanceof Chest chest
+                        ? chest.doubleChestInventory().orElse(chest.inventory())
+                        : carrier.inventory());
     }
 
 }
