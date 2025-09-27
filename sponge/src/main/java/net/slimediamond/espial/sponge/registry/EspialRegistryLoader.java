@@ -70,13 +70,13 @@ public class EspialRegistryLoader {
                         .name("Item Insert")
                         .id(10)
                         .description("Insert an item into a container")
-                        .verb("added")
+                        .verb("inserted")
                         .build(),
                 EspialEvents.ITEM_REMOVE.location(), EspialEvent.builder()
                         .name("Item Remove")
                         .id(11)
                         .description("Remove an item from a container")
-                        .verb("removed")
+                        .verb("took")
                         .build()
         ));
 

@@ -1,6 +1,6 @@
 # Espial
-Espial is a SpongeAPI plugin to retroactively prevent grief on Minecraft servers. It tracks block placements and breakages
-by all players and allows convenient rollbacks and restores of them.
+Espial is a SpongeAPI plugin to retroactively prevent grief on Minecraft servers. It tracks block placements, breakages, and changes
+in the contents of containers by all players and allows convenient rollbacks and restores of them.
 
 Espial is optimized for larger Minecraft servers which have hundreds of thousands of logs for tonnes of players. 
 It has various quality of life features like previews, wands, and more to aid server staff in repairing grief.
