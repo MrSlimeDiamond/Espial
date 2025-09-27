@@ -9,10 +9,7 @@ import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.transaction.TransactionManager;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.preview.EspialPreviewManager;
-import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
-import net.slimediamond.espial.sponge.record.SpongeEspialRecord;
-import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
-import net.slimediamond.espial.sponge.record.SpongeSignModifyRecord;
+import net.slimediamond.espial.sponge.record.*;
 import net.slimediamond.espial.sponge.transaction.EspialTransactionManager;
 import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +39,9 @@ public final class SpongeEspialService implements EspialService {
         }
         if (record instanceof SpongeBlockRecord
                 || record instanceof SpongeHangingDeathRecord
-                || record instanceof SpongeSignModifyRecord) {
+                || record instanceof SpongeSignModifyRecord
+                || record instanceof SpongeContainerChangeRecord
+                || record instanceof SpongeItemFrameChangeRecord) {
             Espial.getInstance().getRecordingQueue().getQueue().add(spongeRecord);
             return;
         }

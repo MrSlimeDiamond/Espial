@@ -6,10 +6,7 @@ import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.BlockRecord;
-import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.HangingDeathRecord;
-import net.slimediamond.espial.api.record.SignModifyRecord;
+import net.slimediamond.espial.api.record.*;
 import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.api.wand.WandType;
 import net.slimediamond.espial.api.wand.WandTypes;
@@ -32,6 +29,7 @@ import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.hanging.Hanging;
+import org.spongepowered.api.entity.hanging.ItemFrame;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Cancellable;
@@ -42,15 +40,19 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
+import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
-import org.spongepowered.api.item.inventory.Carrier;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.*;
+import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
+import org.spongepowered.api.item.inventory.type.CarriedInventory;
 import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
+import org.spongepowered.api.world.Locatable;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -268,6 +270,115 @@ public class SpongeListeners {
             // because I don't want to be bothered with serialization things for the key itself
             final WandType wandType = WandTypes.registry().value(item.require(EspialKeys.WAND_TYPE));
             wandType.apply(query.build(), player, item);
+        }
+    }
+
+    @Listener
+    public void onAffectSlot(final AffectSlotEvent event, @First Player player) {
+        for (final SlotTransaction transaction : event.transactions()) {
+            if (transaction.original().quantity() == transaction.finalReplacement().quantity()) {
+                continue; // nothing happened
+            }
+
+            // must be on a container
+            if (!(transaction.slot().viewedSlot().parent() instanceof final CarriedInventory<?> carriedInventory)
+                    || carriedInventory.carrier().filter(Entity.class::isInstance).isPresent()
+                    && !(carriedInventory instanceof MultiBlockCarrier)) {
+                return;
+            }
+
+            final ServerLocation location = carriedInventory.carrier()
+                    .filter(Locatable.class::isInstance)
+                    .map(Locatable.class::cast)
+                    .map(Locatable::serverLocation)
+                    .orElse(player.serverLocation());
+
+            if (transaction.finalReplacement().equals(transaction.original())) {
+                continue; // nothing was changed
+            }
+
+            // for some reason there doesn't seem to be a way to get a slot's index within an inventory?
+            final Optional<Integer> optionalSlotIndex = transaction.slot().get(Keys.SLOT_INDEX);
+            if (optionalSlotIndex.isEmpty()) {
+                continue;
+            }
+            final int slotIndex = optionalSlotIndex.get();
+            final EspialEvent espialEvent = transaction.original().quantity() > transaction.finalReplacement().quantity()
+                    ? EspialEvents.ITEM_REMOVE.get()
+                    : EspialEvents.ITEM_INSERT.get();
+
+            Espial.getInstance().getEspialService().submit(
+                    ContainerChangeRecord.builder()
+                            .event(espialEvent)
+                            .location(location)
+                            .entityType(player.type())
+                            .slot(slotIndex)
+                            .user(player.uniqueId())
+                            .original(transaction.original())
+                            .replacement(transaction.finalReplacement())
+                            .build());
+        }
+    }
+
+    @Listener
+    public void onAttackEntity(final AttackEntityEvent event, @First final Player player) {
+        final Entity entity = event.entity();
+
+        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
+            event.setCancelled(true);
+            if (entity instanceof ItemFrame) {
+                EspialQueries.queryRecords(entity.serverLocation(), player);
+            } else {
+                player.sendMessage(Format.error(Component.text("You are in interactive mode and can not attack entities")));
+            }
+        }
+
+        if (!(entity instanceof ItemFrame itemFrame)) {
+            return;
+        }
+        if (!itemFrame.item().get().isEmpty()) {
+            Espial.getInstance().getEspialService().submit(
+                    ItemFrameChangeRecord.builder()
+                            .original(itemFrame.item().get())
+                            .replacement(ItemStackSnapshot.empty())
+                            .location(itemFrame.serverLocation())
+                            .user(player.uniqueId())
+                            .entityType(player.type())
+                            .event(EspialEvents.ITEM_FRAME_REMOVE.get())
+                            .build()
+            );
+        }
+    }
+
+    @Listener
+    public void onSecondarilyInteractEntity(final InteractEntityEvent.Secondary.At event, @First final ServerPlayer player) {
+        final Entity entity = event.entity();
+        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
+            event.setCancelled(true);
+            if (entity instanceof ItemFrame) {
+                EspialQueries.queryRecords(entity.serverLocation(), player);
+            } else {
+                player.sendMessage(Format.error(Component.text("You are in interactive mode and can not interact with entities")));
+            }
+        }
+        if (!(entity instanceof ItemFrame itemFrame)) {
+            return;
+        }
+
+        // seemingly, if USED_ITEM is in the context, then it is an item frame insertion
+        // TODO: Item frame rotate recording
+        if (event.context().containsKey(EventContextKeys.USED_ITEM)) {
+            final ItemStackSnapshot item = event.context().require(EventContextKeys.USED_ITEM);
+            Espial.getInstance().getEspialService().submit(
+                    ItemFrameChangeRecord.builder()
+                            .original(ItemStackSnapshot.empty())
+                            .replacement(item)
+                            .user(player.uniqueId())
+                            .entityType(player.type())
+                            .location(itemFrame.serverLocation())
+                            .event(EspialEvents.ITEM_FRAME_INSERT.get())
+                            .build()
+            );
         }
     }
 

@@ -16,6 +16,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import java.text.DateFormat;
@@ -25,7 +26,6 @@ import java.util.*;
 public class RecordFormatter {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    private static final TextColor DATE_COLOR = Format.TEXT_COLOR;
     private static final TextColor NAME_COLOR = Format.THEME_COLOR;
     private static final TextColor EVENT_COLOR = Format.ACCENT_COLOR;
     private static final TextColor STACK_COLOR = Format.THEME_COLOR;
@@ -46,7 +46,15 @@ public class RecordFormatter {
         final Map<StackedRecord, Long> recordTimes = new LinkedHashMap<>();
         for (final EspialRecord record : records) {
             final StackedRecord stackedRecord = new StackedRecord(record);
-            recordCounts.put(stackedRecord, recordCounts.getOrDefault(stackedRecord, 0) + 1);
+            // HACKHACK: Display container change records properly
+            if (record instanceof final ContainerChangeRecord containerChangeRecord) {
+                // do it (count) times
+                for (int i = 0; i < containerChangeRecord.getAffectedItem().quantity(); i++) {
+                    recordCounts.put(stackedRecord, recordCounts.getOrDefault(stackedRecord, 0) + 1);
+                }
+            } else {
+                recordCounts.put(stackedRecord, recordCounts.getOrDefault(stackedRecord, 0) + 1);
+            }
             final long time = record.getDate().getTime();
             recordTimes.put(stackedRecord, Math.min(recordTimes.getOrDefault(stackedRecord, time), time));
         }
@@ -85,8 +93,14 @@ public class RecordFormatter {
                 .append(formatCause(record))
                 .appendSpace()
                 .append(record.getEvent().getVerbComponent().color(EVENT_COLOR))
-                .appendSpace()
-                .append(getTarget(record).color(SPREAD_TARGET_COLOR))
+                .appendSpace();
+
+        if (record instanceof ContainerChangeRecord containerChangeRecord) {
+            builder.append(Component.text(containerChangeRecord.getAffectedItem().quantity() + "x").color(STACK_COLOR))
+                    .appendSpace();
+        }
+
+        builder.append(getTarget(record).color(SPREAD_TARGET_COLOR))
                 .appendSpace()
                 .append(formatDate(record.getDate()));
 
@@ -146,6 +160,10 @@ public class RecordFormatter {
                     builder.append(hangingDeathRecord.getTargetEntityType().asComponent());
             case final SignModifyRecord signModifyRecord ->
                     builder.append(signModifyRecord.getBlockState().type().asComponent());
+            case final ContainerChangeRecord containerChangeRecord ->
+                    builder.append(containerChangeRecord.getAffectedItem().type().asComponent());
+            case final ItemFrameChangeRecord itemFrameChangeRecord ->
+                    builder.append(itemFrameChangeRecord.getAffectedItem().type().asComponent());
             default -> builder.append(Component.text(resourceKey.value().replace("_", " ")));
         }
         builder.hoverEvent(HoverEvent.showText(Component.text(resourceKey.formatted()).color(NamedTextColor.GRAY)));

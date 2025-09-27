@@ -25,6 +25,14 @@ public final class EspialEvents {
 
     public static final DefaultedRegistryReference<EspialEvent> SIGN_MODIFY = EspialEvents.key(EspialResourceKey.espial("sign_modify"));
 
+    public static final DefaultedRegistryReference<EspialEvent> ITEM_INSERT = EspialEvents.key(EspialResourceKey.espial("item_insert"));
+
+    public static final DefaultedRegistryReference<EspialEvent> ITEM_REMOVE = EspialEvents.key(EspialResourceKey.espial("item_remove"));
+
+    public static final DefaultedRegistryReference<EspialEvent> ITEM_FRAME_INSERT = EspialEvents.key(EspialResourceKey.espial("item_frame_insert"));
+
+    public static final DefaultedRegistryReference<EspialEvent> ITEM_FRAME_REMOVE = EspialEvents.key(EspialResourceKey.espial("item_frame_remove"));
+
     public static Registry<EspialEvent> registry() {
         return Sponge.game().registry(EspialRegistryTypes.EVENT);
     }

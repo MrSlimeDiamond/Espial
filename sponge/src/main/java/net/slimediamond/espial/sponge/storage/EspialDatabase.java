@@ -7,10 +7,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.InsertRecordEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.BlockRecord;
-import net.slimediamond.espial.api.record.EspialRecord;
-import net.slimediamond.espial.api.record.HangingDeathRecord;
-import net.slimediamond.espial.api.record.SignModifyRecord;
+import net.slimediamond.espial.api.record.*;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.event.SpongeInsertRecordEvent;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
@@ -25,15 +22,9 @@ import org.spongepowered.api.registry.RegistryTypes;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -77,6 +68,7 @@ public final class EspialDatabase {
             final String entityTypesCreation;
             final String worldsCreation;
             final String signsCreation;
+            final String itemsCreation;
 
             final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
                     "record_id INT NOT NULL, " +
@@ -92,6 +84,23 @@ public final class EspialDatabase {
                     "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
                     "FOREIGN KEY (original) REFERENCES block_states(id), " +
                     "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
+                    ")";
+
+            final String chestItemCreation = "CREATE TABLE IF NOT EXISTS chest_item (" +
+                    "record_id INT NOT NULL, " +
+                    "original INT NOT NULL, " +
+                    "replacement INT NOT NULL, " +
+                    "slot INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (original) REFERENCES items(id), " +
+                    "FOREIGN KEY (replacement) REFERENCES items(id)" +
+                    ")";
+
+            final String itemFrameCreation = "CREATE TABLE IF NOT EXISTS item_frame (" +
+                    "record_id INT NOT NULL, " +
+                    "item INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (item) REFERENCES items(id)" +
                     ")";
 
             final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
@@ -118,6 +127,8 @@ public final class EspialDatabase {
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
                 signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
                         "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
             } else {
                 // Probably MySQL/MariaDB or whatever. use a different statement
 
@@ -132,6 +143,8 @@ public final class EspialDatabase {
                 worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
                 signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
                         "id INT AUTO_INCREMENT PRIMARY KEY, ";
             }
 
@@ -162,10 +175,12 @@ public final class EspialDatabase {
                     "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
                     "FOREIGN KEY (world) REFERENCES worlds(id)" +
                     ")").execute();
+            conn.prepareStatement(itemsCreation + "data TEXT NOT NULL)").execute();
+            conn.prepareStatement(chestItemCreation).execute();
+            conn.prepareStatement(itemFrameCreation).execute();
             conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(signCreation).execute();
             conn.prepareStatement(extraCreation).execute();
-
 
             if (sqlite) {
                 conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
@@ -326,6 +341,36 @@ public final class EspialDatabase {
                     insertState.setInt(2, state);
                     insertState.setInt(3, state);
                     insertState.execute();
+                } else if (record instanceof final ContainerChangeRecord containerChangeRecord) {
+                    final int original = getOrCreateId(
+                            conn,
+                            "items",
+                            "data",
+                            DataFormats.JSON.get().write(containerChangeRecord.getOriginal().toContainer())
+                    );
+                    final int replacement = getOrCreateId(
+                            conn,
+                            "items",
+                            "data",
+                            DataFormats.JSON.get().write(containerChangeRecord.getReplacement().toContainer())
+                    );
+                    final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO chest_item (record_id, original, replacement, slot) VALUES (?, ?, ?, ?)");
+                    insertChestItem.setInt(1, id);
+                    insertChestItem.setInt(2, original);
+                    insertChestItem.setInt(3, replacement);
+                    insertChestItem.setInt(4, containerChangeRecord.getSlot());
+                    insertChestItem.execute();
+                } else if (record instanceof final ItemFrameChangeRecord itemFrameChangeRecord) {
+                    final int item = getOrCreateId(
+                            conn,
+                            "items",
+                            "data",
+                            DataFormats.JSON.get().write(itemFrameChangeRecord.getAffectedItem().toContainer())
+                    );
+                    final PreparedStatement insertItem = conn.prepareStatement("INSERT INTO item_frame (record_id, item) VALUES (?, ?)");
+                    insertItem.setInt(1, id);
+                    insertItem.setInt(2, item);
+                    insertItem.execute();
                 }
 
                 final Cause cause = Cause.of(EventContext.builder()
@@ -364,14 +409,22 @@ public final class EspialDatabase {
                         "extra.replacement AS extra_replacement, " +
                         "original.state AS state_original, " +
                         "replacement.state AS state_replacement, " +
+                        "original_item.data AS item_original, " +
+                        "replacement_item.data AS item_replacement, " +
+                        "ci.slot AS slot, " +
+                        "item_frame_item.data AS item, " +
                         "worlds.resource_key AS world_key, " +
                         "entity_types.resource_key AS entity_type_key " +
                         "FROM records " +
                         "LEFT JOIN extra ON records.id = extra.record_id " +
-                        "LEFT JOIN block_state ON records.id = block_state.record_id " +
                         "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
                         "LEFT JOIN block_states AS original ON bs.original = original.id " +
                         "LEFT JOIN block_states AS replacement ON bs.replacement = replacement.id " +
+                        "LEFT JOIN chest_item AS ci ON records.id = ci.record_id " +
+                        "LEFT JOIN items AS original_item ON ci.original = original_item.id " +
+                        "LEFT JOIN items AS replacement_item ON ci.replacement = replacement_item.id " +
+                        "LEFT JOIN item_frame AS if ON records.id = if.record_id " +
+                        "LEFT JOIN items AS item_frame_item ON if.item = item_frame_item.id " +
                         "LEFT JOIN sign ON records.id = sign.record_id " +
                         "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
                         "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
@@ -382,7 +435,6 @@ public final class EspialDatabase {
                         "AND y BETWEEN ? AND ? " +
                         "AND z BETWEEN ? AND ? "
         );
-
 
         query.getAfter().ifPresent(after -> sql.append(" AND time > ?"));
         query.getBefore().ifPresent(before -> sql.append(" AND time < ?"));
@@ -418,7 +470,6 @@ public final class EspialDatabase {
             Arrays.sort(y);
             Arrays.sort(z);
 
-
             ps.setInt(2, x[0]);
             ps.setInt(3, x[1]);
 
@@ -445,6 +496,14 @@ public final class EspialDatabase {
             final ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+//                System.out.println("------------------------------");
+//                final ResultSetMetaData rsmd = rs.getMetaData();
+//                final int columnsNumber = rsmd.getColumnCount();
+//                for (int i = 1; i <= columnsNumber; i++) {
+//                    final String columnValue = rs.getString(i);
+//                    System.out.println(rsmd.getColumnName(i) + " : " + columnValue);
+//                }
+
                 records.add(RecordFactoryProvider.create(rs));
             }
             // TODO: filter events in SQL
