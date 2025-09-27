@@ -22,13 +22,13 @@ public interface ItemFrameChangeRecord extends EspialRecord {
 
     /**
      * Get the item affected by the event. In the case of item additions,
-     * this is the replacement block. Otherwise, it is the original
+     * this is the replacement item. Otherwise, it is the original
      * item.
      *
      * @return Affected item
      */
     default ItemStackSnapshot getAffectedItem() {
-        return this.getEvent().equals(EspialEvents.ITEM_INSERT.get())
+        return this.getEvent().equals(EspialEvents.ITEM_FRAME_INSERT.get())
                 ? this.getReplacement()
                 : this.getOriginal();
     }

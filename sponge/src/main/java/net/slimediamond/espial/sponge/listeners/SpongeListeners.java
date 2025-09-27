@@ -42,6 +42,7 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
 import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
@@ -344,6 +345,38 @@ public class SpongeListeners {
                             .user(player.uniqueId())
                             .entityType(player.type())
                             .event(EspialEvents.ITEM_FRAME_REMOVE.get())
+                            .build()
+            );
+        }
+    }
+
+    @Listener
+    public void onSecondarilyInteractEntity(final InteractEntityEvent.Secondary.At event, @First final ServerPlayer player) {
+        final Entity entity = event.entity();
+        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
+            event.setCancelled(true);
+            if (entity instanceof ItemFrame) {
+                EspialQueries.queryRecords(entity.serverLocation(), player);
+            } else {
+                player.sendMessage(Format.error(Component.text("You are in interactive mode and can not interact with entities")));
+            }
+        }
+        if (!(entity instanceof ItemFrame itemFrame)) {
+            return;
+        }
+
+        // seemingly, if USED_ITEM is in the context, then it is an item frame insertion
+        // TODO: Item frame rotate recording
+        if (event.context().containsKey(EventContextKeys.USED_ITEM)) {
+            final ItemStackSnapshot item = event.context().require(EventContextKeys.USED_ITEM);
+            Espial.getInstance().getEspialService().submit(
+                    ItemFrameChangeRecord.builder()
+                            .original(ItemStackSnapshot.empty())
+                            .replacement(item)
+                            .user(player.uniqueId())
+                            .entityType(player.type())
+                            .location(itemFrame.serverLocation())
+                            .event(EspialEvents.ITEM_FRAME_INSERT.get())
                             .build()
             );
         }
