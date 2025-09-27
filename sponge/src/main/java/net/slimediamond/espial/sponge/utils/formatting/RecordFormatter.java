@@ -162,6 +162,8 @@ public class RecordFormatter {
                     builder.append(signModifyRecord.getBlockState().type().asComponent());
             case final ContainerChangeRecord containerChangeRecord ->
                     builder.append(containerChangeRecord.getAffectedItem().type().asComponent());
+            case final ItemFrameChangeRecord itemFrameChangeRecord ->
+                    builder.append(itemFrameChangeRecord.getAffectedItem().type().asComponent());
             default -> builder.append(Component.text(resourceKey.value().replace("_", " ")));
         }
         builder.hoverEvent(HoverEvent.showText(Component.text(resourceKey.formatted()).color(NamedTextColor.GRAY)));

@@ -77,6 +77,18 @@ public class EspialRegistryLoader {
                         .id(11)
                         .description("Remove an item from a container")
                         .verb("took")
+                        .build(),
+                EspialEvents.ITEM_FRAME_INSERT.location(), EspialEvent.builder()
+                        .name("Item Insert to Item Frame")
+                        .id(12)
+                        .verb("inserted")
+                        .description("Insert an item into an item frame")
+                        .build(),
+                EspialEvents.ITEM_FRAME_REMOVE.location(), EspialEvent.builder()
+                        .name("Item Remove from Item Frame")
+                        .id(13)
+                        .verb("took")
+                        .description("Remove an item from an item frame by attacking it")
                         .build()
         ));
 

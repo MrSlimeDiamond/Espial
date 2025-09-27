@@ -30,6 +30,7 @@ import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.hanging.Hanging;
+import org.spongepowered.api.entity.hanging.ItemFrame;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.event.Cancellable;
@@ -40,6 +41,8 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
+import org.spongepowered.api.event.entity.AffectEntityEvent;
+import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
@@ -317,6 +320,26 @@ public class SpongeListeners {
                             .original(transaction.original())
                             .replacement(transaction.finalReplacement())
                             .build());
+        }
+    }
+
+    @Listener
+    public void onItemFrameRemoval(final AttackEntityEvent event, @First final Player player) {
+        final Entity entity = event.entity();
+        if (!(entity instanceof ItemFrame itemFrame)) {
+            return;
+        }
+        if (!itemFrame.item().get().isEmpty()) {
+            Espial.getInstance().getEspialService().submit(
+                    ItemFrameChangeRecord.builder()
+                            .original(itemFrame.item().get())
+                            .replacement(ItemStackSnapshot.empty())
+                            .location(itemFrame.serverLocation())
+                            .user(player.uniqueId())
+                            .entityType(player.type())
+                            .event(EspialEvents.ITEM_FRAME_REMOVE.get())
+                            .build()
+            );
         }
     }
 

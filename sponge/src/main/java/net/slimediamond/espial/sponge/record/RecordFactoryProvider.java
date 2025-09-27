@@ -11,9 +11,7 @@ import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.math.vector.Vector3i;
 
-import java.io.IOException;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
@@ -22,14 +20,16 @@ import java.util.UUID;
 public class RecordFactoryProvider {
 
     private static final Map<EspialEvent, RecordFactory<? extends EspialRecord>> RECORD_TYPES = Map.of(
-            EspialEvents.BREAK.get(),         new SpongeBlockRecordFactory(),
-            EspialEvents.PLACE.get(),         new SpongeBlockRecordFactory(),
-            EspialEvents.GROWTH.get(),        new SpongeBlockRecordFactory(),
-            EspialEvents.MODIFY.get(),        new SpongeBlockRecordFactory(),
-            EspialEvents.HANGING_DEATH.get(), new SpongeHangingDeathRecordFactory(),
-            EspialEvents.SIGN_MODIFY.get(),   new SpongeSignModifyRecordFactory(),
-            EspialEvents.ITEM_INSERT.get(),   new SpongeContainerChangeRecordFactory(),
-            EspialEvents.ITEM_REMOVE.get(),   new SpongeContainerChangeRecordFactory()
+            EspialEvents.BREAK.get(),             new SpongeBlockRecordFactory(),
+            EspialEvents.PLACE.get(),             new SpongeBlockRecordFactory(),
+            EspialEvents.GROWTH.get(),            new SpongeBlockRecordFactory(),
+            EspialEvents.MODIFY.get(),            new SpongeBlockRecordFactory(),
+            EspialEvents.HANGING_DEATH.get(),     new SpongeHangingDeathRecordFactory(),
+            EspialEvents.SIGN_MODIFY.get(),       new SpongeSignModifyRecordFactory(),
+            EspialEvents.ITEM_INSERT.get(),       new SpongeContainerChangeRecordFactory(),
+            EspialEvents.ITEM_REMOVE.get(),       new SpongeContainerChangeRecordFactory(),
+            EspialEvents.ITEM_FRAME_INSERT.get(), new SpongeItemFrameChangeRecordFactory(),
+            EspialEvents.ITEM_FRAME_REMOVE.get(), new SpongeItemFrameChangeRecordFactory()
     );
 
     @SuppressWarnings("unchecked")

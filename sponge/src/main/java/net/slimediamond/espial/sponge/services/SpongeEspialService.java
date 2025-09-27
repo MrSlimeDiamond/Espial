@@ -40,7 +40,8 @@ public final class SpongeEspialService implements EspialService {
         if (record instanceof SpongeBlockRecord
                 || record instanceof SpongeHangingDeathRecord
                 || record instanceof SpongeSignModifyRecord
-                || record instanceof SpongeContainerChangeRecord) {
+                || record instanceof SpongeContainerChangeRecord
+                || record instanceof SpongeItemFrameChangeRecord) {
             Espial.getInstance().getRecordingQueue().getQueue().add(spongeRecord);
             return;
         }

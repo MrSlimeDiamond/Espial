@@ -96,6 +96,13 @@ public final class EspialDatabase {
                     "FOREIGN KEY (replacement) REFERENCES items(id)" +
                     ")";
 
+            final String itemFrameCreation = "CREATE TABLE IF NOT EXISTS item_frame (" +
+                    "record_id INT NOT NULL, " +
+                    "item INT NOT NULL, " +
+                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY (item) REFERENCES items(id)" +
+                    ")";
+
             final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
                     "record_id INT NOT NULL, " +
                     "original INT NOT NULL, " +
@@ -170,6 +177,7 @@ public final class EspialDatabase {
                     ")").execute();
             conn.prepareStatement(itemsCreation + "data TEXT NOT NULL)").execute();
             conn.prepareStatement(chestItemCreation).execute();
+            conn.prepareStatement(itemFrameCreation).execute();
             conn.prepareStatement(blockStateCreation).execute();
             conn.prepareStatement(signCreation).execute();
             conn.prepareStatement(extraCreation).execute();
@@ -352,6 +360,17 @@ public final class EspialDatabase {
                     insertChestItem.setInt(3, replacement);
                     insertChestItem.setInt(4, containerChangeRecord.getSlot());
                     insertChestItem.execute();
+                } else if (record instanceof final ItemFrameChangeRecord itemFrameChangeRecord) {
+                    final int item = getOrCreateId(
+                            conn,
+                            "items",
+                            "data",
+                            DataFormats.JSON.get().write(itemFrameChangeRecord.getAffectedItem().toContainer())
+                    );
+                    final PreparedStatement insertItem = conn.prepareStatement("INSERT INTO item_frame (record_id, item) VALUES (?, ?)");
+                    insertItem.setInt(1, id);
+                    insertItem.setInt(2, item);
+                    insertItem.execute();
                 }
 
                 final Cause cause = Cause.of(EventContext.builder()
@@ -393,6 +412,7 @@ public final class EspialDatabase {
                         "original_item.data AS item_original, " +
                         "replacement_item.data AS item_replacement, " +
                         "ci.slot AS slot, " +
+                        "item_f.data AS item, " +
                         "worlds.resource_key AS world_key, " +
                         "entity_types.resource_key AS entity_type_key " +
                         "FROM records " +
@@ -403,6 +423,8 @@ public final class EspialDatabase {
                         "LEFT JOIN chest_item AS ci ON records.id = ci.record_id " +
                         "LEFT JOIN items AS original_item ON ci.original = original_item.id " +
                         "LEFT JOIN items AS replacement_item ON ci.replacement = replacement_item.id " +
+                        "LEFT JOIN item_frame AS it ON records.id = it.record_id " +
+                        "LEFT JOIN items AS item_f ON it.item = it.item = item_f.id " +
                         "LEFT JOIN sign ON records.id = sign.record_id " +
                         "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
                         "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
