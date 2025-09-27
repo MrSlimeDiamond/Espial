@@ -412,7 +412,7 @@ public final class EspialDatabase {
                         "original_item.data AS item_original, " +
                         "replacement_item.data AS item_replacement, " +
                         "ci.slot AS slot, " +
-                        "item_f.data AS item, " +
+                        "item_frame_item.data AS item, " +
                         "worlds.resource_key AS world_key, " +
                         "entity_types.resource_key AS entity_type_key " +
                         "FROM records " +
@@ -423,8 +423,8 @@ public final class EspialDatabase {
                         "LEFT JOIN chest_item AS ci ON records.id = ci.record_id " +
                         "LEFT JOIN items AS original_item ON ci.original = original_item.id " +
                         "LEFT JOIN items AS replacement_item ON ci.replacement = replacement_item.id " +
-                        "LEFT JOIN item_frame AS it ON records.id = it.record_id " +
-                        "LEFT JOIN items AS item_f ON it.item = it.item = item_f.id " +
+                        "LEFT JOIN item_frame AS if ON records.id = if.record_id " +
+                        "LEFT JOIN items AS item_frame_item ON if.item = item_frame_item.id " +
                         "LEFT JOIN sign ON records.id = sign.record_id " +
                         "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
                         "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
