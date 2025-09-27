@@ -19,7 +19,6 @@ import net.slimediamond.espial.sponge.wand.WandLoreBuilder;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.block.transaction.BlockTransaction;
 import org.spongepowered.api.block.transaction.Operation;
 import org.spongepowered.api.block.transaction.Operations;
@@ -41,7 +40,6 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.entity.ChangeSignEvent;
-import org.spongepowered.api.event.entity.AffectEntityEvent;
 import org.spongepowered.api.event.entity.AttackEntityEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
@@ -49,9 +47,7 @@ import org.spongepowered.api.event.item.inventory.AffectSlotEvent;
 import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.event.item.inventory.InteractItemEvent;
 import org.spongepowered.api.item.inventory.*;
-import org.spongepowered.api.item.inventory.entity.PlayerInventory;
 import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
-import org.spongepowered.api.item.inventory.type.BlockEntityInventory;
 import org.spongepowered.api.item.inventory.type.CarriedInventory;
 import org.spongepowered.api.registry.RegistryEntry;
 import org.spongepowered.api.registry.RegistryTypes;
@@ -324,8 +320,18 @@ public class SpongeListeners {
     }
 
     @Listener
-    public void onItemFrameRemoval(final AttackEntityEvent event, @First final Player player) {
+    public void onAttackEntity(final AttackEntityEvent event, @First final Player player) {
         final Entity entity = event.entity();
+
+        if (Espial.getInstance().getEspialService().getInspectingUsers().contains(player.uniqueId())) {
+            event.setCancelled(true);
+            if (entity instanceof ItemFrame) {
+                EspialQueries.queryRecords(entity.serverLocation(), player);
+            } else {
+                player.sendMessage(Format.error(Component.text("You are in interactive mode and can not attack entities")));
+            }
+        }
+
         if (!(entity instanceof ItemFrame itemFrame)) {
             return;
         }
