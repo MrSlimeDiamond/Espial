@@ -423,8 +423,8 @@ public final class EspialDatabase {
                         "LEFT JOIN chest_item AS ci ON records.id = ci.record_id " +
                         "LEFT JOIN items AS original_item ON ci.original = original_item.id " +
                         "LEFT JOIN items AS replacement_item ON ci.replacement = replacement_item.id " +
-                        "LEFT JOIN item_frame AS if ON records.id = if.record_id " +
-                        "LEFT JOIN items AS item_frame_item ON if.item = item_frame_item.id " +
+                        "LEFT JOIN item_frame AS it ON records.id = it.record_id " +
+                        "LEFT JOIN items AS item_frame_item ON it.item = item_frame_item.id " +
                         "LEFT JOIN sign ON records.id = sign.record_id " +
                         "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
                         "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
