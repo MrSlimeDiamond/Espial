@@ -5,10 +5,12 @@ import net.slimediamond.espial.api.record.HangingDeathRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.ResourceKey;
+import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.world.server.ServerLocation;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -28,7 +30,13 @@ public class SpongeHangingDeathRecordFactory implements RecordFactory<HangingDea
             throws SQLException {
         final String target = rs.getString("target");
         final EntityType<?> targetEntityType = EntityTypes.registry().value(ResourceKey.resolve(target));
-        return new SpongeHangingDeathRecord(id, date, user, entityType, location, event, rolledBack, targetEntityType, null);
+        final String extra = rs.getString("extra_original");
+        try {
+            return new SpongeHangingDeathRecord(id, date, user, entityType, location, event, rolledBack, targetEntityType, DataFormats.JSON.get().read(extra));
+        } catch (final IOException e) {
+            // smile
+            throw new RuntimeException(e);
+        }
     }
 
 }

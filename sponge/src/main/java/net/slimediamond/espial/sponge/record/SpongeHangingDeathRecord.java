@@ -66,7 +66,7 @@ public class SpongeHangingDeathRecord extends SpongeEspialRecord implements Hang
     @Override
     public void restore() {
         // kill entity at that location
-        getLocation().world().nearbyEntities(getLocation().position(), 2).stream()
+        getLocation().world().nearbyEntities(getLocation().position(), 1).stream()
                 .filter(entity -> entity.type().equals(targetEntityType))
                 .forEach(Entity::remove);
 
