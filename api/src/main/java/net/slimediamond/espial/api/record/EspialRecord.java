@@ -2,6 +2,7 @@ package net.slimediamond.espial.api.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.world.server.ServerLocation;
 
@@ -61,11 +62,13 @@ public interface EspialRecord extends EntityDataHeld {
     void restore();
 
     /**
-     * Get whether the record is rolled back
+     * Get when the record was rolled back, or return null
+     * if it has not been rolled back.
      *
-     * @return Whether the record is rolled back
+     * @return Rollback date
      */
-    boolean isRolledBack();
+    @Nullable
+    Date getRolledBack();
 
     interface Builder<T extends Builder<T>> extends org.spongepowered.api.util.Builder<EspialRecord, T> {
 

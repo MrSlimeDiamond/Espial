@@ -8,6 +8,7 @@ import net.slimediamond.espial.api.SignText;
 import net.slimediamond.espial.api.event.InsertRecordEvent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.*;
+import net.slimediamond.espial.api.registry.EspialRegistryTypes;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.event.SpongeInsertRecordEvent;
 import net.slimediamond.espial.sponge.record.RecordFactoryProvider;
@@ -63,130 +64,182 @@ public final class EspialDatabase {
         dataSource = new HikariDataSource(config);
 
         try (final Connection conn = getConn()) {
-            final String recordsCreation;
-            final String blockStatesCreation;
-            final String entityTypesCreation;
-            final String worldsCreation;
-            final String signsCreation;
-            final String itemsCreation;
+            // TODO: TEMPORARILY DISABLED
+            // TODO: PUT NEW CREATION STATEMENTS HERE
+//            final String recordsCreation;
+//            final String blockStatesCreation;
+//            final String entityTypesCreation;
+//            final String worldsCreation;
+//            final String signsCreation;
+//            final String itemsCreation;
+//
+//            final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
+//                    "record_id INT NOT NULL, " +
+//                    "original TEXT, " +
+//                    "replacement TEXT, " +
+//                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE" +
+//                    ")";
+//
+//            final String blockStateCreation = "CREATE TABLE IF NOT EXISTS block_state (" +
+//                    "record_id INT NOT NULL, " +
+//                    "original INT NOT NULL, " +
+//                    "replacement INT NOT NULL, " +
+//                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+//                    "FOREIGN KEY (original) REFERENCES block_states(id), " +
+//                    "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
+//                    ")";
+//
+//            final String chestItemCreation = "CREATE TABLE IF NOT EXISTS chest_item (" +
+//                    "record_id INT NOT NULL, " +
+//                    "original INT NOT NULL, " +
+//                    "replacement INT NOT NULL, " +
+//                    "slot INT NOT NULL, " +
+//                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+//                    "FOREIGN KEY (original) REFERENCES items(id), " +
+//                    "FOREIGN KEY (replacement) REFERENCES items(id)" +
+//                    ")";
+//
+//            final String itemFrameCreation = "CREATE TABLE IF NOT EXISTS item_frame (" +
+//                    "record_id INT NOT NULL, " +
+//                    "item INT NOT NULL, " +
+//                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+//                    "FOREIGN KEY (item) REFERENCES items(id)" +
+//                    ")";
+//
+//            final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
+//                    "record_id INT NOT NULL, " +
+//                    "original INT NOT NULL, " +
+//                    "replacement INT NOT NULL, " +
+//                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
+//                    "FOREIGN KEY (original) REFERENCES signs(id), " +
+//                    "FOREIGN KEY (replacement) REFERENCES signs(id)" +
+//                    ")";
+//
+//            // Databases need to be made differently on different databases.
+//            this.sqlite = connectionString.contains("sqlite");
+//            if (sqlite) {
+//                Espial.getInstance().getLogger().info("Detected database type: sqlite");
+//
+//                recordsCreation = "CREATE TABLE IF NOT EXISTS records " +
+//                        "(id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
+//                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
+//                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
+//                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
+//                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
+//                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+//            } else {
+//                // Probably MySQL/MariaDB or whatever. use a different statement
+//
+//                Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
+//
+//                recordsCreation = "CREATE TABLE IF NOT EXISTS records (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
+//                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
+//            }
+//
+//            // order matters! Be careful.
+//            conn.prepareStatement(entityTypesCreation + "resource_key TEXT NOT NULL)").execute();
+//            conn.prepareStatement(worldsCreation + "resource_key TEXT NOT NULL)").execute();
+//            conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
+//            conn.prepareStatement(signsCreation +
+//                    "front_1 VARCHAR(384), " +
+//                    "front_2 VARCHAR(384), " +
+//                    "front_3 VARCHAR(384), " +
+//                    "front_4 VARCHAR(384), " +
+//                    "back_1 VARCHAR(384), " +
+//                    "back_2 VARCHAR(384), " +
+//                    "back_3 VARCHAR(384), " +
+//                    "back_4 VARCHAR(384))").execute();
+//            conn.prepareStatement(recordsCreation +
+//                    "type TINYINT NOT NULL, " +
+//                    "time TIMESTAMP NOT NULL, " +
+//                    "player_uuid CHAR(36), " +
+//                    "entity_type INT NOT NULL, " +
+//                    "target VARCHAR(255) NOT NULL, " +
+//                    "world INT NOT NULL, " +
+//                    "x INT NOT NULL, " +
+//                    "y INT NOT NULL, " +
+//                    "z INT NOT NULL, " +
+//                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE, " +
+//                    "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
+//                    "FOREIGN KEY (world) REFERENCES worlds(id)" +
+//                    ")").execute();
+//            conn.prepareStatement(itemsCreation + "data TEXT NOT NULL)").execute();
+//            conn.prepareStatement(chestItemCreation).execute();
+//            conn.prepareStatement(itemFrameCreation).execute();
+//            conn.prepareStatement(blockStateCreation).execute();
+//            conn.prepareStatement(signCreation).execute();
+//            conn.prepareStatement(extraCreation).execute();
+//
+//            if (sqlite) {
+//                conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
+//                // prevent database file locking on sqlite
+//                //conn.prepareStatement("PRAGMA journal_mode = WAL").execute();
+//            }
 
-            final String extraCreation = "CREATE TABLE IF NOT EXISTS extra (" +
-                    "record_id INT NOT NULL, " +
-                    "original TEXT, " +
-                    "replacement TEXT, " +
-                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE" +
-                    ")";
-
-            final String blockStateCreation = "CREATE TABLE IF NOT EXISTS block_state (" +
-                    "record_id INT NOT NULL, " +
-                    "original INT NOT NULL, " +
-                    "replacement INT NOT NULL, " +
-                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (original) REFERENCES block_states(id), " +
-                    "FOREIGN KEY (replacement) REFERENCES block_states(id)" +
-                    ")";
-
-            final String chestItemCreation = "CREATE TABLE IF NOT EXISTS chest_item (" +
-                    "record_id INT NOT NULL, " +
-                    "original INT NOT NULL, " +
-                    "replacement INT NOT NULL, " +
-                    "slot INT NOT NULL, " +
-                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (original) REFERENCES items(id), " +
-                    "FOREIGN KEY (replacement) REFERENCES items(id)" +
-                    ")";
-
-            final String itemFrameCreation = "CREATE TABLE IF NOT EXISTS item_frame (" +
-                    "record_id INT NOT NULL, " +
-                    "item INT NOT NULL, " +
-                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (item) REFERENCES items(id)" +
-                    ")";
-
-            final String signCreation = "CREATE TABLE IF NOT EXISTS sign (" +
-                    "record_id INT NOT NULL, " +
-                    "original INT NOT NULL, " +
-                    "replacement INT NOT NULL, " +
-                    "FOREIGN KEY (record_id) REFERENCES records(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (original) REFERENCES signs(id), " +
-                    "FOREIGN KEY (replacement) REFERENCES signs(id)" +
-                    ")";
-
-            // Databases need to be made differently on different databases.
-            this.sqlite = connectionString.contains("sqlite");
-            if (sqlite) {
-                Espial.getInstance().getLogger().info("Detected database type: sqlite");
-
-                recordsCreation = "CREATE TABLE IF NOT EXISTS records " +
-                        "(id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
-                        "id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-            } else {
-                // Probably MySQL/MariaDB or whatever. use a different statement
-
-                Espial.getInstance().getLogger().info("Detected database type: MySQL/MariaDB");
-
-                recordsCreation = "CREATE TABLE IF NOT EXISTS records (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-                blockStatesCreation = "CREATE TABLE IF NOT EXISTS block_states (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-                entityTypesCreation = "CREATE TABLE IF NOT EXISTS entity_types (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-                worldsCreation = "CREATE TABLE IF NOT EXISTS worlds (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-                signsCreation = "CREATE TABLE IF NOT EXISTS signs (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-                itemsCreation = "CREATE TABLE IF NOT EXISTS items (" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY, ";
-            }
-
-            // order matters! Be careful.
-            conn.prepareStatement(entityTypesCreation + "resource_key TEXT NOT NULL)").execute();
-            conn.prepareStatement(worldsCreation + "resource_key TEXT NOT NULL)").execute();
-            conn.prepareStatement(blockStatesCreation + "state TINYTEXT NOT NULL)").execute();
-            conn.prepareStatement(signsCreation +
-                    "front_1 VARCHAR(384), " +
-                    "front_2 VARCHAR(384), " +
-                    "front_3 VARCHAR(384), " +
-                    "front_4 VARCHAR(384), " +
-                    "back_1 VARCHAR(384), " +
-                    "back_2 VARCHAR(384), " +
-                    "back_3 VARCHAR(384), " +
-                    "back_4 VARCHAR(384))").execute();
-            conn.prepareStatement(recordsCreation +
-                    "type TINYINT NOT NULL, " +
-                    "time TIMESTAMP NOT NULL, " +
-                    "player_uuid CHAR(36), " +
-                    "entity_type INT NOT NULL, " +
-                    "target VARCHAR(255) NOT NULL, " +
-                    "world INT NOT NULL, " +
-                    "x INT NOT NULL, " +
-                    "y INT NOT NULL, " +
-                    "z INT NOT NULL, " +
-                    "rolled_back BOOLEAN NOT NULL DEFAULT FALSE, " +
-                    "FOREIGN KEY (entity_type) REFERENCES entity_types(id), " +
-                    "FOREIGN KEY (world) REFERENCES worlds(id)" +
-                    ")").execute();
-            conn.prepareStatement(itemsCreation + "data TEXT NOT NULL)").execute();
-            conn.prepareStatement(chestItemCreation).execute();
-            conn.prepareStatement(itemFrameCreation).execute();
-            conn.prepareStatement(blockStateCreation).execute();
-            conn.prepareStatement(signCreation).execute();
-            conn.prepareStatement(extraCreation).execute();
-
-            if (sqlite) {
-                conn.prepareStatement("PRAGMA foreign_keys = ON").execute();
-                // prevent database file locking on sqlite
-                //conn.prepareStatement("PRAGMA journal_mode = WAL").execute();
-            }
+            conn.prepareStatement("""
+                CREATE OR REPLACE VIEW records_view AS
+                    SELECT
+                    records.id,
+                    records.time,
+                    records.rolled_back,
+                    players.uuid as player_uuid,
+                    location.x as x,
+                    location.y as y,
+                    location.z as z,
+                    record_types.record_type as type,
+                    world.resource_key as world_key,
+                    extra.original_data as original_data,
+                    extra.replacement_data as replacement_data,
+                    original.state as original_state,
+                    replacement.state as replacement_state,
+                    entity_types.resource_key as entity_type_key,
+                    item_container.*,
+                    signs_original.front_1 AS original_front_1,
+                    signs_original.front_2 AS original_front_2,
+                    signs_original.front_3 AS original_front_3,
+                    signs_original.front_4 AS original_front_4,
+                    signs_original.back_1  AS original_back_1,
+                    signs_original.back_2  AS original_back_2,
+                    signs_original.back_3  AS original_back_3,
+                    signs_original.back_4  AS original_back_4,
+                    signs_replacement.front_1 AS replacement_front_1,
+                    signs_replacement.front_2 AS replacement_front_2,
+                    signs_replacement.front_3 AS replacement_front_3,
+                    signs_replacement.front_4 AS replacement_front_4,
+                    signs_replacement.back_1  AS replacement_back_1,
+                    signs_replacement.back_2  AS replacement_back_2,
+                    signs_replacement.back_3  AS replacement_back_3,
+                    signs_replacement.back_4  AS replacement_back_4
+                    FROM records
+                    LEFT JOIN players ON players.id = records.player
+                    LEFT JOIN locations AS location ON location.id = records.location
+                    LEFT JOIN worlds AS world ON location.world_id = world.id
+                    LEFT JOIN sign_change ON records.id = sign_change.record_id
+                    LEFT JOIN sign_text AS signs_original ON sign_change.original_text = signs_original.id
+                    LEFT JOIN sign_text AS signs_replacement ON sign_change.replacement_text = signs_replacement.id
+                    LEFT JOIN extra ON extra.record_id = records.id
+                    LEFT JOIN record_types ON record_types.id = records.record_type
+                    LEFT JOIN block_change AS bs ON records.id = bs.record_id
+                    LEFT JOIN block_states AS original ON bs.original_block = original.id
+                    LEFT JOIN block_states AS replacement ON bs.replacement_block = replacement.id
+                    LEFT JOIN entity_types ON records.entity_type = entity_types.id
+                    LEFT JOIN item_container ON item_container.record_id = records.id
+            """);
         }
     }
 
@@ -199,41 +252,43 @@ public final class EspialDatabase {
      */
     public int submit(@NotNull final EspialRecord record) throws SQLException, IOException {
         try (final Connection conn = getConn()) {
-            final PreparedStatement ps = conn.prepareStatement("INSERT INTO records "
-                    + " (type," +
-                    "time," +
-                    "player_uuid," +
-                    "entity_type," +
-                    "target," +
-                    "world," +
-                    "x," +
-                    "y," +
-                    "z," +
-                    "rolled_back)" +
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)",
+            final PreparedStatement ps = conn.prepareStatement("INSERT INTO records " +
+                            "(record_type," +
+                            "time," +
+                            "player," +
+                            "entity_type," +
+                            "location) " +
+                            " VALUES (?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
-            ps.setInt(1, record.getEvent().getId());
             final Timestamp timestamp = new Timestamp(record.getDate().getTime());
             ps.setTimestamp(2, timestamp);
             if (record.getUser().isPresent()) {
-                ps.setString(3, record.getUser().get().toString());
+                ps.setInt(3, this.getOrCreateId(conn, "players", "uuid",
+                        record.getUser().get().toString()));
             } else {
-                ps.setNull(3, Types.VARCHAR);
+                ps.setNull(3, Types.INTEGER);
             }
 
             // this makes stuff slower, but it's much more efficient for storage
-            final int entityTypeId = getOrCreateId(conn, "entity_types", "resource_key",
+            final int recordTypeId = this.getOrCreateId(conn, "record_types", "record_type",
+                    record.getEvent().key(EspialRegistryTypes.EVENT).formatted());
+            final int entityTypeId = this.getOrCreateId(conn, "entity_types", "resource_key",
                     record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
-            final int worldId = getOrCreateId(conn, "worlds", "resource_key",
+            final int worldId = this.getOrCreateId(conn, "worlds", "resource_key",
                     record.getLocation().worldKey().formatted());
+            final int locationId = this.getOrCreateId(conn, "locations",
+                    Map.of(
+                            "world_id", worldId,
+                            "x", record.getLocation().blockX(),
+                            "y", record.getLocation().blockY(),
+                            "z", record.getLocation().blockZ()
+                    ),
+                    Types.INTEGER);
 
+            ps.setInt(1, recordTypeId);
             ps.setInt(4, entityTypeId);
-            ps.setString(5, record.getTarget());
-            ps.setInt(6, worldId);
-            ps.setInt(7, record.getLocation().blockPosition().x());
-            ps.setInt(8, record.getLocation().blockPosition().y());
-            ps.setInt(9, record.getLocation().blockPosition().z());
+            ps.setInt(5, locationId);
 
             ps.execute();
 
@@ -248,7 +303,7 @@ public final class EspialDatabase {
                 final int id = rs.getInt(1);
 
                 final DataQuery unsafeData = DataQuery.of("UnsafeData");
-                final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO extra (record_id, original, replacement) " +
+                final PreparedStatement insertExtra = conn.prepareStatement("INSERT INTO extra (record_id, original_data, replacement_data) " +
                         "VALUES (?, ?, ?)");
 
                 if (record instanceof final BlockRecord blockRecord) {
@@ -258,7 +313,7 @@ public final class EspialDatabase {
                     final int replacementState = getOrCreateId(conn, "block_states", "state",
                             blockRecord.getReplacementBlock().state().asString());
 
-                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
+                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_change (record_id, original_block, replacement_block) " +
                             "VALUES (?, ?, ?)");
 
                     insertState.setInt(1, id);
@@ -298,7 +353,7 @@ public final class EspialDatabase {
                     final SignText original = signModifyRecord.getOriginalContents();
                     final SignText replacement = signModifyRecord.getReplacementContents();
 
-                    final Map<String, String> originalSign = Map.of(
+                    final Map<String, Object> originalSign = Map.of(
                             "front_1", componentToString(original.getFront1()),
                             "front_2", componentToString(original.getFront2()),
                             "front_3", componentToString(original.getFront3()),
@@ -310,7 +365,7 @@ public final class EspialDatabase {
                             "back_4", componentToString(original.getBack4())
                     );
 
-                    final Map<String, String> replacementSign = Map.of(
+                    final Map<String, Object> replacementSign = Map.of(
                             "front_1", componentToString(replacement.getFront1()),
                             "front_2", componentToString(replacement.getFront2()),
                             "front_3", componentToString(replacement.getFront3()),
@@ -322,10 +377,10 @@ public final class EspialDatabase {
                             "back_4", componentToString(replacement.getBack4())
                     );
 
-                    final int originalId = getOrCreateId(conn, "signs", originalSign);
-                    final int replacementId = getOrCreateId(conn, "signs", replacementSign);
+                    final int originalId = getOrCreateId(conn, "sign_text", originalSign, Types.VARCHAR);
+                    final int replacementId = getOrCreateId(conn, "sign_text", replacementSign, Types.VARCHAR);
 
-                    final PreparedStatement insertSign = conn.prepareStatement("INSERT INTO sign (record_id, original, replacement) VALUES (?, ?, ?)");
+                    final PreparedStatement insertSign = conn.prepareStatement("INSERT INTO sign_change (record_id, original_text, replacement_text) VALUES (?, ?, ?)");
                     insertSign.setInt(1, id);
                     insertSign.setInt(2, originalId);
                     insertSign.setInt(3, replacementId);
@@ -334,7 +389,7 @@ public final class EspialDatabase {
                     final int state = getOrCreateId(conn, "block_states", "state",
                             signModifyRecord.getBlockState().asString());
 
-                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_state (record_id, original, replacement) " +
+                    final PreparedStatement insertState = conn.prepareStatement("INSERT INTO block_change (record_id, original_block, replacement_block) " +
                             "VALUES (?, ?, ?)");
 
                     insertState.setInt(1, id);
@@ -354,7 +409,7 @@ public final class EspialDatabase {
                             "data",
                             DataFormats.JSON.get().write(containerChangeRecord.getReplacement().toContainer())
                     );
-                    final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO chest_item (record_id, original, replacement, slot) VALUES (?, ?, ?, ?)");
+                    final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO item_container (record_id, original_item, replacement_item, slot) VALUES (?, ?, ?, ?)");
                     insertChestItem.setInt(1, id);
                     insertChestItem.setInt(2, original);
                     insertChestItem.setInt(3, replacement);
@@ -387,53 +442,11 @@ public final class EspialDatabase {
 
     public List<EspialRecord> query(@NotNull final EspialQuery query) throws SQLException {
         final StringBuilder sql = new StringBuilder(
-                "SELECT " +
-                        "records.*, " +
-                        "signs_original.front_1 AS original_front_1, " +
-                        "signs_original.front_2 AS original_front_2, " +
-                        "signs_original.front_3 AS original_front_3, " +
-                        "signs_original.front_4 AS original_front_4, " +
-                        "signs_original.back_1  AS original_back_1, " +
-                        "signs_original.back_2  AS original_back_2, " +
-                        "signs_original.back_3  AS original_back_3, " +
-                        "signs_original.back_4  AS original_back_4, " +
-                        "signs_replacement.front_1 AS replacement_front_1, " +
-                        "signs_replacement.front_2 AS replacement_front_2, " +
-                        "signs_replacement.front_3 AS replacement_front_3, " +
-                        "signs_replacement.front_4 AS replacement_front_4, " +
-                        "signs_replacement.back_1  AS replacement_back_1, " +
-                        "signs_replacement.back_2  AS replacement_back_2, " +
-                        "signs_replacement.back_3  AS replacement_back_3, " +
-                        "signs_replacement.back_4  AS replacement_back_4, " +
-                        "extra.original AS extra_original, " +
-                        "extra.replacement AS extra_replacement, " +
-                        "original.state AS state_original, " +
-                        "replacement.state AS state_replacement, " +
-                        "original_item.data AS item_original, " +
-                        "replacement_item.data AS item_replacement, " +
-                        "ci.slot AS slot, " +
-                        "item_frame_item.data AS item, " +
-                        "worlds.resource_key AS world_key, " +
-                        "entity_types.resource_key AS entity_type_key " +
-                        "FROM records " +
-                        "LEFT JOIN extra ON records.id = extra.record_id " +
-                        "LEFT JOIN block_state AS bs ON records.id = bs.record_id " +
-                        "LEFT JOIN block_states AS original ON bs.original = original.id " +
-                        "LEFT JOIN block_states AS replacement ON bs.replacement = replacement.id " +
-                        "LEFT JOIN chest_item AS ci ON records.id = ci.record_id " +
-                        "LEFT JOIN items AS original_item ON ci.original = original_item.id " +
-                        "LEFT JOIN items AS replacement_item ON ci.replacement = replacement_item.id " +
-                        "LEFT JOIN item_frame AS it ON records.id = it.record_id " +
-                        "LEFT JOIN items AS item_frame_item ON it.item = item_frame_item.id " +
-                        "LEFT JOIN sign ON records.id = sign.record_id " +
-                        "LEFT JOIN signs AS signs_original ON sign.original = signs_original.id " +
-                        "LEFT JOIN signs AS signs_replacement ON sign.replacement = signs_replacement.id " +
-                        "JOIN entity_types ON records.entity_type = entity_types.id " +
-                        "JOIN worlds ON records.world = worlds.id " +
-                        "WHERE worlds.resource_key = ? " +
-                        "AND x BETWEEN ? AND ? " +
-                        "AND y BETWEEN ? AND ? " +
-                        "AND z BETWEEN ? AND ? "
+                "SELECT * FROM records_view " +
+                "WHERE world_key = ? " +
+                "AND x BETWEEN ? AND ? " +
+                "AND y BETWEEN ? AND ? " +
+                "AND z BETWEEN ? AND ? "
         );
 
         query.getAfter().ifPresent(after -> sql.append(" AND time > ?"));
@@ -523,7 +536,11 @@ public final class EspialDatabase {
             final PreparedStatement ps = conn.prepareStatement(
                     "UPDATE records SET rolled_back = ? WHERE id IN (" + placeholders + ")"
             );
-            ps.setBoolean(1, rolledBack);
+            if (rolledBack) {
+                ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+            } else {
+                ps.setNull(1, Types.DATE);
+            }
             for (int i = 0; i < records.size(); i++) {
                 ps.setInt(i + 2, records.get(i).getId());
             }
@@ -535,13 +552,18 @@ public final class EspialDatabase {
         try (final Connection conn = getConn()) {
             final PreparedStatement ps = conn.prepareStatement("UPDATE records SET rolled_back = ? WHERE id = ?");
 
-            ps.setBoolean(1, rolledBack);
+            if (rolledBack) {
+                ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+            } else {
+                ps.setNull(1, Types.DATE);
+            }
+
             ps.setInt(2, record.getId());
             ps.executeUpdate();
         }
     }
 
-    public int getOrCreateId(final Connection conn, final String table, final Map<String, String> data) throws SQLException {
+    public int getOrCreateId(final Connection conn, final String table, final Map<String, Object> data, int type) throws SQLException {
         if (data.isEmpty()) {
             throw new IllegalArgumentException("Provided column-data map must not be empty");
         }
@@ -563,8 +585,8 @@ public final class EspialDatabase {
                 .collect(Collectors.joining(" AND "));
         final PreparedStatement select = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + whereClause);
         int i = 1;
-        for (final String value : data.values()) {
-            select.setString(i++, value);
+        for (final Object value : data.values()) {
+            select.setObject(i++, value, type);
         }
         final ResultSet rs = select.executeQuery();
         if (rs.next()) {
@@ -580,8 +602,8 @@ public final class EspialDatabase {
         final PreparedStatement insert = conn.prepareStatement(
                 "INSERT INTO " + table + " (" + columns + ") VALUES (" + placeholders + ")", Statement.RETURN_GENERATED_KEYS);
         i = 1;
-        for (final String value : data.values()) {
-            insert.setString(i++, value);
+        for (final Object value : data.values()) {
+            insert.setObject(i++, value, type);
         }
         insert.executeUpdate();
 
@@ -596,7 +618,7 @@ public final class EspialDatabase {
     }
 
     public int getOrCreateId(final Connection conn, final String table, final String column, final String data) throws SQLException {
-        return this.getOrCreateId(conn, table, Map.of(column, data));
+        return this.getOrCreateId(conn, table, Map.of(column, data), Types.VARCHAR);
     }
 
     private static String componentToString(final Component component) {

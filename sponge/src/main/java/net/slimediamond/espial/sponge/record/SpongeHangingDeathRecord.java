@@ -21,7 +21,7 @@ public class SpongeHangingDeathRecord extends SpongeEspialRecord implements Hang
     private final DataContainer extraData;
 
     public SpongeHangingDeathRecord(final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
-                                    final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
+                                    final @NotNull ServerLocation location, final @NotNull EspialEvent event, @Nullable final Date rolledBack,
                                     final EntityType<?> targetEntityType, final DataContainer extraData) {
         super(date, user, entityType, location, event, rolledBack);
         this.targetEntityType = targetEntityType;
@@ -29,7 +29,7 @@ public class SpongeHangingDeathRecord extends SpongeEspialRecord implements Hang
     }
 
     public SpongeHangingDeathRecord(final int id, final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
-                                    final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
+                                    final @NotNull ServerLocation location, final @NotNull EspialEvent event, @Nullable final Date rolledBack,
                                     final EntityType<?> targetEntityType, final DataContainer extraData) {
         super(id, date, user, entityType, location, event, rolledBack);
         this.targetEntityType = targetEntityType;

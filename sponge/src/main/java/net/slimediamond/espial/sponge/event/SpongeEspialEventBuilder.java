@@ -5,16 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class SpongeEspialEventBuilder implements EspialEvent.Builder {
 
-    private int id;
     private String name;
     private String description;
     private String verb;
-
-    @Override
-    public EspialEvent.Builder id(final int id) {
-        this.id = id;
-        return this;
-    }
 
     @Override
     public EspialEvent.Builder name(@NotNull final String name) {
@@ -36,7 +29,7 @@ public class SpongeEspialEventBuilder implements EspialEvent.Builder {
 
     @Override
     public @NotNull EspialEvent build() {
-        return new SpongeEspialEvent(id, name, description, verb);
+        return new SpongeEspialEvent(name, description, verb);
     }
 
 }

@@ -126,7 +126,7 @@ public class RecordFormatter {
                     .hoverEvent(HoverEvent.showText(Component.join(JoinConfiguration.newlines(), extraDisplay))));
         }
 
-        if (record.isRolledBack()) {
+        if (record.getRolledBack() != null) {
             builder.decorate(TextDecoration.STRIKETHROUGH);
         }
 

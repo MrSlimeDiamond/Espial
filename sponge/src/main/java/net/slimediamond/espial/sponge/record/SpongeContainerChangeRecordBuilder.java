@@ -32,7 +32,7 @@ public class SpongeContainerChangeRecordBuilder extends SpongeRecordBuilder<Cont
 
     @Override
     public @NotNull EspialRecord build() {
-        return new SpongeContainerChangeRecord(-1, date, user, entityType, location, event, false, slot, original, replacement);
+        return new SpongeContainerChangeRecord(-1, date, user, entityType, location, event, null, slot, original, replacement);
     }
 
 }

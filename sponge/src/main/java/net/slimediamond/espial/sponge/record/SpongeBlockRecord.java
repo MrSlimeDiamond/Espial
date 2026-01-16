@@ -27,7 +27,7 @@ public class SpongeBlockRecord extends SpongeEspialRecord implements BlockRecord
                              @NotNull final EspialEvent event,
                              @NotNull final BlockSnapshot original,
                              @NotNull final BlockSnapshot replacement,
-                             final boolean rolledBack) {
+                             @Nullable final Date rolledBack) {
         super(id, date, user, entityType, location, event, rolledBack);
         this.original = original;
         this.replacement = replacement;

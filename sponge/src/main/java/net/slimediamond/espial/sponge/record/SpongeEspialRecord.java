@@ -16,7 +16,7 @@ import java.util.UUID;
 public abstract class SpongeEspialRecord implements EspialRecord {
 
     private int id = -1;
-    private boolean rolledBack;
+    private Date rolledBack;
     private final Date date;
     private final UUID user;
     private final EntityType<?> entityType;
@@ -28,7 +28,7 @@ public abstract class SpongeEspialRecord implements EspialRecord {
                               @NotNull final EntityType<?> entityType,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
-                              final boolean rolledBack) {
+                              @Nullable final Date rolledBack) {
         this.date = date;
         this.user = user;
         this.entityType = entityType;
@@ -43,7 +43,7 @@ public abstract class SpongeEspialRecord implements EspialRecord {
                               @NotNull final EntityType<?> entityType,
                               @NotNull final ServerLocation location,
                               @NotNull final EspialEvent event,
-                              final boolean rolledBack) {
+                              @Nullable final Date rolledBack) {
         this.id = id;
         this.date = date;
         this.user = user;
@@ -84,7 +84,7 @@ public abstract class SpongeEspialRecord implements EspialRecord {
     }
 
     @Override
-    public boolean isRolledBack() {
+    public @Nullable Date getRolledBack() {
         return rolledBack;
     }
 
@@ -93,7 +93,7 @@ public abstract class SpongeEspialRecord implements EspialRecord {
     }
 
     public void setRolledBack(final boolean rolledBack) {
-        this.rolledBack = rolledBack;
+        this.rolledBack = new Date();
         try {
             Espial.getInstance().getDatabase().setRolledBack(this, rolledBack);
         } catch (SQLException e) {

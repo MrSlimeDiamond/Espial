@@ -35,7 +35,7 @@ public class StageWand implements WandType {
                 records = results.stream().sorted(Comparator.comparingInt(EspialRecord::getId)).toList();
             }
 
-            records = records.stream().filter(record -> record.isRolledBack() == !rollback).toList();
+            records = records.stream().filter(record -> (record.getRolledBack() != null) == !rollback).toList();
             final EspialRecord record = records.getFirst();
             if (record == null) {
                 player.sendMessage(Format.NO_RECORDS_FOUND);

@@ -27,7 +27,7 @@ public class SpongeItemFrameChangeRecordFactory implements RecordFactory<ItemFra
                                         @Nullable final UUID user,
                                         @NotNull final EntityType<?> entityType,
                                         @NotNull final ServerLocation location,
-                                        final boolean rolledBack) throws SQLException {
+                                        @Nullable final Date rolledBack) throws SQLException {
         final String itemData = rs.getString("item");
         try {
             final ItemStackSnapshot item = ItemStack.builder()

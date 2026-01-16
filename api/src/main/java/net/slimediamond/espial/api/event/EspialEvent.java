@@ -13,13 +13,6 @@ import org.spongepowered.api.util.annotation.CatalogedBy;
 public interface EspialEvent extends DefaultedRegistryValue, ComponentLike {
 
     /**
-     * Get the ID of the Espial event
-     *
-     * @return Event ID
-     */
-    int getId();
-
-    /**
      * Get the name of the Espial event
      *
      * @return Event name
@@ -70,16 +63,6 @@ public interface EspialEvent extends DefaultedRegistryValue, ComponentLike {
     }
     
     interface Builder extends org.spongepowered.api.util.Builder<EspialEvent, Builder> {
-
-        /**
-         * Sets the ID for the event
-         *
-         *<p><strong>This is required</strong></p>
-         *
-         * @param id Event ID
-         * @return This builder, for chaining
-         */
-        Builder id(int id);
 
         /**
          * Sets the name for the event

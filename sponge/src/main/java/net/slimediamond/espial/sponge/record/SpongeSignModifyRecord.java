@@ -22,7 +22,7 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     private final BlockState blockState;
 
     public SpongeSignModifyRecord(final int id, final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
-                                  final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
+                                  final @NotNull ServerLocation location, final @NotNull EspialEvent event, @Nullable final Date rolledBack,
                                   final SignText originalContents, final SignText replacementContents, final boolean frontSide,
                                   final BlockState blockState) {
         super(id, date, user, entityType, location, event, rolledBack);
@@ -33,7 +33,7 @@ public class SpongeSignModifyRecord extends SpongeEspialRecord implements SignMo
     }
 
     public SpongeSignModifyRecord(final @NotNull Date date, final @Nullable UUID user, final @NotNull EntityType<?> entityType,
-                                  final @NotNull ServerLocation location, final @NotNull EspialEvent event, final boolean rolledBack,
+                                  final @NotNull ServerLocation location, final @NotNull EspialEvent event, @Nullable final Date rolledBack,
                                   final SignText originalContents, final SignText replacementContents, final boolean frontSide,
                                   final BlockState blockState) {
         super(date, user, entityType, location, event, rolledBack);

@@ -28,11 +28,11 @@ public final class SpongeBlockRecordFactory implements RecordFactory<BlockRecord
                               @Nullable final UUID user,
                               @NotNull final EntityType<?> entityType,
                               @NotNull final ServerLocation location,
-                              final boolean rolledBack)
+                              @Nullable final Date rolledBack)
             throws SQLException {
         final ResourceKey worldKey = location.worldKey();
-        final BlockState originalState = BlockState.fromString(rs.getString("state_original"));
-        final BlockState replacementState = BlockState.fromString(rs.getString("state_replacement"));
+        final BlockState originalState = BlockState.fromString(rs.getString("original_state"));
+        final BlockState replacementState = BlockState.fromString(rs.getString("replacement_state"));
 
         BlockSnapshot original = BlockSnapshot.builder()
                 .blockState(originalState)
@@ -46,14 +46,14 @@ public final class SpongeBlockRecordFactory implements RecordFactory<BlockRecord
                 .position(location.blockPosition())
                 .build();
 
-        // see if we have extra_original or extra_replacement, then apply its data.
+        // see if we have original_data or replacement_data, then apply its data.
         // It's not always present for storage space purposes.
         try {
-            final String extraOriginal = rs.getString("extra_original");
+            final String extraOriginal = rs.getString("original_data");
             if (extraOriginal != null) {
                 original = original.withRawData(DataFormats.JSON.get().read(extraOriginal));
             }
-            final String extraReplacement = rs.getString("extra_replacement");
+            final String extraReplacement = rs.getString("replacement_data");
             if (extraReplacement != null) {
                 replacement = replacement.withRawData(DataFormats.JSON.get().read(extraReplacement));
             }

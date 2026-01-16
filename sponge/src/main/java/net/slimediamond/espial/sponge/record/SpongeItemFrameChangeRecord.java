@@ -27,7 +27,7 @@ public class SpongeItemFrameChangeRecord extends SpongeEspialRecord implements I
                                        final @NotNull EntityType<?> entityType,
                                        final @NotNull ServerLocation location,
                                        final @NotNull EspialEvent event,
-                                       final boolean rolledBack,
+                                       final @Nullable Date rolledBack,
                                        final ItemStackSnapshot original,
                                        final ItemStackSnapshot replacement) {
         super(id, date, user, entityType, location, event, rolledBack);

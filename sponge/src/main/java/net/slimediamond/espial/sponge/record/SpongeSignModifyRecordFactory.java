@@ -26,7 +26,7 @@ public class SpongeSignModifyRecordFactory implements RecordFactory<SignModifyRe
                                    @Nullable final UUID user,
                                    @NotNull final EntityType<?> entityType,
                                    @NotNull final ServerLocation location,
-                                   final boolean rolledBack)
+                                   @Nullable final Date rolledBack)
             throws SQLException {
 
         // Fuck
@@ -58,7 +58,7 @@ public class SpongeSignModifyRecordFactory implements RecordFactory<SignModifyRe
         final SignText replacementText = SignText.from(replacementFront1, replacementFront2, replacementFront3, replacementFront4,
                 replacementBack1, replacementBack2, replacementBack3, replacementBack4);
 
-        final BlockState blockState = BlockState.fromString(rs.getString("state_original"));
+        final BlockState blockState = BlockState.fromString(rs.getString("original_state"));
 
         return new SpongeSignModifyRecord(id, date, user, entityType, location, event, rolledBack, originalText, replacementText, true, blockState);
     }

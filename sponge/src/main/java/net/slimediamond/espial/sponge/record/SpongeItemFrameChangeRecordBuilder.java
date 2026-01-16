@@ -25,7 +25,7 @@ public class SpongeItemFrameChangeRecordBuilder extends SpongeRecordBuilder<Item
 
     @Override
     public @NotNull EspialRecord build() {
-        return new SpongeItemFrameChangeRecord(-1, date, user, entityType, location, event, false, original, replacement);
+        return new SpongeItemFrameChangeRecord(-1, date, user, entityType, location, event, null, original, replacement);
     }
 
 }

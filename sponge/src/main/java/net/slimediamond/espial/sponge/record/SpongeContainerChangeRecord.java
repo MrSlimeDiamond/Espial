@@ -30,7 +30,7 @@ public class SpongeContainerChangeRecord extends SpongeEspialRecord implements C
                                        final @NotNull EntityType<?> entityType,
                                        final @NotNull ServerLocation location,
                                        final @NotNull EspialEvent event,
-                                       final boolean rolledBack,
+                                       final @Nullable Date rolledBack,
                                        final int slot,
                                        final ItemStackSnapshot original,
                                        final ItemStackSnapshot replacement) {

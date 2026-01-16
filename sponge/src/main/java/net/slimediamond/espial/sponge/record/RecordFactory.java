@@ -29,6 +29,6 @@ public interface RecordFactory<T extends EspialRecord> {
              @Nullable UUID user,
              @NotNull EntityType<?> entityType,
              @NotNull ServerLocation location,
-             boolean rolledBack) throws SQLException;
+             @Nullable Date rolledBack) throws SQLException;
 
 }

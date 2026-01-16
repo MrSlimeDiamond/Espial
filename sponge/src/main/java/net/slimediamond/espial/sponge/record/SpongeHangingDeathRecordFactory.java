@@ -26,11 +26,11 @@ public class SpongeHangingDeathRecordFactory implements RecordFactory<HangingDea
                                      @Nullable final UUID user,
                                      @NotNull final EntityType<?> entityType,
                                      @NotNull final ServerLocation location,
-                                     final boolean rolledBack)
+                                     @Nullable final Date rolledBack)
             throws SQLException {
         final String target = rs.getString("target");
         final EntityType<?> targetEntityType = EntityTypes.registry().value(ResourceKey.resolve(target));
-        final String extra = rs.getString("extra_original");
+        final String extra = rs.getString("original_data");
         try {
             return new SpongeHangingDeathRecord(id, date, user, entityType, location, event, rolledBack, targetEntityType, DataFormats.JSON.get().read(extra));
         } catch (final IOException e) {

@@ -26,7 +26,7 @@ public class SpongeHangingDeathRecordBuilder
 
     @Override
     public @NotNull HangingDeathRecord build() {
-        return new SpongeHangingDeathRecord(date, user, entityType, location, event, false, targetEntityType, extraData);
+        return new SpongeHangingDeathRecord(date, user, entityType, location, event, null, targetEntityType, extraData);
     }
 
 }

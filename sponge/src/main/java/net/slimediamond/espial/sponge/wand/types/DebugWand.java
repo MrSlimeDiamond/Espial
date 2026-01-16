@@ -58,7 +58,7 @@ public class DebugWand implements WandType {
                 Format.detail("Type", record.getClass().getSimpleName()),
                 Format.detail("ID", String.valueOf(record.getId())),
                 Format.detail("Target", record.getTarget()),
-                Format.detail("Rolled back", record.isRolledBack() ? "yes" : "no"));
+                Format.detail("Rolled back", record.getRolledBack() != null ? "yes" : "no"));
     }
 
     private static Component extraInfo(final EspialRecord record) {

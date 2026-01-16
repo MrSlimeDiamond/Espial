@@ -40,7 +40,7 @@ public class SpongeSignModifyRecordBuilder extends SpongeRecordBuilder<SignModif
 
     @Override
     public @NotNull EspialRecord build() {
-        return new SpongeSignModifyRecord(date, user, entityType, location, event, false, originalContents, replacementContents, frontSide, blockState);
+        return new SpongeSignModifyRecord(date, user, entityType, location, event, null, originalContents, replacementContents, frontSide, blockState);
     }
 
 }

@@ -11,8 +11,6 @@ public class RollbackCommand extends TransactionCommand {
 
         addAlias("rollback");
         addAlias("rb");
-
-        addPredicate(record -> !record.isRolledBack());
     }
 
 }

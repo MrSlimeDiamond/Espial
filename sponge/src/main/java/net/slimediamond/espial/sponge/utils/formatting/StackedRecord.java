@@ -23,7 +23,7 @@ public class StackedRecord implements EntityDataHeld {
         this.user = record.getUser().orElse(null);
         this.entityType = record.getEntityType();
         this.event = record.getEvent();
-        this.rolledBack = record.isRolledBack();
+        this.rolledBack = record.getRolledBack() != null;
         this.target = RecordFormatter.getTarget(record);
     }
 

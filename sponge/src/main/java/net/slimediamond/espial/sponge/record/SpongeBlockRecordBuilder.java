@@ -24,7 +24,7 @@ public class SpongeBlockRecordBuilder extends SpongeRecordBuilder<BlockRecord.Bu
 
     @Override
     public @NotNull BlockRecord build() {
-        return new SpongeBlockRecord(-1, date, user, entityType, location, event, original, replacement, false);
+        return new SpongeBlockRecord(-1, date, user, entityType, location, event, original, replacement, null);
     }
 
 }
