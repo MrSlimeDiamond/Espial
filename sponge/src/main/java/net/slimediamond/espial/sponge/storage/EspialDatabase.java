@@ -191,6 +191,7 @@ public final class EspialDatabase {
 //                //conn.prepareStatement("PRAGMA journal_mode = WAL").execute();
 //            }
 
+            // TODO: Make a view for each type of record, and then query them simultaneously
             conn.prepareStatement("""
                 CREATE OR REPLACE VIEW records_view AS
                     SELECT
@@ -201,6 +202,10 @@ public final class EspialDatabase {
                     location.x as x,
                     location.y as y,
                     location.z as z,
+                    item_container.item_frame,
+                    item_container.original_item,
+                    item_container.replacement_item,
+                    item_container.slot,
                     record_types.record_type as type,
                     world.resource_key as world_key,
                     extra.original_data as original_data,
@@ -208,7 +213,6 @@ public final class EspialDatabase {
                     original.state as original_state,
                     replacement.state as replacement_state,
                     entity_types.resource_key as entity_type_key,
-                    item_container.*,
                     signs_original.front_1 AS original_front_1,
                     signs_original.front_2 AS original_front_2,
                     signs_original.front_3 AS original_front_3,
@@ -224,7 +228,9 @@ public final class EspialDatabase {
                     signs_replacement.back_1  AS replacement_back_1,
                     signs_replacement.back_2  AS replacement_back_2,
                     signs_replacement.back_3  AS replacement_back_3,
-                    signs_replacement.back_4  AS replacement_back_4
+                    signs_replacement.back_4  AS replacement_back_4,
+                    item_original.data as item_original,
+                    item_replacement.data as item_replacement
                     FROM records
                     LEFT JOIN players ON players.id = records.player
                     LEFT JOIN locations AS location ON location.id = records.location
@@ -239,6 +245,8 @@ public final class EspialDatabase {
                     LEFT JOIN block_states AS replacement ON bs.replacement_block = replacement.id
                     LEFT JOIN entity_types ON records.entity_type = entity_types.id
                     LEFT JOIN item_container ON item_container.record_id = records.id
+                    LEFT JOIN items AS item_original ON item_original.id = item_container.original_item
+                    LEFT JOIN items AS item_replacement ON item_replacement.id = item_container.replacement_item
             """);
         }
     }
@@ -409,11 +417,12 @@ public final class EspialDatabase {
                             "data",
                             DataFormats.JSON.get().write(containerChangeRecord.getReplacement().toContainer())
                     );
-                    final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO item_container (record_id, original_item, replacement_item, slot) VALUES (?, ?, ?, ?)");
+                    final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO item_container (record_id, item_frame, original_item, replacement_item, slot) VALUES (?, ?, ?, ?, ?)");
                     insertChestItem.setInt(1, id);
-                    insertChestItem.setInt(2, original);
-                    insertChestItem.setInt(3, replacement);
-                    insertChestItem.setInt(4, containerChangeRecord.getSlot());
+                    insertChestItem.setBoolean(2, false);
+                    insertChestItem.setInt(3, original);
+                    insertChestItem.setInt(4, replacement);
+                    insertChestItem.setInt(5, containerChangeRecord.getSlot());
                     insertChestItem.execute();
                 } else if (record instanceof final ItemFrameChangeRecord itemFrameChangeRecord) {
                     final int item = getOrCreateId(
