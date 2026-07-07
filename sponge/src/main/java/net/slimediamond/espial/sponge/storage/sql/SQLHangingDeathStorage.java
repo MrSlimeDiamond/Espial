@@ -79,7 +79,7 @@ public class SQLHangingDeathStorage implements RecordStorage<HangingDeathRecord>
             }
 
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not query records", e, Collections.emptyList());
+            throw new EspialStorageException(e);
         }
         return results;
     }
@@ -101,7 +101,7 @@ public class SQLHangingDeathStorage implements RecordStorage<HangingDeathRecord>
             insertEntity.execute();
             return id;
         } catch (final SQLException e) {
-            throw new EspialStorageException("Unable to insert record", e, record);
+            throw new EspialStorageException(e, record);
         }
     }
 

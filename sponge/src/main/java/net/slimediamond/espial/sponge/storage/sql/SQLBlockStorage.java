@@ -94,7 +94,7 @@ public class SQLBlockStorage implements RecordStorage<BlockRecord> {
             }
 
         } catch (final SQLException e) {
-            throw new EspialStorageException("Could not query records", e, Collections.emptyList());
+            throw new EspialStorageException(e);
         }
         return results;
     }
@@ -141,7 +141,7 @@ public class SQLBlockStorage implements RecordStorage<BlockRecord> {
 
             return id;
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not insert record", e, record);
+            throw new EspialStorageException(e, record);
         }
     }
 

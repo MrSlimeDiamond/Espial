@@ -72,7 +72,7 @@ public class SQLItemFrameStorage implements RecordStorage<ItemFrameChangeRecord>
             }
 
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not query records", e, Collections.emptyList());
+            throw new EspialStorageException(e);
         }
         return results;
     }
@@ -103,7 +103,7 @@ public class SQLItemFrameStorage implements RecordStorage<ItemFrameChangeRecord>
             insertItem.execute();
             return id;
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not insert record", e, record);
+            throw new EspialStorageException(e, record);
         }
     }
 

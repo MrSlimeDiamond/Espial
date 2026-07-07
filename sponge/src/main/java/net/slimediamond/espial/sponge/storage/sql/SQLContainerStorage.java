@@ -72,7 +72,7 @@ public class SQLContainerStorage implements RecordStorage<ContainerChangeRecord>
             }
 
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not query records", e, Collections.emptyList());
+            throw new EspialStorageException(e);
         }
         return results;
     }
@@ -104,7 +104,7 @@ public class SQLContainerStorage implements RecordStorage<ContainerChangeRecord>
 
             return id;
         } catch (final SQLException | IOException e) {
-            throw new EspialStorageException("Could not query records", e, record);
+            throw new EspialStorageException(e, record);
         }
     }
 

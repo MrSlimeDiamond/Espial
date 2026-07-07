@@ -2,11 +2,27 @@ package net.slimediamond.espial.api.storage;
 
 import net.slimediamond.espial.api.record.EspialRecord;
 
+import java.util.Collections;
 import java.util.List;
 
 public class EspialStorageException extends Exception {
 
     private final List<EspialRecord> records;
+
+    public EspialStorageException(final Throwable cause) {
+        super(cause);
+        this.records = Collections.emptyList();
+    }
+
+    public EspialStorageException(final Throwable cause, final List<EspialRecord> records) {
+        super(cause);
+        this.records = records;
+    }
+
+    public EspialStorageException(final Throwable cause, final EspialRecord record) {
+        super(cause);
+        this.records = List.of(record);
+    }
 
     public EspialStorageException(final String message, final List<EspialRecord> records) {
         super(message);

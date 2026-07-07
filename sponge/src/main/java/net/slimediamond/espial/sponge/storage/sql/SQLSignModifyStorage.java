@@ -175,7 +175,7 @@ public class SQLSignModifyStorage implements RecordStorage<SignModifyRecord> {
 
             return id;
         } catch (final SQLException e) {
-            throw new EspialStorageException("Could not insert record", e, record);
+            throw new EspialStorageException(e, record);
         }
     }
 
