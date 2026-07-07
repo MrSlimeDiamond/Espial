@@ -94,12 +94,11 @@ public class SQLContainerStorage implements RecordStorage<ContainerChangeRecord>
                     "data",
                     DataFormats.JSON.get().write(record.getReplacement().toContainer())
             );
-            final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO item_container (record_id, item_frame, original_item, replacement_item, slot) VALUES (?, ?, ?, ?, ?)");
+            final PreparedStatement insertChestItem = conn.prepareStatement("INSERT INTO item_container (record_id, original_item, replacement_item, slot) VALUES (?, ?, ?, ?)");
             insertChestItem.setInt(1, id);
-            insertChestItem.setBoolean(2, false);
-            insertChestItem.setInt(3, original);
-            insertChestItem.setInt(4, replacement);
-            insertChestItem.setInt(5, record.getSlot());
+            insertChestItem.setInt(2, original);
+            insertChestItem.setInt(3, replacement);
+            insertChestItem.setInt(4, record.getSlot());
             insertChestItem.execute();
 
             return id;

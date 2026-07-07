@@ -95,11 +95,10 @@ public class SQLItemFrameStorage implements RecordStorage<ItemFrameChangeRecord>
                     "data",
                     DataFormats.JSON.get().write(record.getReplacement().toContainer())
             );
-            final PreparedStatement insertItem = conn.prepareStatement("INSERT INTO item_container (record_id, item_frame, original_item, replacement_item) VALUES (?, ?, ?, ?)");
+            final PreparedStatement insertItem = conn.prepareStatement("INSERT INTO item_container (record_id, original_item, replacement_item) VALUES (?, ?, ?)");
             insertItem.setInt(1, id);
-            insertItem.setBoolean(2, false);
-            insertItem.setInt(3, original);
-            insertItem.setInt(4, replacement);
+            insertItem.setInt(2, original);
+            insertItem.setInt(3, replacement);
             insertItem.execute();
             return id;
         } catch (final SQLException | IOException e) {
