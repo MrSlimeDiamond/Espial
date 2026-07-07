@@ -217,13 +217,13 @@ public class SQLStorage extends DefaultStorage {
             conn.prepareStatement("""
                 CREATE OR REPLACE VIEW records_view AS SELECT
                     records.id, records.time, records.rolled_back, players.uuid AS player_uuid,
-                    location.x AS x, location.y AS y, location.z AS z, record_types.record_type
+                    location.x AS x, location.y AS y, location.z AS z, event_types.event_type
                     AS type, world.resource_key AS world_key, entity_types.resource_key AS entity_type_key
                     FROM records
                     LEFT JOIN players ON players.id = records.player
                     LEFT JOIN locations AS location ON location.id = records.location
                     LEFT JOIN worlds AS world ON location.world_id = world.id
-                    LEFT JOIN record_types ON record_types.id = records.record_type
+                    LEFT JOIN event_types ON event_types.id = records.event_type
                     LEFT JOIN entity_types ON records.entity_type = entity_types.id
             """).execute();
         } catch (final SQLException e) {
@@ -409,7 +409,7 @@ public class SQLStorage extends DefaultStorage {
      */
     public int insert(final Connection conn, final EspialRecord record) throws SQLException {
         final PreparedStatement ps = conn.prepareStatement("INSERT INTO records " +
-                        "(record_type," +
+                        "(event_type," +
                         "time," +
                         "player," +
                         "entity_type," +
@@ -427,7 +427,7 @@ public class SQLStorage extends DefaultStorage {
         }
 
         // this makes stuff slower, but it's much more efficient for storage
-        final int recordTypeId = this.getOrCreateId(conn, "record_types", "record_type",
+        final int recordTypeId = this.getOrCreateId(conn, "event_types", "event_type",
                 record.getEvent().key(EspialRegistryTypes.EVENT).formatted());
         final int entityTypeId = this.getOrCreateId(conn, "entity_types", "resource_key",
                 record.getEntityType().key(RegistryTypes.ENTITY_TYPE).formatted());
