@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.api.wand.WandType;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.data.EspialKeys;
@@ -51,8 +52,8 @@ public class StageWand implements WandType {
                         .plugin(Espial.getInstance().getContainer())
                         .build());
                 try {
-                    Espial.getInstance().getDatabase().setRolledBack(record, rollback);
-                } catch (final SQLException e) {
+                    Espial.getInstance().getStorage().setRolledBack(record, rollback);
+                } catch (final EspialStorageException e) {
                     player.sendMessage(Format.error(Component.text("Unable to set rolled back status, this might " +
                             "result in some weirdness in the future")));
                     return;

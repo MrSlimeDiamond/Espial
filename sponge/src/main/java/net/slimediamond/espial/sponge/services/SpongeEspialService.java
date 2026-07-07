@@ -54,7 +54,7 @@ public final class SpongeEspialService implements EspialService {
         Sponge.asyncScheduler().submit(Task.builder()
                 .execute(() -> {
                     try {
-                        future.complete(Espial.getInstance().getDatabase().query(query));
+                        future.complete(Espial.getInstance().getStorage().query(query));
                     } catch (final Throwable t) {
                         final String stackTrace = t.toString();
                         query.getAudience().ifPresent(audience ->

@@ -28,7 +28,7 @@ public class SpongeRecordingQueue extends Thread {
                 final InsertRecordEvent.Pre event = new SpongeInsertRecordEvent.PreImpl(record, cause);
                 Sponge.eventManager().post(event);
                 if (!event.isCancelled()) {
-                    final int id = Espial.getInstance().getDatabase().submit(record);
+                    final int id = Espial.getInstance().getStorage().submit(record);
                     record.setId(id);
                 }
             } catch (final InterruptedException e) {

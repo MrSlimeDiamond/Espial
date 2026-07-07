@@ -2,6 +2,7 @@ package net.slimediamond.espial.sponge.commands;
 
 import net.kyori.adventure.text.Component;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.commands.subsystem.Flags;
 import net.slimediamond.espial.sponge.permission.Permissions;
@@ -41,9 +42,9 @@ public class PurgeCommand extends RecordResultCommand {
         }
         // erase records
         try {
-            Espial.getInstance().getDatabase().batchDelete(records.stream().map(EspialRecord::getId).toList());
+            Espial.getInstance().getStorage().batchDelete(records.stream().map(EspialRecord::getId).toList());
             context.sendMessage(Format.text(String.format("Erased %o records", records.size())));
-        } catch (final SQLException e) {
+        } catch (final EspialStorageException e) {
             context.sendMessage(Format.error("Unable to delete records"));
 //            Espial.getInstance().getLogger().error(e);
             e.printStackTrace();

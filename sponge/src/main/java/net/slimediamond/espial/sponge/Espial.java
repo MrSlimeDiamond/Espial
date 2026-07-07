@@ -6,6 +6,8 @@ import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.*;
 import net.slimediamond.espial.api.services.EspialService;
 import net.slimediamond.espial.api.services.EspialServiceProvider;
+import net.slimediamond.espial.api.storage.EspialStorage;
+import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.sponge.commands.NearbySignsCommand;
 import net.slimediamond.espial.sponge.commands.RootCommand;
@@ -19,7 +21,7 @@ import net.slimediamond.espial.sponge.queue.SpongeRecordingQueue;
 import net.slimediamond.espial.sponge.record.*;
 import net.slimediamond.espial.sponge.registry.EspialRegistryLoader;
 import net.slimediamond.espial.sponge.services.SpongeEspialService;
-import net.slimediamond.espial.sponge.storage.EspialDatabase;
+import net.slimediamond.espial.sponge.storage.sql.SQLStorage;
 import net.slimediamond.espial.sponge.transaction.TransactionBuilder;
 import net.slimediamond.espial.sponge.utils.formatting.Format;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +47,6 @@ import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 @Plugin("espial")
@@ -54,7 +55,7 @@ public class Espial {
     private static Espial instance;
     private EspialService espialService;
     private Configuration config;
-    private EspialDatabase database;
+    private EspialStorage storage;
     private SpongeRecordingQueue recordingQueue;
 
     @Inject
@@ -87,13 +88,14 @@ public class Espial {
         this.reference.save();
 
         this.logger.info("Starting database");
-        this.database = new EspialDatabase(this.config.getJdbc());
+        //this.storage = new EspialDatabase(this.config.getJdbc());
+        this.storage = new SQLStorage(this.config.getJdbc());
         try {
-            this.database.open();
+            this.storage.open();
             this.recordingQueue = new SpongeRecordingQueue();
             this.recordingQueue.start();
             this.logger.info("Database opened");
-        } catch (final SQLException e) {
+        } catch (final EspialStorageException e) {
             this.logger.error("Could not open database connection. Espial will not do anything", e);
         }
     }
@@ -187,8 +189,8 @@ public class Espial {
         return config;
     }
 
-    public EspialDatabase getDatabase() {
-        return database;
+    public EspialStorage getStorage() {
+        return storage;
     }
 
     public SpongeRecordingQueue getRecordingQueue() {

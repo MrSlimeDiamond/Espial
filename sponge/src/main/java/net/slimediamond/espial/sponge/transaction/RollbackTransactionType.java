@@ -3,6 +3,7 @@ package net.slimediamond.espial.sponge.transaction;
 import net.kyori.adventure.audience.Audience;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.api.transaction.Transaction;
 import net.slimediamond.espial.api.transaction.TransactionType;
 import net.slimediamond.espial.api.transaction.TransactionTypes;
@@ -31,8 +32,8 @@ public class RollbackTransactionType implements TransactionType {
         Sponge.asyncScheduler().submit(Task.builder()
                 .execute(() -> {
                     try {
-                        Espial.getInstance().getDatabase().batchSetRolledBack(records, true);
-                    } catch (final SQLException e) {
+                        Espial.getInstance().getStorage().batchSetRolledBack(records, true);
+                    } catch (final EspialStorageException e) {
                         Espial.getInstance().getLogger().error("Unable to batch set rollback on records", e);
                     }
                 })

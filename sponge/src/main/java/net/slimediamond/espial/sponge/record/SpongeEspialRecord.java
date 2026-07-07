@@ -2,6 +2,7 @@ package net.slimediamond.espial.sponge.record;
 
 import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.record.EspialRecord;
+import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.sponge.Espial;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,13 +93,9 @@ public abstract class SpongeEspialRecord implements EspialRecord {
         this.id = id;
     }
 
-    public void setRolledBack(final boolean rolledBack) {
+    public void setRolledBack(final boolean rolledBack) throws EspialStorageException {
         this.rolledBack = new Date();
-        try {
-            Espial.getInstance().getDatabase().setRolledBack(this, rolledBack);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        Espial.getInstance().getStorage().setRolledBack(this, rolledBack);
     }
 
 }
