@@ -496,13 +496,46 @@ public class SQLStorage extends DefaultStorage {
     }
 
     @Override
-    public void batchSetRolledBack(Collection<EspialRecord> records, boolean rolledBack) {
-
+    public void batchSetRolledBack(List<EspialRecord> records, boolean rolledBack) throws EspialStorageException {
+        if (records.isEmpty()) {
+            return;
+        }
+        try (final Connection conn = getConn()) {
+            final String placeholders = String.join(", ", Collections.nCopies(records.size(), "?"));
+            final PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE records SET rolled_back = ? WHERE id IN (" + placeholders + ")"
+            );
+            if (rolledBack) {
+                ps.setDate(1, new java.sql.Date(System.currentTimeMillis()));
+            } else {
+                ps.setNull(1, Types.DATE);
+            }
+            for (int i = 0; i < records.size(); i++) {
+                ps.setInt(i + 2, records.get(i).getId());
+            }
+            ps.executeUpdate();
+        } catch (final SQLException e) {
+            throw new EspialStorageException(e);
+        }
     }
 
     @Override
     public void batchDelete(List<Integer> ids) throws EspialStorageException {
-
+        if (ids.isEmpty()) {
+            return;
+        }
+        try (final Connection conn = getConn()) {
+            final String placeholders = String.join(", ", Collections.nCopies(ids.size(), "?"));
+            final PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM records WHERE id IN (" + placeholders + ")"
+            );
+            for (int i = 0; i < ids.size(); i++) {
+                ps.setInt(i + 1, ids.get(i));
+            }
+            ps.executeUpdate();
+        } catch (final SQLException e) {
+            throw new EspialStorageException(e);
+        }
     }
 
 }

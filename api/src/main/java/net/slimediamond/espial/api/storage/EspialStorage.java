@@ -4,7 +4,6 @@ package net.slimediamond.espial.api.storage;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.EspialRecord;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,7 +47,7 @@ public interface EspialStorage {
      * @param records The records on which to set the rolled back state
      * @param rolledBack Whether the records are rolled back
      */
-    void batchSetRolledBack(Collection<EspialRecord> records, boolean rolledBack) throws EspialStorageException;
+    void batchSetRolledBack(List<EspialRecord> records, boolean rolledBack) throws EspialStorageException;
 
     /**
      * Batch delete a bunch of records
