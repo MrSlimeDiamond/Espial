@@ -1,15 +1,12 @@
 package net.slimediamond.espial.sponge.storage.sql;
 
-import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.ContainerChangeRecord;
 import net.slimediamond.espial.api.record.ItemFrameChangeRecord;
 import net.slimediamond.espial.api.storage.EspialStorageException;
-import net.slimediamond.espial.sponge.record.SpongeContainerChangeRecord;
 import net.slimediamond.espial.sponge.record.SpongeItemFrameChangeRecord;
-import net.slimediamond.espial.sponge.storage.RecordStorage;
 import net.slimediamond.espial.sponge.storage.Result;
+import net.slimediamond.espial.sponge.storage.SpongeRecordStorage;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -20,16 +17,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-public class SQLItemFrameStorage implements RecordStorage<ItemFrameChangeRecord> {
+public class SQLItemFrameStorage extends SpongeRecordStorage<ItemFrameChangeRecord> {
 
     final SQLStorage sqlStorage;
 
     public SQLItemFrameStorage(final SQLStorage sqlStorage) {
+        super(ItemFrameChangeRecord.class);
         this.sqlStorage = sqlStorage;
+
+        this.supports(EspialEvents.ITEM_FRAME_INSERT, EspialEvents.ITEM_FRAME_REMOVE);
     }
 
     @Override
@@ -104,16 +102,6 @@ public class SQLItemFrameStorage implements RecordStorage<ItemFrameChangeRecord>
         } catch (final SQLException | IOException e) {
             throw new EspialStorageException(e, record);
         }
-    }
-
-    @Override
-    public Class<ItemFrameChangeRecord> getType() {
-        return ItemFrameChangeRecord.class;
-    }
-
-    @Override
-    public Set<EspialEvent> getHandledEvents() {
-        return Set.of(EspialEvents.ITEM_FRAME_INSERT.get(), EspialEvents.ITEM_FRAME_REMOVE.get());
     }
 
 }

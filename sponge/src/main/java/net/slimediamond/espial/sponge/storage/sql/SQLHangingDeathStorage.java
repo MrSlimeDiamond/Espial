@@ -1,22 +1,17 @@
 package net.slimediamond.espial.sponge.storage.sql;
 
-import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
-import net.slimediamond.espial.api.record.ContainerChangeRecord;
 import net.slimediamond.espial.api.record.HangingDeathRecord;
 import net.slimediamond.espial.api.storage.EspialStorageException;
-import net.slimediamond.espial.sponge.record.SpongeContainerChangeRecord;
 import net.slimediamond.espial.sponge.record.SpongeHangingDeathRecord;
-import net.slimediamond.espial.sponge.storage.RecordStorage;
 import net.slimediamond.espial.sponge.storage.Result;
+import net.slimediamond.espial.sponge.storage.SpongeRecordStorage;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.data.persistence.DataContainer;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import java.io.IOException;
@@ -25,16 +20,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class SQLHangingDeathStorage implements RecordStorage<HangingDeathRecord> {
+public class SQLHangingDeathStorage extends SpongeRecordStorage<HangingDeathRecord> {
 
     final SQLStorage sqlStorage;
 
     public SQLHangingDeathStorage(final SQLStorage sqlStorage) {
+        super(HangingDeathRecord.class);
         this.sqlStorage = sqlStorage;
+
+        this.supports(EspialEvents.HANGING_DEATH);
     }
 
     @Override
@@ -103,16 +100,6 @@ public class SQLHangingDeathStorage implements RecordStorage<HangingDeathRecord>
         } catch (final SQLException e) {
             throw new EspialStorageException(e, record);
         }
-    }
-
-    @Override
-    public Class<HangingDeathRecord> getType() {
-        return HangingDeathRecord.class;
-    }
-
-    @Override
-    public Set<EspialEvent> getHandledEvents() {
-        return Set.of(EspialEvents.HANGING_DEATH.get());
     }
 
 }

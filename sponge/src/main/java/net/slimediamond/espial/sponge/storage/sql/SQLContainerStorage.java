@@ -1,13 +1,12 @@
 package net.slimediamond.espial.sponge.storage.sql;
 
-import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.ContainerChangeRecord;
 import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.sponge.record.SpongeContainerChangeRecord;
-import net.slimediamond.espial.sponge.storage.RecordStorage;
 import net.slimediamond.espial.sponge.storage.Result;
+import net.slimediamond.espial.sponge.storage.SpongeRecordStorage;
 import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -18,16 +17,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-public class SQLContainerStorage implements RecordStorage<ContainerChangeRecord> {
+public class SQLContainerStorage extends SpongeRecordStorage<ContainerChangeRecord> {
 
     private final SQLStorage sqlStorage;
 
     public SQLContainerStorage(final SQLStorage sqlStorage) {
+        super(ContainerChangeRecord.class);
         this.sqlStorage = sqlStorage;
+
+        this.supports(EspialEvents.ITEM_REMOVE, EspialEvents.ITEM_INSERT);
     }
 
     @Override
@@ -105,16 +105,6 @@ public class SQLContainerStorage implements RecordStorage<ContainerChangeRecord>
         } catch (final SQLException | IOException e) {
             throw new EspialStorageException(e, record);
         }
-    }
-
-    @Override
-    public Class<ContainerChangeRecord> getType() {
-        return ContainerChangeRecord.class;
-    }
-
-    @Override
-    public Set<EspialEvent> getHandledEvents() {
-        return Set.of(EspialEvents.ITEM_REMOVE.get(), EspialEvents.ITEM_INSERT.get());
     }
 
 }

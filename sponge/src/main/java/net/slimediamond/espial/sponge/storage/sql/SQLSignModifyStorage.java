@@ -3,25 +3,27 @@ package net.slimediamond.espial.sponge.storage.sql;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.slimediamond.espial.api.SignText;
-import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.SignModifyRecord;
 import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.sponge.record.SpongeSignModifyRecord;
-import net.slimediamond.espial.sponge.storage.RecordStorage;
 import net.slimediamond.espial.sponge.storage.Result;
+import net.slimediamond.espial.sponge.storage.SpongeRecordStorage;
 import org.spongepowered.api.block.BlockState;
 
 import java.sql.*;
 import java.util.*;
 
-public class SQLSignModifyStorage implements RecordStorage<SignModifyRecord> {
+public class SQLSignModifyStorage extends SpongeRecordStorage<SignModifyRecord> {
 
     final SQLStorage sqlStorage;
 
     public SQLSignModifyStorage(final SQLStorage sqlStorage) {
+        super(SignModifyRecord.class);
         this.sqlStorage = sqlStorage;
+
+        this.supports(EspialEvents.HANGING_DEATH);
     }
 
     @Override
@@ -181,16 +183,6 @@ public class SQLSignModifyStorage implements RecordStorage<SignModifyRecord> {
 
     private static String componentToString(final Component component) {
         return GsonComponentSerializer.gson().serialize(component);
-    }
-
-    @Override
-    public Class<SignModifyRecord> getType() {
-        return SignModifyRecord.class;
-    }
-
-    @Override
-    public Set<EspialEvent> getHandledEvents() {
-        return Set.of(EspialEvents.SIGN_MODIFY.get());
     }
 
 }

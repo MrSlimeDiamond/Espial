@@ -1,13 +1,12 @@
 package net.slimediamond.espial.sponge.storage.sql;
 
-import net.slimediamond.espial.api.event.EspialEvent;
 import net.slimediamond.espial.api.event.EspialEvents;
 import net.slimediamond.espial.api.query.EspialQuery;
 import net.slimediamond.espial.api.record.BlockRecord;
 import net.slimediamond.espial.api.storage.EspialStorageException;
 import net.slimediamond.espial.sponge.Espial;
 import net.slimediamond.espial.sponge.record.SpongeBlockRecord;
-import net.slimediamond.espial.sponge.storage.RecordStorage;
+import net.slimediamond.espial.sponge.storage.SpongeRecordStorage;
 import net.slimediamond.espial.sponge.storage.Result;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
@@ -19,16 +18,17 @@ import org.spongepowered.api.data.persistence.DataQuery;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-public class SQLBlockStorage implements RecordStorage<BlockRecord> {
+public class SQLBlockStorage extends SpongeRecordStorage<BlockRecord> {
 
     private final SQLStorage sqlStorage;
 
     public SQLBlockStorage(final SQLStorage sqlStorage) {
+        super(BlockRecord.class);
         this.sqlStorage = sqlStorage;
+
+        this.supports(EspialEvents.PLACE, EspialEvents.BREAK, EspialEvents.GROWTH, EspialEvents.MODIFY);
     }
 
     @Override
@@ -143,19 +143,6 @@ public class SQLBlockStorage implements RecordStorage<BlockRecord> {
         } catch (final SQLException | IOException e) {
             throw new EspialStorageException(e, record);
         }
-    }
-
-    @Override
-    public Class<BlockRecord> getType() {
-        return BlockRecord.class;
-    }
-
-    @Override
-    public Set<EspialEvent> getHandledEvents() {
-        return Set.of(
-                EspialEvents.PLACE.get(), EspialEvents.BREAK.get(),
-                EspialEvents.GROWTH.get(), EspialEvents.MODIFY.get()
-        );
     }
 
 }
