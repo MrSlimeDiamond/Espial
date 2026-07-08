@@ -23,7 +23,7 @@ public class SQLSignModifyStorage extends SpongeRecordStorage<SignModifyRecord> 
         super(SignModifyRecord.class);
         this.sqlStorage = sqlStorage;
 
-        this.supports(EspialEvents.HANGING_DEATH);
+        this.supports(EspialEvents.SIGN_MODIFY);
     }
 
     @Override

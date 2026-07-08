@@ -15,10 +15,7 @@ import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.registry.RegistryTypes;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,8 +40,8 @@ public class SQLHangingDeathStorage extends SpongeRecordStorage<HangingDeathReco
                 extra.original_data as original_data, entity_types.resource_key AS target
                 FROM records_view
                 LEFT JOIN extra ON extra.record_id = records_view.id
-                LEFT JOIN hanging_deaths ON hanging_deaths.record_id = records_view.id
-                LEFT JOIN entity_types ON entity_types.id = hanging_deaths.entity_type
+                LEFT JOIN entity_deaths ON entity_deaths.record_id = records_view.id
+                LEFT JOIN entity_types ON entity_types.id = entity_deaths.entity_type
             """;
 
             final ResultSet rs = this.sqlStorage.query(conn, sql, query, this);
@@ -86,7 +83,7 @@ public class SQLHangingDeathStorage extends SpongeRecordStorage<HangingDeathReco
         try (final Connection conn = this.sqlStorage.getConn()) {
             final int id = this.sqlStorage.insert(conn, record);
 
-            final PreparedStatement insertEntity = conn.prepareStatement("INSERT INTO hanging_deaths (record_id, entity_type) VALUES (?, ?)");
+            final PreparedStatement insertEntity = conn.prepareStatement("INSERT INTO entity_deaths (record_id, entity_type) VALUES (?, ?)");
             final int entityId = this.sqlStorage.getOrCreateId(
                     conn,
                     "entity_types",
@@ -96,8 +93,17 @@ public class SQLHangingDeathStorage extends SpongeRecordStorage<HangingDeathReco
             insertEntity.setInt(1, id);
             insertEntity.setInt(2, entityId);
             insertEntity.execute();
+
+            final PreparedStatement insertExtra = this.sqlStorage.prepareExtraDataStatement(conn);
+
+            insertExtra.setInt(1, id);
+            insertExtra.setString(2, DataFormats.JSON.get()
+                    .write(record.getExtraData().get()));
+            insertExtra.setNull(3, Types.CHAR);
+            insertExtra.execute();
+
             return id;
-        } catch (final SQLException e) {
+        } catch (final SQLException | IOException e) {
             throw new EspialStorageException(e, record);
         }
     }
